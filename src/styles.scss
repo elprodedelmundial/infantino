@@ -1,0 +1,89 @@
+// PRODE Global Styles
+:root {
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #111113;
+  --bg-tertiary: #1a1a1d;
+  --accent: #e8ff47;
+  --accent-dim: #c4d93c;
+  --text-primary: #fafafa;
+  --text-secondary: #8a8a8e;
+  --text-muted: #5a5a5e;
+  --border: #2a2a2d;
+  --error: #ff6b6b;
+  --success: #4ade80;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// Animated background
+.bg-pattern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.4;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(232, 255, 71, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(232, 255, 71, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(232, 255, 71, 0.03) 0%, transparent 60%);
+}
+
+.grid-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 60px); }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(232, 255, 71, 0.3)); }
+  50% { transform: scale(1.02); filter: drop-shadow(0 0 40px rgba(232, 255, 71, 0.5)); }
+}

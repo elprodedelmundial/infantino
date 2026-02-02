@@ -1,0 +1,209 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header" *ngIf="tournament">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <h1 class="page-title">Editar Predicciones</h1>
+      <p class="page-subtitle">{{ tournament.name }}</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-container" *ngIf="!isLoading">
+      <div class="filter-group">
+        <label class="filter-label">Mostrar</label>
+        <div class="filter-buttons">
+          <button 
+            class="filter-btn" 
+            [class.active]="timeFilter === 'future'"
+            (click)="setTimeFilter('future')">
+            Próximos
+          </button>
+          <button 
+            class="filter-btn" 
+            [class.active]="timeFilter === 'all'"
+            (click)="setTimeFilter('all')">
+            Todos
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Etapa</label>
+        <div class="filter-select-wrapper">
+          <select 
+            class="filter-select"
+            [ngModel]="stageFilter"
+            (ngModelChange)="setStageFilter($event)">
+            <option value="all">Todas las etapas</option>
+            <option 
+              *ngFor="let stage of stages" 
+              [value]="stage.id"
+              [disabled]="!isStageAvailable(stage)">
+              {{ stage.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group" *ngIf="stageFilter === 'group_stage'">
+        <label class="filter-label">Grupo</label>
+        <div class="filter-select-wrapper">
+          <select 
+            class="filter-select"
+            [ngModel]="groupFilter"
+            (ngModelChange)="setGroupFilter($event)">
+            <option value="all">Todos los grupos</option>
+            <option *ngFor="let group of groups" [value]="group">
+              Grupo {{ group }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-stats" *ngIf="unsavedCount > 0">
+        <span class="unsaved-count">
+          {{ unsavedCount }} sin guardar
+        </span>
+      </div>
+    </div>
+
+    <!-- Save All Button -->
+    <div class="save-all-bar" *ngIf="hasUnsavedChanges && !isLoading">
+      <span class="save-info">
+        Tienes {{ unsavedCount }} predicción(es) sin guardar
+      </span>
+      <button class="save-all-btn" (click)="saveAllChanges()" [disabled]="isSaving">
+        <svg *ngIf="!isSaving" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M4 9L7.5 12.5L14 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="spinner-small" *ngIf="isSaving"></span>
+        {{ isSaving ? 'Guardando...' : 'Guardar Todas' }}
+      </button>
+    </div>
+
+    <!-- Matches List -->
+    <div class="matches-container" *ngIf="!isLoading">
+      <div 
+        *ngFor="let match of filteredMatches"
+        [id]="'match-' + match.id"
+        class="match-card"
+        [class.played]="match.isPlayed"
+        [class.editing]="match.isEditing"
+        [class.has-changes]="match.hasChanges">
+        
+        <div class="match-header">
+          <span class="match-code">{{ match.matchCode }}</span>
+          <span class="match-group" *ngIf="match.group">Grupo {{ match.group }}</span>
+          <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
+        </div>
+
+        <div class="match-content">
+          <div class="team home">
+            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
+            <span class="team-name">{{ match.homeTeam.name }}</span>
+            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">×{{ match.odds.home.toFixed(1) }}</span>
+          </div>
+
+          <!-- Score Display/Edit -->
+          <div class="score-section">
+            <div class="score-display" *ngIf="!match.isEditing">
+              <span class="predicted-score">
+                {{ match.predictedScore.home }} - {{ match.predictedScore.away }}
+              </span>
+              <span class="draw-odds" *ngIf="match.odds && !match.isPlayed">Empate ×{{ match.odds.draw.toFixed(1) }}</span>
+              <span class="actual-score" *ngIf="match.isPlayed && match.actualScore">
+                Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
+              </span>
+            </div>
+
+            <div class="score-edit" *ngIf="match.isEditing">
+              <div class="score-input-group">
+                <button class="score-btn" (click)="decrementScore(match, 'home')">−</button>
+                <input 
+                  type="number" 
+                  class="score-input"
+                  [(ngModel)]="match.editedHomeScore"
+                  (ngModelChange)="onScoreChange(match)"
+                  min="0" 
+                  max="9">
+                <button class="score-btn" (click)="incrementScore(match, 'home')">+</button>
+              </div>
+              <span class="score-separator">-</span>
+              <div class="score-input-group">
+                <button class="score-btn" (click)="decrementScore(match, 'away')">−</button>
+                <input 
+                  type="number" 
+                  class="score-input"
+                  [(ngModel)]="match.editedAwayScore"
+                  (ngModelChange)="onScoreChange(match)"
+                  min="0" 
+                  max="9">
+                <button class="score-btn" (click)="incrementScore(match, 'away')">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="team away">
+            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">×{{ match.odds.away.toFixed(1) }}</span>
+            <span class="team-name">{{ match.awayTeam.name }}</span>
+            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
+          </div>
+        </div>
+
+        <div class="match-footer">
+          <!-- Result badge for played matches -->
+          <span [ngClass]="getResultBadgeClass(match)" *ngIf="match.isPlayed && match.result">
+            {{ match.result === 'correct' ? 'Correcto' : match.result === 'half' ? 'Parcial' : 'Incorrecto' }}
+          </span>
+
+          <!-- Edit controls for future matches -->
+          <div class="edit-controls" *ngIf="!match.isPlayed">
+            <button 
+              class="edit-btn" 
+              *ngIf="!match.isEditing"
+              (click)="startEditing(match)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+              Editar
+            </button>
+            
+            <div class="edit-actions" *ngIf="match.isEditing">
+              <button class="cancel-btn" (click)="cancelEditing(match)">
+                Cancelar
+              </button>
+              <button 
+                class="save-btn" 
+                [disabled]="!match.hasChanges"
+                (click)="saveMatch(match)">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredMatches.length === 0">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <circle cx="30" cy="30" r="25" stroke="#2a2a2d" stroke-width="2" stroke-dasharray="6 4"/>
+          <path d="M22 30H38M30 22V38" stroke="#5a5a5e" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p>No hay partidos que coincidan con los filtros seleccionados</p>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando predicciones...</p>
+    </div>
+  </div>
+</main>

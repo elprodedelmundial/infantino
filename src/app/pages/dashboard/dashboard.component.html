@@ -1,0 +1,38 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="main-buttons">
+      <button class="main-btn results" (click)="goToResults()">
+        <div class="btn-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2"/>
+            <path d="M24 14V24L30 30" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="btn-content">
+          <span class="btn-title">RESULTADOS</span>
+          <span class="btn-description">Partidos en vivo y próximos encuentros</span>
+        </div>
+        <svg class="btn-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button class="main-btn tournaments" (click)="goToMyTournaments()">
+        <div class="btn-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <path d="M24 8L28.09 18.26L39.27 19.27L30.64 26.14L33.18 37.05L24 31.27L14.82 37.05L17.36 26.14L8.73 19.27L19.91 18.26L24 8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="btn-content">
+          <span class="btn-title">TORNEOS</span>
+          <span class="btn-description">Tus torneos y predicciones</span>
+        </div>
+        <svg class="btn-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</main>

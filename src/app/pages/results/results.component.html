@@ -1,0 +1,232 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <h1 class="page-title">Resultados</h1>
+      <p class="page-subtitle">Partidos en vivo y próximos encuentros</p>
+    </div>
+
+    <!-- Live Matches Section -->
+    <div class="live-section" *ngIf="!isLoading && liveMatches.length > 0">
+      <div class="section-header">
+        <h2 class="section-title live">
+          <span class="live-dot"></span>
+          En Vivo
+        </h2>
+      </div>
+
+      <div class="live-matches-list">
+        <div class="live-match-card" *ngFor="let match of liveMatches">
+          <div class="match-time-badge live">
+            <span class="live-indicator"></span>
+            {{ match.matchTime }}
+          </div>
+          
+          <div class="match-teams">
+            <div class="team home">
+              <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
+              <span class="team-name">{{ match.homeTeam.name }}</span>
+            </div>
+            
+            <div class="score-display">
+              <span class="current-score">{{ match.currentScore?.home }} - {{ match.currentScore?.away }}</span>
+            </div>
+            
+            <div class="team away">
+              <span class="team-name">{{ match.awayTeam.name }}</span>
+              <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
+            </div>
+          </div>
+
+          <button 
+            class="view-predictions-btn" 
+            *ngIf="hasJoinedTournaments()"
+            (click)="viewPredictions(match)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Ver Predicciones
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Matches Section -->
+    <div class="upcoming-section" *ngIf="!isLoading && upcomingMatches.length > 0">
+      <div class="section-header">
+        <h2 class="section-title">Próximos Partidos</h2>
+      </div>
+
+      <div class="upcoming-matches-list">
+        <div class="upcoming-match-card" *ngFor="let match of upcomingMatches">
+          <div class="match-schedule">
+            <span class="match-date">{{ formatMatchDate(match) }}</span>
+            <span class="match-time">{{ formatMatchTime(match) }}</span>
+          </div>
+          
+          <div class="match-teams compact">
+            <div class="team home">
+              <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
+              <span class="team-name">{{ match.homeTeam.name }}</span>
+            </div>
+            
+            <span class="vs">vs</span>
+            
+            <div class="team away">
+              <span class="team-name">{{ match.awayTeam.name }}</span>
+              <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
+            </div>
+          </div>
+
+          <ng-container *ngIf="hasJoinedTournaments()">
+            <div class="prediction-status" *ngIf="getFirstPrediction(match) as pred; else noPrediction">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ pred.home }} - {{ pred.away }}
+            </div>
+            <ng-template #noPrediction>
+              <div class="prediction-placeholder"></div>
+            </ng-template>
+
+            <button 
+              class="predict-btn" 
+              [class.has-prediction]="hasPrediction(match)"
+              (click)="predictMatch(match)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+              {{ hasPrediction(match) ? 'Editar' : 'Predecir' }}
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && liveMatches.length === 0 && upcomingMatches.length === 0">
+      <div class="empty-icon">
+        <svg viewBox="0 0 80 80" fill="none">
+          <circle cx="40" cy="40" r="35" stroke="#2a2a2d" stroke-width="2" stroke-dasharray="6 4"/>
+          <path d="M40 25V40L50 50" stroke="#5a5a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="empty-title">No hay partidos disponibles</h2>
+      <p class="empty-subtitle">Los próximos partidos aparecerán aquí</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando partidos...</p>
+    </div>
+  </div>
+</main>
+
+<!-- Predictions Modal - Divided by Tournament -->
+<div class="modal-overlay" *ngIf="showPredictionsModal" (click)="closePredictionsModal()">
+  <div class="modal-content predictions-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closePredictionsModal()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="modal-header" *ngIf="selectedMatch">
+      <div class="match-info-header">
+        <div class="team home">
+          <img [src]="selectedMatch.homeTeam.flagUrl" [alt]="selectedMatch.homeTeam.name" class="flag">
+          <span>{{ selectedMatch.homeTeam.name }}</span>
+        </div>
+        <div class="match-score">
+          <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
+          <span class="match-time-label live">{{ selectedMatch.matchTime }}</span>
+        </div>
+        <div class="team away">
+          <span>{{ selectedMatch.awayTeam.name }}</span>
+          <img [src]="selectedMatch.awayTeam.flagUrl" [alt]="selectedMatch.awayTeam.name" class="flag">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <h3 class="predictions-title">Predicciones por Torneo</h3>
+      
+      <div class="predictions-loading" *ngIf="isLoadingPredictions">
+        <div class="spinner-small"></div>
+        <span>Cargando predicciones...</span>
+      </div>
+
+      <div class="tournaments-predictions" *ngIf="!isLoadingPredictions && matchPredictionsByTournament">
+        <div 
+          class="tournament-predictions-group"
+          *ngFor="let tournamentPred of matchPredictionsByTournament.tournamentPredictions">
+          
+          <button 
+            class="tournament-group-header"
+            (click)="toggleTournamentExpanded(tournamentPred.tournamentId)"
+            [class.expanded]="isTournamentExpanded(tournamentPred.tournamentId)">
+            <span class="tournament-group-name">{{ tournamentPred.tournamentName }}</span>
+            <span class="tournament-group-count">{{ tournamentPred.predictions.length }} predicciones</span>
+            <svg class="expand-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          
+          <div class="tournament-predictions-list" *ngIf="isTournamentExpanded(tournamentPred.tournamentId)">
+            <div 
+              class="prediction-item" 
+              *ngFor="let pred of tournamentPred.predictions"
+              [class.current-user]="pred.isCurrentUser">
+              <div class="member-info">
+                <div class="member-avatar">{{ pred.avatarInitials }}</div>
+                <span class="member-name">
+                  {{ pred.username }}
+                  <span class="you-tag" *ngIf="pred.isCurrentUser">Tú</span>
+                </span>
+              </div>
+              <div class="member-prediction">
+                {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tournament Selector Modal -->
+<div class="modal-overlay" *ngIf="showTournamentSelector" (click)="closeTournamentSelector()">
+  <div class="modal-content selector-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeTournamentSelector()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <h3 class="selector-title">Selecciona el Torneo</h3>
+    <p class="selector-subtitle">¿Para cuál torneo deseas hacer tu predicción?</p>
+
+    <div class="tournament-options">
+      <button 
+        class="tournament-option"
+        *ngFor="let joined of joinedTournaments"
+        (click)="selectTournamentForPrediction(joined.tournament.id)">
+        <span class="tournament-name">{{ joined.tournament.name }}</span>
+        <span class="tournament-rank">{{ joined.userRanking }}º posición</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

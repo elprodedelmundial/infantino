@@ -1,0 +1,201 @@
+.main {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 100px 40px 60px;
+}
+
+.content-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+  animation: fadeUp 0.8s ease-out both;
+}
+
+.page-header {
+  margin-bottom: 40px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin-bottom: 20px;
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.tournaments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tournament-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: rgba(17, 17, 19, 0.6);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(232, 255, 71, 0.05);
+  }
+}
+
+.tournament-info {
+  flex: 1;
+}
+
+.tournament-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.tournament-meta {
+  display: flex;
+  gap: 20px;
+}
+
+.participants,
+.start-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+
+  svg {
+    opacity: 0.7;
+  }
+}
+
+.join-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--bg-primary);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(232, 255, 71, 0.3);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &.joined {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--bg-primary);
+  }
+
+  &.loading {
+    border-color: var(--text-muted);
+  }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--text-muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  &.large {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 60px 0;
+  color: var(--text-muted);
+
+  p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 80px 20px 40px;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .tournament-card {
+    padding: 16px 18px;
+  }
+
+  .tournament-name {
+    font-size: 1rem;
+  }
+
+  .tournament-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .join-btn {
+    width: 44px;
+    height: 44px;
+  }
+}

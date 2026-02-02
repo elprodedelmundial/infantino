@@ -1,0 +1,152 @@
+.main {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 100px 40px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-wrapper {
+  max-width: 600px;
+  width: 100%;
+  animation: fadeUp 0.8s ease-out both;
+}
+
+// Main Buttons
+.main-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.main-btn {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  padding: 32px 36px;
+  background: rgba(17, 17, 19, 0.6);
+  border: 2px solid var(--border);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+
+  &:hover {
+    transform: translateX(8px);
+    border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(232, 255, 71, 0.15);
+
+    .btn-icon {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+
+    .btn-arrow {
+      transform: translateX(8px);
+      color: var(--accent);
+    }
+  }
+
+  &.results {
+    .btn-icon {
+      background: rgba(255, 107, 107, 0.15);
+      color: #ff6b6b;
+    }
+
+    &:hover .btn-icon {
+      background: #ff6b6b;
+      color: var(--bg-primary);
+    }
+  }
+
+  &.tournaments {
+    .btn-icon {
+      background: rgba(232, 255, 71, 0.15);
+      color: var(--accent);
+    }
+  }
+}
+
+.btn-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.4s ease;
+}
+
+.btn-content {
+  flex: 1;
+}
+
+.btn-title {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.btn-description {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.btn-arrow {
+  color: var(--text-muted);
+  transition: all 0.4s ease;
+  flex-shrink: 0;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .main {
+    padding: 80px 20px 40px;
+    align-items: flex-start;
+    padding-top: 120px;
+  }
+
+  .main-btn {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+
+  .btn-icon {
+    width: 60px;
+    height: 60px;
+
+    svg {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .btn-title {
+    font-size: 1.15rem;
+  }
+
+  .btn-description {
+    font-size: 0.7rem;
+  }
+}

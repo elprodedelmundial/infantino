@@ -1,0 +1,61 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <h1 class="page-title">Buscar Torneo</h1>
+      <p class="page-subtitle">Únete a un torneo y comienza a competir</p>
+    </div>
+
+    <div class="tournaments-container" *ngIf="!isLoading">
+      <div class="tournament-card" *ngFor="let tournament of tournaments">
+        <div class="tournament-info">
+          <h3 class="tournament-name">{{ tournament.name }}</h3>
+          <div class="tournament-meta">
+            <span class="participants">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              {{ tournament.participantsCount }}/{{ tournament.maxParticipants }}
+            </span>
+            <span class="start-date">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M2 6H14" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M11 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              {{ formatDate(tournament.startDate) }}
+            </span>
+          </div>
+        </div>
+        <button 
+          class="join-btn" 
+          [class.joined]="tournament.isJoined"
+          [class.loading]="joiningId === tournament.id"
+          [disabled]="tournament.isJoined || joiningId === tournament.id"
+          (click)="joinTournament(tournament)">
+          <svg *ngIf="!tournament.isJoined && joiningId !== tournament.id" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <svg *ngIf="tournament.isJoined" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="spinner" *ngIf="joiningId === tournament.id"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner large"></div>
+      <p>Cargando torneos...</p>
+    </div>
+  </div>
+</main>

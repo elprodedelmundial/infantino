@@ -1,0 +1,274 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header" *ngIf="standings">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <div class="header-top">
+        <div>
+          <h1 class="page-title">{{ standings.tournament.name }}</h1>
+          <p class="page-subtitle">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            {{ standings.tournament.participantsCount }} participantes
+          </p>
+        </div>
+        <button class="leave-btn" (click)="promptLeaveTournament()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M6 2H4C3.44772 2 3 2.44772 3 3V15C3 15.5523 3.44772 16 4 16H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 12L15 9L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Abandonar Torneo
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs" *ngIf="!isLoading">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'standings'"
+        (click)="setActiveTab('standings')">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M6 14V8M9 14V4M12 14V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Clasificación
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'predictions'"
+        (click)="setActiveTab('predictions')">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="2" y="3" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M2 7H16" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M9 7V15" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Mis Predicciones
+      </button>
+    </div>
+
+    <!-- Standings Tab -->
+    <div class="standings-container" *ngIf="!isLoading && standings && activeTab === 'standings'">
+      <div class="standings-header">
+        <span class="header-pos">#</span>
+        <span class="header-player">Jugador</span>
+        <span class="header-predictions">Últimas 5</span>
+        <span class="header-points">Pts</span>
+      </div>
+
+      <div class="standings-list">
+        <div 
+          class="player-row" 
+          *ngFor="let player of standings.players"
+          [class.current-user]="isCurrentUser(player)">
+          <div [ngClass]="getPositionClass(player.position)">
+            {{ player.position }}
+          </div>
+          <div class="player-info">
+            <div class="player-avatar">
+              <span>{{ player.avatarInitials }}</span>
+            </div>
+            <span class="player-name">
+              {{ player.username }}
+              <span class="you-badge" *ngIf="isCurrentUser(player)">Tú</span>
+            </span>
+          </div>
+          <div class="predictions-dots">
+            <div 
+              *ngFor="let pred of player.lastPredictions"
+              [ngClass]="getPredictionClass(pred)"
+              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : 'Incorrecto'">
+            </div>
+          </div>
+          <div class="points">
+            {{ player.points }}
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="legend-title">Leyenda:</span>
+        <div class="legend-item">
+          <div class="prediction correct"></div>
+          <span>Correcto</span>
+        </div>
+        <div class="legend-item">
+          <div class="prediction half"></div>
+          <span>Parcial</span>
+        </div>
+        <div class="legend-item">
+          <div class="prediction incorrect"></div>
+          <span>Incorrecto</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Predictions Tab -->
+    <div class="predictions-container" *ngIf="!isLoading && predictions && activeTab === 'predictions'">
+      
+      <!-- Predictions Banner -->
+      <div class="predictions-banner" (click)="editAllPredictions()">
+        <div class="banner-icon predictions">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M17 3L21 7L8 20H4V16L17 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M14 6L18 10" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="banner-text">
+          <h4>Editar Predicciones</h4>
+          <p>Ingresa tus predicciones para los próximos partidos</p>
+        </div>
+        <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Awards Button -->
+      <div class="awards-banner" (click)="goToAwards()">
+        <div class="banner-icon awards">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="banner-text">
+          <h4>Premios del Torneo</h4>
+          <p>Predice el campeón, Balón de Oro, Bota de Oro y más</p>
+        </div>
+        <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      
+      <!-- Past Predictions -->
+      <div class="predictions-section">
+        <h3 class="section-title standalone">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M9 5V9L12 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Últimos Partidos
+        </h3>
+        
+        <div class="predictions-table">
+          <div class="table-header">
+            <span class="col-code">Código</span>
+            <span class="col-match">Partido</span>
+            <span class="col-prediction">Predicción</span>
+            <span class="col-result">Resultado</span>
+            <span class="col-status">Estado</span>
+          </div>
+          
+          <div class="table-row" *ngFor="let pred of predictions.pastPredictions">
+            <span class="col-code">{{ pred.matchCode }}</span>
+            <div class="col-match">
+              <div class="team home">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag">
+                <span class="team-name">{{ pred.homeTeam.name }}</span>
+              </div>
+              <span class="vs">vs</span>
+              <div class="team away">
+                <span class="team-name">{{ pred.awayTeam.name }}</span>
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag">
+              </div>
+            </div>
+            <span class="col-prediction score">
+              {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+            </span>
+            <span class="col-result score actual">
+              {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
+            </span>
+            <div class="col-status">
+              <span [ngClass]="getResultBadgeClass(pred)">
+                {{ pred.result === 'correct' ? 'Correcto' : pred.result === 'half' ? 'Parcial' : 'Incorrecto' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Predictions -->
+      <div class="predictions-section upcoming">
+        <h3 class="section-title">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="3" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2 7H16" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 1V3M12 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Próximos Partidos
+        </h3>
+        
+        <div class="predictions-table upcoming-table">
+          <div class="table-header">
+            <span class="col-code">Código</span>
+            <span class="col-match">Partido</span>
+            <span class="col-prediction">Tu Predicción</span>
+            <span class="col-date">Fecha</span>
+            <span class="col-actions">Acción</span>
+          </div>
+          
+          <div class="table-row" *ngFor="let pred of predictions.upcomingPredictions">
+            <span class="col-code">{{ pred.matchCode }}</span>
+            <div class="col-match">
+              <div class="team home">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag">
+                <span class="team-name">{{ pred.homeTeam.name }}</span>
+              </div>
+              <span class="vs">vs</span>
+              <div class="team away">
+                <span class="team-name">{{ pred.awayTeam.name }}</span>
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag">
+              </div>
+            </div>
+            <span class="col-prediction score pending">
+              {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+            </span>
+            <span class="col-date">{{ formatMatchDate(pred.matchDate) }}</span>
+            <div class="col-actions">
+              <button class="edit-btn" (click)="editPrediction(pred)" title="Editar predicción">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando datos...</p>
+    </div>
+  </div>
+</main>
+
+<!-- Leave Tournament Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showLeaveConfirm" (click)="cancelLeave()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-icon warning">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+        <path d="M16 9V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="16" cy="23" r="1.5" fill="currentColor"/>
+      </svg>
+    </div>
+    <h3>¿Abandonar Torneo?</h3>
+    <p>Estás a punto de abandonar <strong>{{ standings?.tournament?.name }}</strong>. Perderás tu posición y predicciones. Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" (click)="cancelLeave()">Cancelar</button>
+      <button class="modal-btn confirm" (click)="confirmLeaveTournament()" [disabled]="isLeaving">
+        <span class="spinner-small" *ngIf="isLeaving"></span>
+        {{ isLeaving ? 'Saliendo...' : 'Sí, Abandonar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
