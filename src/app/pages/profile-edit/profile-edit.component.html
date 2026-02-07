@@ -30,20 +30,11 @@
     <div class="profile-container" *ngIf="!isLoading">
       <!-- Avatar Section -->
       <div class="avatar-section">
-        <div class="avatar-preview" [class.has-image]="avatarUrl">
-          <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar">
-          <span *ngIf="!avatarUrl" class="avatar-initials">{{ initials }}</span>
+        <div class="avatar-preview">
+          <span class="avatar-initials">{{ initials }}</span>
         </div>
-        <div class="avatar-actions">
-          <div class="form-group">
-            <label class="form-label">URL de imagen de perfil</label>
-            <input 
-              type="url" 
-              class="form-input"
-              [(ngModel)]="avatarUrl"
-              placeholder="https://ejemplo.com/imagen.jpg">
-          </div>
-          <p class="avatar-hint">Ingresa la URL de una imagen para tu perfil</p>
+        <div class="avatar-info">
+          <p class="avatar-hint">Tu avatar se genera automáticamente a partir de tus iniciales</p>
         </div>
       </div>
 
@@ -139,6 +130,45 @@
             {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
           </button>
         </form>
+      </div>
+
+      <!-- Delete Account Section -->
+      <div class="delete-section">
+        <div class="section-header danger">
+          <h3>Zona de Peligro</h3>
+        </div>
+        <div class="delete-content">
+          <p class="delete-warning">Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de que esto es lo que deseas.</p>
+          <button type="button" class="btn-danger" (click)="showDeleteConfirmDialog()" [disabled]="isDeleting">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4H14M5.333 4V2.667C5.333 2.298 5.632 2 6 2H10C10.368 2 10.667 2.298 10.667 2.667V4M12.667 4V13.333C12.667 13.702 12.368 14 12 14H4C3.632 14 3.333 13.702 3.333 13.333V4H12.667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Eliminar Cuenta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="warning-icon">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12M12 16V16.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <h3>Confirmar Eliminación</h3>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos permanentemente.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+          <button type="button" class="btn-danger" (click)="confirmDeleteUser()" [disabled]="isDeleting">
+            <span class="spinner-small" *ngIf="isDeleting"></span>
+            {{ isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta' }}
+          </button>
+        </div>
       </div>
     </div>
 

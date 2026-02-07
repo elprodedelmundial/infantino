@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
-import { TournamentService } from '../../services/tournament.service';
+import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { Tournament } from '../../models/tournament.model';
 
 @Component({
@@ -20,7 +20,7 @@ export class TournamentSearchComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private tournamentService: TournamentService
+    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService
   ) {}
 
   ngOnInit(): void {

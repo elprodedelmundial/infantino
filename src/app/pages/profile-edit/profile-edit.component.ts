@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
-import { UserService } from '../../services/user.service';
+import { IUserService, USER_SERVICE } from '../../services/user-service.interface';
 import { UserProfile } from '../../models/user.model';
 
 @Component({
@@ -19,12 +19,13 @@ export class ProfileEditComponent implements OnInit {
   isLoading: boolean = true;
   isSaving: boolean = false;
   isChangingPassword: boolean = false;
+  isDeleting: boolean = false;
+  showDeleteConfirm: boolean = false;
   
   // Form fields
   fullName: string = '';
   editUsername: string = '';
   email: string = '';
-  avatarUrl: string = '';
   
   // Password fields
   currentPassword: string = '';
@@ -38,7 +39,7 @@ export class ProfileEditComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private userService: UserService
+    @Inject(USER_SERVICE) private userService: IUserService
   ) {}
 
   ngOnInit(): void {
@@ -57,7 +58,6 @@ export class ProfileEditComponent implements OnInit {
       this.fullName = profile.fullName;
       this.editUsername = profile.username;
       this.email = profile.email;
-      this.avatarUrl = profile.avatarUrl || '';
       this.isLoading = false;
     });
   }
@@ -74,15 +74,21 @@ export class ProfileEditComponent implements OnInit {
     this.userService.updateProfile({
       fullName: this.fullName,
       username: this.editUsername,
-      email: this.email,
-      avatarUrl: this.avatarUrl || undefined
-    }).subscribe(updatedProfile => {
-      this.profile = updatedProfile;
-      this.username = updatedProfile.username;
-      this.successMessage = 'Perfil actualizado correctamente';
-      this.isSaving = false;
-      
-      setTimeout(() => this.clearMessages(), 3000);
+      email: this.email
+    }).subscribe({
+      next: (updatedProfile) => {
+        this.profile = updatedProfile;
+        this.username = updatedProfile.username;
+        this.successMessage = 'Perfil actualizado correctamente';
+        this.isSaving = false;
+        
+        setTimeout(() => this.clearMessages(), 3000);
+      },
+      error: (error) => {
+        this.isSaving = false;
+        this.errorMessage = error.message || 'Error al actualizar el perfil';
+        setTimeout(() => this.clearMessages(), 5000);
+      }
     });
   }
 
@@ -139,6 +145,34 @@ export class ProfileEditComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/dashboard'], {
       state: { username: this.username }
+    });
+  }
+
+  showDeleteConfirmDialog(): void {
+    this.showDeleteConfirm = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm = false;
+  }
+
+  confirmDeleteUser(): void {
+    this.isDeleting = true;
+    this.clearMessages();
+
+    this.userService.deleteUser().subscribe({
+      next: () => {
+        this.isDeleting = false;
+        this.showDeleteConfirm = false;
+        // Navigate to home page after deletion
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        this.isDeleting = false;
+        this.showDeleteConfirm = false;
+        this.errorMessage = error.message || 'Error al eliminar la cuenta';
+        setTimeout(() => this.clearMessages(), 3000);
+      }
     });
   }
 

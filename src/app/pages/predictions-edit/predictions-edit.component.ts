@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
-import { TournamentService } from '../../services/tournament.service';
+import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { 
   Tournament,
   MatchPrediction, 
@@ -49,7 +49,7 @@ export class PredictionsEditComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private tournamentService: TournamentService
+    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService
   ) {}
 
   ngOnInit(): void {

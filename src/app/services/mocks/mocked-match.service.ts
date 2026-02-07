@@ -5,11 +5,11 @@ import {
   MatchScore,
   MatchOdds,
   MemberPrediction
-} from '../models/tournament.model';
-import { IMatchService, TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
+} from '../../models/tournament.model';
+import { IMatchService, TournamentPredictions, MatchPredictionsByTournament } from '../match-service.interface';
 
 // Not using @Injectable since this is created via factory
-export class MatchService implements IMatchService {
+export class MockedMatchService implements IMatchService {
   
   // Country data
   private countries: Country[] = [
@@ -38,6 +38,19 @@ export class MatchService implements IMatchService {
   // Cache for consistent match data
   private liveMatchesCache: LiveMatch[] | null = null;
   private upcomingMatchesCache: LiveMatch[] | null = null;
+
+  private logApiCall(method: string, endpoint: string, body?: object, headers?: object): void {
+    console.log('========================================');
+    console.log(`🔌 MOCK API CALL - ${method} ${endpoint}`);
+    console.log('========================================');
+    if (headers) {
+      console.log('Headers:', JSON.stringify(headers, null, 2));
+    }
+    if (body) {
+      console.log('Request Body:', JSON.stringify(body, null, 2));
+    }
+    console.log('========================================');
+  }
 
   private generateOdds(homeTeam: Country, awayTeam: Country): MatchOdds {
     const strongTeams = ['ARG', 'BRA', 'FRA', 'ENG', 'ESP', 'GER', 'POR', 'NED'];
@@ -117,7 +130,7 @@ export class MatchService implements IMatchService {
         stage: 'group_stage',
         group: String.fromCharCode(65 + Math.floor(Math.random() * 8)),
         odds: this.generateOdds(homeTeam, awayTeam),
-        tournamentIds: [] // Will be populated based on user's tournaments
+        tournamentIds: []
       });
     }
 
@@ -148,7 +161,7 @@ export class MatchService implements IMatchService {
         stage: 'group_stage',
         group: String.fromCharCode(65 + Math.floor(Math.random() * 8)),
         odds: this.generateOdds(homeTeam, awayTeam),
-        tournamentIds: [] // Will be populated based on user's tournaments
+        tournamentIds: []
       });
     }
 
@@ -157,38 +170,44 @@ export class MatchService implements IMatchService {
   }
 
   getLiveMatches(): Observable<LiveMatch[]> {
+    this.logApiCall('GET', '/api/matches/live');
     return of(this.generateLiveMatches()).pipe(delay(200));
   }
 
   getUpcomingMatches(): Observable<LiveMatch[]> {
+    this.logApiCall('GET', '/api/matches/upcoming');
     return of(this.generateUpcomingMatches()).pipe(delay(200));
   }
 
   getMatchById(matchId: string): Observable<LiveMatch | null> {
+    this.logApiCall('GET', `/api/matches/${matchId}`);
     const allMatches = [...this.generateLiveMatches(), ...this.generateUpcomingMatches()];
     const match = allMatches.find(m => m.id === matchId);
     return of(match || null).pipe(delay(100));
   }
 
-  // Get predictions for a match, divided by tournament
   getMatchPredictionsByTournament(
     matchId: string, 
     joinedTournaments: { id: string; name: string }[],
     currentUsername: string
   ): Observable<MatchPredictionsByTournament | null> {
+    this.logApiCall('GET', `/api/matches/${matchId}/predictions`, {
+      tournamentIds: joinedTournaments.map(t => t.id)
+    }, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
+
     const allMatches = [...this.generateLiveMatches(), ...this.generateUpcomingMatches()];
     const match = allMatches.find(m => m.id === matchId);
     
     if (!match) return of(null);
 
-    // Generate predictions for each tournament
     const memberNames = [
       'Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S',
       'Lucía_F', 'Diego_L', 'Sofía_V', 'Martín_C', 'Valentina_H'
     ];
 
     const tournamentPredictions: TournamentPredictions[] = joinedTournaments.map(tournament => {
-      // Generate different number of members per tournament
       const memberCount = 5 + Math.floor(Math.random() * 5);
       const selectedMembers = memberNames.slice(0, memberCount);
 
@@ -203,7 +222,6 @@ export class MatchService implements IMatchService {
         isCurrentUser: false
       }));
 
-      // Add current user prediction
       predictions.unshift({
         oddsId: `pred-${tournament.id}-current`,
         username: currentUsername,
@@ -230,9 +248,11 @@ export class MatchService implements IMatchService {
     return of(result).pipe(delay(300));
   }
 
-  // Get user's prediction for a match in a specific tournament
   getUserPredictionForMatch(matchId: string, tournamentId: string): Observable<MatchScore | null> {
-    // Mock: return a random prediction or null
+    this.logApiCall('GET', `/api/matches/${matchId}/predictions/me?tournamentId=${tournamentId}`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
+
     if (Math.random() > 0.3) {
       return of({
         home: Math.floor(Math.random() * 4),
@@ -242,8 +262,8 @@ export class MatchService implements IMatchService {
     return of(null).pipe(delay(100));
   }
 
-  // Clear cache (useful for testing or refreshing data)
   clearCache(): void {
+    this.logApiCall('LOCAL', 'clearCache');
     this.liveMatchesCache = null;
     this.upcomingMatchesCache = null;
   }

@@ -1,4 +1,4 @@
-import { Observable, of, delay, BehaviorSubject } from 'rxjs';
+import { Observable, of, delay } from 'rxjs';
 import { 
   Tournament, 
   JoinedTournament, 
@@ -8,7 +8,6 @@ import {
   UserPredictions,
   MatchPrediction,
   Country,
-  TournamentStage,
   TournamentStageInfo,
   AllPredictionsData,
   MatchScore,
@@ -19,11 +18,11 @@ import {
   MemberPrediction,
   MatchWithPredictions,
   DashboardLiveData
-} from '../models/tournament.model';
-import { ITournamentService } from './tournament-service.interface';
+} from '../../models/tournament.model';
+import { ITournamentService } from '../tournament-service.interface';
 
 // Not using @Injectable since this is created via factory
-export class TournamentService implements ITournamentService {
+export class MockedTournamentService implements ITournamentService {
   
   private currentUserId = 'user-1';
   private currentUsername = 'Usuario';
@@ -158,8 +157,20 @@ export class TournamentService implements ITournamentService {
   // User award predictions
   private userAwardPredictions: Map<string, TournamentAwardPrediction> = new Map();
 
+  private logApiCall(method: string, endpoint: string, body?: object, headers?: object): void {
+    console.log('========================================');
+    console.log(`🔌 MOCK API CALL - ${method} ${endpoint}`);
+    console.log('========================================');
+    if (headers) {
+      console.log('Headers:', JSON.stringify(headers, null, 2));
+    }
+    if (body) {
+      console.log('Request Body:', JSON.stringify(body, null, 2));
+    }
+    console.log('========================================');
+  }
+
   private generateOdds(homeTeam: Country, awayTeam: Country): MatchOdds {
-    // Strong teams have lower odds (favorites)
     const strongTeams = ['ARG', 'BRA', 'FRA', 'ENG', 'ESP', 'GER', 'POR', 'NED'];
     const mediumTeams = ['URU', 'COL', 'BEL', 'CRO', 'ITA', 'MEX', 'USA', 'JPN', 'KOR', 'MAR'];
     
@@ -173,31 +184,25 @@ export class TournamentService implements ITournamentService {
     const awayStrength = getTeamStrength(awayTeam);
     const diff = awayStrength - homeStrength;
 
-    // Base odds calculation
     let homeOdds: number, drawOdds: number, awayOdds: number;
 
     if (diff > 1) {
-      // Home is much stronger
       homeOdds = 1.1 + Math.random() * 0.3;
       drawOdds = 3.5 + Math.random() * 1.5;
       awayOdds = 5.0 + Math.random() * 3.0;
     } else if (diff > 0) {
-      // Home is slightly stronger
       homeOdds = 1.4 + Math.random() * 0.4;
       drawOdds = 3.0 + Math.random() * 1.0;
       awayOdds = 3.5 + Math.random() * 2.0;
     } else if (diff === 0) {
-      // Equal strength
       homeOdds = 2.0 + Math.random() * 0.6;
       drawOdds = 2.8 + Math.random() * 0.8;
       awayOdds = 2.2 + Math.random() * 0.6;
     } else if (diff > -2) {
-      // Away is slightly stronger
       homeOdds = 3.0 + Math.random() * 1.5;
       drawOdds = 2.8 + Math.random() * 0.8;
       awayOdds = 1.6 + Math.random() * 0.4;
     } else {
-      // Away is much stronger
       homeOdds = 4.5 + Math.random() * 2.5;
       drawOdds = 3.2 + Math.random() * 1.2;
       awayOdds = 1.2 + Math.random() * 0.3;
@@ -217,19 +222,15 @@ export class TournamentService implements ITournamentService {
     
     let matchIndex = 1;
     const baseDate = new Date('2026-02-15');
-    
-    // 40 matches already played, 32 upcoming
     const playedMatchCount = 40;
     
     groups.forEach((group, groupIndex) => {
-      // Get 4 teams for this group
       const groupTeams = shuffledCountries.slice(groupIndex * 4, (groupIndex + 1) * 4);
       
-      // Generate all 6 matches for this group (round-robin)
       const groupMatches: [number, number][] = [
-        [0, 1], [2, 3], // Matchday 1
-        [0, 2], [1, 3], // Matchday 2
-        [0, 3], [1, 2], // Matchday 3
+        [0, 1], [2, 3],
+        [0, 2], [1, 3],
+        [0, 3], [1, 2],
       ];
       
       groupMatches.forEach(([homeIdx, awayIdx], matchDayOffset) => {
@@ -238,7 +239,7 @@ export class TournamentService implements ITournamentService {
         matchDate.setDate(baseDate.getDate() + Math.floor(matchDayOffset / 2) * 4 + groupIndex % 3);
         
         if (!isPlayed) {
-          matchDate.setDate(matchDate.getDate() + 15); // Future matches
+          matchDate.setDate(matchDate.getDate() + 15);
         }
         
         const homeTeam = groupTeams[homeIdx];
@@ -255,7 +256,6 @@ export class TournamentService implements ITournamentService {
           const actualAway = Math.floor(Math.random() * 4);
           actualScore = { home: actualHome, away: actualAway };
           
-          // Calculate result
           if (predictedHome === actualHome && predictedAway === actualAway) {
             result = 'correct';
           } else if (
@@ -316,7 +316,6 @@ export class TournamentService implements ITournamentService {
     return { pastPredictions, upcomingPredictions };
   }
 
-  // Mocked standings data
   private generateMockPlayers(tournamentId: string): TournamentPlayer[] {
     const names = [
       'Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S',
@@ -343,15 +342,11 @@ export class TournamentService implements ITournamentService {
       };
     });
 
-    // Sort by points descending
     players.sort((a, b) => b.points - a.points);
-    
-    // Reassign positions after sorting
     players.forEach((player, index) => {
       player.position = index + 1;
     });
 
-    // Insert current user at a random position
     const userPosition = Math.floor(Math.random() * 10) + 3;
     const userPredictions: PredictionResult[] = [];
     for (let i = 0; i < 5; i++) {
@@ -370,10 +365,7 @@ export class TournamentService implements ITournamentService {
       avatarInitials: this.currentUsername.substring(0, 2).toUpperCase()
     };
 
-    // Replace player at user position with current user
     players.splice(userPosition - 1, 0, currentUser);
-    
-    // Reassign positions
     players.forEach((player, index) => {
       player.position = index + 1;
     });
@@ -382,10 +374,12 @@ export class TournamentService implements ITournamentService {
   }
 
   setCurrentUser(username: string): void {
+    this.logApiCall('LOCAL', 'setCurrentUser', { username });
     this.currentUsername = username;
   }
 
   getAvailableTournaments(): Observable<Tournament[]> {
+    this.logApiCall('GET', '/api/tournaments');
     const tournaments = this.availableTournaments.map(t => ({
       ...t,
       isJoined: this.joinedTournamentIds.has(t.id)
@@ -394,6 +388,9 @@ export class TournamentService implements ITournamentService {
   }
 
   getJoinedTournaments(): Observable<JoinedTournament[]> {
+    this.logApiCall('GET', '/api/tournaments/joined', undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const joined = this.availableTournaments
       .filter(t => this.joinedTournamentIds.has(t.id))
       .map(tournament => ({
@@ -405,6 +402,9 @@ export class TournamentService implements ITournamentService {
   }
 
   joinTournament(tournamentId: string): Observable<boolean> {
+    this.logApiCall('POST', `/api/tournaments/${tournamentId}/join`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     this.joinedTournamentIds.add(tournamentId);
     const tournament = this.availableTournaments.find(t => t.id === tournamentId);
     if (tournament) {
@@ -414,18 +414,23 @@ export class TournamentService implements ITournamentService {
   }
 
   leaveTournament(tournamentId: string): Observable<boolean> {
+    this.logApiCall('DELETE', `/api/tournaments/${tournamentId}/leave`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     this.joinedTournamentIds.delete(tournamentId);
     const tournament = this.availableTournaments.find(t => t.id === tournamentId);
     if (tournament && tournament.participantsCount > 0) {
       tournament.participantsCount--;
     }
-    // Clear cache
     this.allMatchesCache.delete(tournamentId);
     this.userAwardPredictions.delete(tournamentId);
     return of(true).pipe(delay(300));
   }
 
   getTournamentStandings(tournamentId: string): Observable<TournamentStandings | null> {
+    this.logApiCall('GET', `/api/tournaments/${tournamentId}/standings`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const tournament = this.availableTournaments.find(t => t.id === tournamentId);
     if (!tournament) {
       return of(null);
@@ -441,14 +446,19 @@ export class TournamentService implements ITournamentService {
   }
 
   getUserPredictions(tournamentId: string): Observable<UserPredictions> {
+    this.logApiCall('GET', `/api/tournaments/${tournamentId}/predictions/me`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     return of(this.generateMockPredictions(tournamentId)).pipe(delay(300));
   }
 
   getAllPredictions(tournamentId: string): Observable<AllPredictionsData> {
+    this.logApiCall('GET', `/api/tournaments/${tournamentId}/predictions`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const matches = this.getAllMatches(tournamentId);
     const stages = this.stagesConfig.map(stage => ({
       ...stage,
-      // Only group stage has started for now
       hasStarted: stage.id === 'group_stage'
     }));
 
@@ -456,6 +466,12 @@ export class TournamentService implements ITournamentService {
   }
 
   updatePrediction(tournamentId: string, matchId: string, newScore: MatchScore): Observable<boolean> {
+    this.logApiCall('PUT', `/api/tournaments/${tournamentId}/predictions/${matchId}`, {
+      homeScore: newScore.home,
+      awayScore: newScore.away
+    }, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const matches = this.getAllMatches(tournamentId);
     const match = matches.find(m => m.id === matchId);
     
@@ -468,6 +484,15 @@ export class TournamentService implements ITournamentService {
   }
 
   updateMultiplePredictions(tournamentId: string, updates: { matchId: string; score: MatchScore }[]): Observable<boolean> {
+    this.logApiCall('PUT', `/api/tournaments/${tournamentId}/predictions/batch`, {
+      predictions: updates.map(u => ({
+        matchId: u.matchId,
+        homeScore: u.score.home,
+        awayScore: u.score.away
+      }))
+    }, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const matches = this.getAllMatches(tournamentId);
     
     updates.forEach(update => {
@@ -481,45 +506,53 @@ export class TournamentService implements ITournamentService {
   }
 
   getTournamentById(tournamentId: string): Observable<Tournament | null> {
+    this.logApiCall('GET', `/api/tournaments/${tournamentId}`);
     const tournament = this.availableTournaments.find(t => t.id === tournamentId);
     return of(tournament || null).pipe(delay(100));
   }
 
-  // Award predictions
   getCountriesForAwards(): Observable<Country[]> {
+    this.logApiCall('GET', '/api/countries');
     return of(this.countries.slice(0, 32)).pipe(delay(200));
   }
 
   getPlayersForAwards(): Observable<Player[]> {
+    this.logApiCall('GET', '/api/players');
     return of(this.players).pipe(delay(200));
   }
 
   getGoalkeepersForAwards(): Observable<Player[]> {
+    this.logApiCall('GET', '/api/players?position=goalkeeper');
     return of(this.players.filter(p => p.position === 'Portero')).pipe(delay(200));
   }
 
   getYoungPlayersForAwards(): Observable<Player[]> {
+    this.logApiCall('GET', '/api/players?category=young');
     return of(this.players.filter(p => p.id.startsWith('y'))).pipe(delay(200));
   }
 
   getUserAwardPredictions(tournamentId: string): Observable<TournamentAwardPrediction | null> {
+    this.logApiCall('GET', `/api/tournaments/${tournamentId}/awards/me`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const predictions = this.userAwardPredictions.get(tournamentId);
     return of(predictions || null).pipe(delay(200));
   }
 
   saveAwardPredictions(tournamentId: string, predictions: TournamentAwardPrediction): Observable<boolean> {
+    this.logApiCall('PUT', `/api/tournaments/${tournamentId}/awards`, predictions, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     this.userAwardPredictions.set(tournamentId, predictions);
     return of(true).pipe(delay(300));
   }
 
-  // Live Matches and Member Predictions
   private generateLiveMatches(): LiveMatch[] {
     const matches: LiveMatch[] = [];
     const joinedIds = Array.from(this.joinedTournamentIds);
     
     if (joinedIds.length === 0) return matches;
 
-    // Generate 2 live matches
     const liveMatchTimes = ["45'+2", "67'", "23'", "HT"];
     for (let i = 0; i < 2; i++) {
       const homeTeam = this.countries[Math.floor(Math.random() * 20)];
@@ -570,7 +603,7 @@ export class TournamentService implements ITournamentService {
       }
 
       const matchDate = new Date(baseDate);
-      matchDate.setHours(matchDate.getHours() + (i + 1) * 3); // Every 3 hours
+      matchDate.setHours(matchDate.getHours() + (i + 1) * 3);
 
       matches.push({
         id: `upcoming-${i + 1}`,
@@ -594,6 +627,9 @@ export class TournamentService implements ITournamentService {
   }
 
   getDashboardLiveData(): Observable<DashboardLiveData> {
+    this.logApiCall('GET', '/api/dashboard/live', undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const liveMatches = this.generateLiveMatches();
     const upcomingMatches = this.generateUpcomingMatches(3);
     
@@ -601,15 +637,16 @@ export class TournamentService implements ITournamentService {
   }
 
   getMemberPredictions(matchId: string, tournamentId?: string): Observable<MatchWithPredictions | null> {
+    this.logApiCall('GET', `/api/matches/${matchId}/predictions${tournamentId ? `?tournamentId=${tournamentId}` : ''}`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const joinedIds = Array.from(this.joinedTournamentIds);
     
-    // Generate mock member predictions
     const memberNames = [
       'Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S',
       'Lucía_F', 'Diego_L', 'Sofía_V', 'Martín_C', 'Valentina_H'
     ];
 
-    // Find or generate the match
     const isLive = matchId.startsWith('live');
     let match: LiveMatch;
 
@@ -625,10 +662,9 @@ export class TournamentService implements ITournamentService {
       match = foundMatch;
     }
 
-    // Generate member predictions
     const membersToShow = tournamentId 
-      ? memberNames.slice(0, 8) // Specific tournament - fewer members
-      : memberNames; // All tournaments
+      ? memberNames.slice(0, 8)
+      : memberNames;
 
     const memberPredictions: MemberPrediction[] = membersToShow.map((name, index) => ({
       oddsId: `pred-${index}`,
@@ -638,10 +674,9 @@ export class TournamentService implements ITournamentService {
         home: Math.floor(Math.random() * 4),
         away: Math.floor(Math.random() * 4)
       },
-      isCurrentUser: index === 0 // First one is always the current user for demo
+      isCurrentUser: index === 0
     }));
 
-    // Add current user prediction
     memberPredictions[0] = {
       oddsId: 'pred-current',
       username: this.currentUsername,
@@ -660,6 +695,9 @@ export class TournamentService implements ITournamentService {
   }
 
   getLiveMatchesForTournament(tournamentId: string): Observable<LiveMatch[]> {
+    this.logApiCall('GET', `/api/tournaments/${tournamentId}/matches/live`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     if (!this.joinedTournamentIds.has(tournamentId)) {
       return of([]);
     }

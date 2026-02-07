@@ -31,20 +31,23 @@
           autocomplete="name">
       </div>
 
-      <!-- Register: Username (Optional) -->
+      <!-- Register: Username (Required) -->
       <div class="form-group" *ngIf="isRegister">
         <label class="form-label" for="username">
-          Nombre de Usuario <span class="optional">(opcional)</span>
+          Nombre de Usuario <span class="required">*</span>
         </label>
         <input 
           type="text" 
           id="username" 
           class="form-input" 
+          [class.input-error]="hasFieldError('username')"
           placeholder="juanperez"
           [(ngModel)]="username"
           name="username"
-          autocomplete="username">
-        <span class="form-hint">Si no lo especificas, usaremos tu email</span>
+          autocomplete="username"
+          required
+          minlength="3">
+        <span class="form-hint">Mínimo 3 caracteres</span>
       </div>
 
       <!-- Email -->
@@ -56,6 +59,7 @@
           type="email" 
           id="email" 
           class="form-input" 
+          [class.input-error]="hasFieldError('email')"
           placeholder="tu@ejemplo.com"
           [(ngModel)]="email"
           name="email"

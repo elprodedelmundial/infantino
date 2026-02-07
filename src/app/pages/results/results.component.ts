@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
-import { TournamentService } from '../../services/tournament.service';
-import { MatchService, MatchPredictionsByTournament } from '../../services/match.service';
+import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
+import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament } from '../../services/match-service.interface';
 import { JoinedTournament, LiveMatch, MatchScore } from '../../models/tournament.model';
 
 @Component({
@@ -34,8 +34,8 @@ export class ResultsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private tournamentService: TournamentService,
-    private matchService: MatchService
+    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
+    @Inject(MATCH_SERVICE) private matchService: IMatchService
   ) {}
 
   ngOnInit(): void {
