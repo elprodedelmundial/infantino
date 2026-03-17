@@ -58,7 +58,7 @@ export class MyTournamentsComponent implements OnInit {
     });
   }
 
-  getRankingSuffix(ranking: number): string {
-    return 'º';
+  formatRanking(ranking: number | null): string {
+    return ranking !== null ? `${ranking}º` : '-';
   }
 }

@@ -7,7 +7,7 @@ import { EnvironmentConfig } from '../config/environment.config';
 
 interface AuthResponse {
   token: string;
-  userId: string;
+  user_id: string;
   username: string;
   email: string;
   fullname: string;
@@ -18,8 +18,8 @@ interface UserResponse {
   fullname: string;
   username: string;
   email: string;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface ConflictErrorResponse {
@@ -27,16 +27,16 @@ interface ConflictErrorResponse {
   error: string;
   message: string;
   field: 'username' | 'email';
-  rejectedValue: string;
+  rejected_value: string;
   timestamp: string;
 }
 
 // Not using @Injectable since this is created via factory
 export class UserService implements IUserService {
-  
+
   private baseUrl: string;
   private token: string | null = null;
-  
+
   private currentUser: UserProfile = {
     id: '',
     username: '',
@@ -60,11 +60,11 @@ export class UserService implements IUserService {
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-    
+
     if (this.token) {
       headers = headers.set('Authorization', `Bearer ${this.token}`);
     }
-    
+
     return headers;
   }
 
@@ -79,7 +79,7 @@ export class UserService implements IUserService {
 
   private mapAuthResponse(response: AuthResponse): UserProfile {
     return {
-      id: response.userId,
+      id: response.user_id,
       username: response.username,
       fullName: response.fullname,
       email: response.email
@@ -106,18 +106,18 @@ export class UserService implements IUserService {
       map(response => this.mapAuthResponse(response)),
       catchError((error: HttpErrorResponse) => {
         console.error('Registration error:', error);
-        
+
         // Handle 409 Conflict - username or email already exists
         if (error.status === 409) {
           const conflictError = error.error as ConflictErrorResponse;
           const registrationError: RegistrationError = {
-            message: conflictError.message || this.getConflictMessage(conflictError.field, conflictError.rejectedValue),
+            message: conflictError.message || this.getConflictMessage(conflictError.field, conflictError.rejected_value),
             field: conflictError.field,
-            rejectedValue: conflictError.rejectedValue
+            rejectedValue: conflictError.rejected_value
           };
           return throwError(() => registrationError);
         }
-        
+
         // Handle other errors
         const genericError: RegistrationError = {
           message: error.error?.message || 'Registration failed'
@@ -138,7 +138,7 @@ export class UserService implements IUserService {
 
   login(email: string, password: string): Observable<UserProfile> {
     const body = {
-      username: email,
+      user: email,
       password: password
     };
 

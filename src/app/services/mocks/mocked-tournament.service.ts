@@ -30,21 +30,28 @@ export class MockedTournamentService implements ITournamentService {
   // Mocked available tournaments
   private availableTournaments: Tournament[] = [
     {
-      id: 'tournament-1',
+      id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+      name: 'General',
+      participantsCount: 16,
+      maxParticipants: 37,
+      startDate: new Date('2026-03-01')
+    },
+    {
+      id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       name: 'EPO',
       participantsCount: 14,
       maxParticipants: 25,
       startDate: new Date('2026-02-15')
     },
     {
-      id: 'tournament-2',
+      id: 'e8d7c6b5-a4f3-4e2d-9c1b-0a8f7e6d5c4b',
       name: 'Maldolar',
       participantsCount: 4,
       maxParticipants: 10,
       startDate: new Date('2026-02-20')
     },
     {
-      id: 'tournament-3',
+      id: 'b5d4c3a2-1e0f-4d9c-8b7a-6f5e4d3c2b1a',
       name: 'Baldosa',
       participantsCount: 16,
       maxParticipants: 37,
