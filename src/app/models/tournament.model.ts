@@ -9,7 +9,7 @@ export interface Tournament {
 
 export interface JoinedTournament {
   tournament: Tournament;
-  userRanking: number;
+  userRanking: number | null;
   userPoints: number;
 }
 

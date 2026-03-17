@@ -17,6 +17,7 @@ import {
 } from '../models/tournament.model';
 import { ITournamentService } from './tournament-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
+import { MockedTournamentService } from './mocks/mocked-tournament.service';
 
 // API Response interfaces (snake_case matching grondona API)
 interface GroupResponse {
@@ -34,6 +35,7 @@ interface UserGroupResponse {
   member_count: number;
   joined_at: string;
   points: number;
+  rank: number | null;
 }
 
 // Not using @Injectable since this is created via factory
@@ -42,6 +44,9 @@ export class TournamentService implements ITournamentService {
   private baseUrl: string;
   private token: string | null = null;
   private joinedGroupIds: string[] = [];
+
+  // Delegate methods not yet in the grondona API to the mock for realistic data
+  private mock = new MockedTournamentService();
 
   constructor(
     private http: HttpClient,
@@ -80,7 +85,7 @@ export class TournamentService implements ITournamentService {
         startDate: new Date(ug.joined_at),
         isJoined: true
       },
-      userRanking: 0,
+      userRanking: ug.rank ?? null,
       userPoints: ug.points
     };
   }
@@ -88,6 +93,7 @@ export class TournamentService implements ITournamentService {
   setCurrentUser(username: string): void {
     // Refresh token from storage in case login happened
     this.token = localStorage.getItem('auth_token');
+    this.mock.setCurrentUser(username);
   }
 
   getAvailableTournaments(): Observable<Tournament[]> {
@@ -169,63 +175,63 @@ export class TournamentService implements ITournamentService {
     return this.joinedGroupIds;
   }
 
-  // Methods below are not yet available in the grondona API
+  // Methods below are not yet in the grondona API — delegate to mock for realistic UI data
   getTournamentStandings(tournamentId: string): Observable<TournamentStandings | null> {
-    return of(null);
+    return this.mock.getTournamentStandings(tournamentId);
   }
 
   getUserPredictions(tournamentId: string): Observable<UserPredictions> {
-    return of({ pastPredictions: [], upcomingPredictions: [] });
+    return this.mock.getUserPredictions(tournamentId);
   }
 
   getAllPredictions(tournamentId: string): Observable<AllPredictionsData> {
-    return of({ matches: [], stages: [] });
+    return this.mock.getAllPredictions(tournamentId);
   }
 
   updatePrediction(tournamentId: string, matchId: string, newScore: MatchScore): Observable<boolean> {
-    return of(false);
+    return this.mock.updatePrediction(tournamentId, matchId, newScore);
   }
 
   updateMultiplePredictions(
     tournamentId: string,
     updates: { matchId: string; score: MatchScore }[]
   ): Observable<boolean> {
-    return of(false);
+    return this.mock.updateMultiplePredictions(tournamentId, updates);
   }
 
   getCountriesForAwards(): Observable<Country[]> {
-    return of([]);
+    return this.mock.getCountriesForAwards();
   }
 
   getPlayersForAwards(): Observable<Player[]> {
-    return of([]);
+    return this.mock.getPlayersForAwards();
   }
 
   getGoalkeepersForAwards(): Observable<Player[]> {
-    return of([]);
+    return this.mock.getGoalkeepersForAwards();
   }
 
   getYoungPlayersForAwards(): Observable<Player[]> {
-    return of([]);
+    return this.mock.getYoungPlayersForAwards();
   }
 
   getUserAwardPredictions(tournamentId: string): Observable<TournamentAwardPrediction | null> {
-    return of(null);
+    return this.mock.getUserAwardPredictions(tournamentId);
   }
 
   saveAwardPredictions(tournamentId: string, predictions: TournamentAwardPrediction): Observable<boolean> {
-    return of(false);
+    return this.mock.saveAwardPredictions(tournamentId, predictions);
   }
 
   getDashboardLiveData(): Observable<DashboardLiveData> {
-    return of({ liveMatches: [], upcomingMatches: [] });
+    return this.mock.getDashboardLiveData();
   }
 
   getMemberPredictions(matchId: string, tournamentId?: string): Observable<MatchWithPredictions | null> {
-    return of(null);
+    return this.mock.getMemberPredictions(matchId, tournamentId);
   }
 
   getLiveMatchesForTournament(tournamentId: string): Observable<LiveMatch[]> {
-    return of([]);
+    return this.mock.getLiveMatchesForTournament(tournamentId);
   }
 }
