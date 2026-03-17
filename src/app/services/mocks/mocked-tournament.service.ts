@@ -379,7 +379,9 @@ export class MockedTournamentService implements ITournamentService {
   }
 
   getAvailableTournaments(): Observable<Tournament[]> {
-    this.logApiCall('GET', '/api/tournaments');
+    this.logApiCall('GET', '/api/groups?joined=false', undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
     const tournaments = this.availableTournaments.map(t => ({
       ...t,
       isJoined: this.joinedTournamentIds.has(t.id)
@@ -388,7 +390,7 @@ export class MockedTournamentService implements ITournamentService {
   }
 
   getJoinedTournaments(): Observable<JoinedTournament[]> {
-    this.logApiCall('GET', '/api/tournaments/joined', undefined, {
+    this.logApiCall('GET', '/api/users/me/groups', undefined, {
       'Authorization': 'Bearer <jwt-token>'
     });
     const joined = this.availableTournaments
@@ -402,7 +404,7 @@ export class MockedTournamentService implements ITournamentService {
   }
 
   joinTournament(tournamentId: string): Observable<boolean> {
-    this.logApiCall('POST', `/api/tournaments/${tournamentId}/join`, undefined, {
+    this.logApiCall('POST', `/api/groups/${tournamentId}/join`, undefined, {
       'Authorization': 'Bearer <jwt-token>'
     });
     this.joinedTournamentIds.add(tournamentId);
@@ -414,7 +416,7 @@ export class MockedTournamentService implements ITournamentService {
   }
 
   leaveTournament(tournamentId: string): Observable<boolean> {
-    this.logApiCall('DELETE', `/api/tournaments/${tournamentId}/leave`, undefined, {
+    this.logApiCall('DELETE', `/api/groups/${tournamentId}/leave`, undefined, {
       'Authorization': 'Bearer <jwt-token>'
     });
     this.joinedTournamentIds.delete(tournamentId);
