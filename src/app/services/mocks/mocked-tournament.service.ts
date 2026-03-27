@@ -33,7 +33,7 @@ export class MockedTournamentService implements ITournamentService {
       id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
       name: 'General',
       participantsCount: 16,
-      maxParticipants: 37,
+      maxParticipants: 50,
       startDate: new Date('2026-03-01')
     },
     {

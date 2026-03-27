@@ -1,250 +1,170 @@
-import { Observable, of, delay } from 'rxjs';
-import { 
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map, shareReplay, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import {
   LiveMatch,
   Country,
-  MatchScore,
-  MatchOdds,
-  MemberPrediction
+  MatchScore
 } from '../models/tournament.model';
 import { IMatchService, TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
+import { EnvironmentConfig } from '../config/environment.config';
+import { MockedMatchService } from './mocks/mocked-match.service';
+
+export const WORLD_CUP_ID = '28652183-a2d6-4f33-a624-0d24645ce3cd';
+
+interface TeamResponse {
+  id: string;
+  name: string;
+  code: string;
+  icon: string;
+}
+
+interface TournamentMatchResponse {
+  id: string;
+  match_key: string;
+  home_team: TeamResponse;
+  away_team: TeamResponse;
+  home_quota: number;
+  away_quota: number;
+  tie_quota: number;
+  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED';
+  started_at?: string;
+  finished_at?: string;
+  home_goals?: number;
+  away_goals?: number;
+  home_penalties?: number;
+  away_penalties?: number;
+}
+
+interface TournamentMatchesResponse {
+  id: string;
+  name: string;
+  past_matches?: TournamentMatchResponse[];
+  live_matches?: TournamentMatchResponse[];
+  next_matches?: TournamentMatchResponse[];
+}
 
 // Not using @Injectable since this is created via factory
 export class MatchService implements IMatchService {
-  
-  // Country data
-  private countries: Country[] = [
-    { code: 'ARG', name: 'Argentina', flagUrl: 'https://flagcdn.com/w40/ar.png' },
-    { code: 'BRA', name: 'Brasil', flagUrl: 'https://flagcdn.com/w40/br.png' },
-    { code: 'URU', name: 'Uruguay', flagUrl: 'https://flagcdn.com/w40/uy.png' },
-    { code: 'COL', name: 'Colombia', flagUrl: 'https://flagcdn.com/w40/co.png' },
-    { code: 'ESP', name: 'España', flagUrl: 'https://flagcdn.com/w40/es.png' },
-    { code: 'GER', name: 'Alemania', flagUrl: 'https://flagcdn.com/w40/de.png' },
-    { code: 'FRA', name: 'Francia', flagUrl: 'https://flagcdn.com/w40/fr.png' },
-    { code: 'ITA', name: 'Italia', flagUrl: 'https://flagcdn.com/w40/it.png' },
-    { code: 'ENG', name: 'Inglaterra', flagUrl: 'https://flagcdn.com/w40/gb-eng.png' },
-    { code: 'POR', name: 'Portugal', flagUrl: 'https://flagcdn.com/w40/pt.png' },
-    { code: 'NED', name: 'Países Bajos', flagUrl: 'https://flagcdn.com/w40/nl.png' },
-    { code: 'BEL', name: 'Bélgica', flagUrl: 'https://flagcdn.com/w40/be.png' },
-    { code: 'CRO', name: 'Croacia', flagUrl: 'https://flagcdn.com/w40/hr.png' },
-    { code: 'MEX', name: 'México', flagUrl: 'https://flagcdn.com/w40/mx.png' },
-    { code: 'USA', name: 'Estados Unidos', flagUrl: 'https://flagcdn.com/w40/us.png' },
-    { code: 'JPN', name: 'Japón', flagUrl: 'https://flagcdn.com/w40/jp.png' },
-    { code: 'KOR', name: 'Corea del Sur', flagUrl: 'https://flagcdn.com/w40/kr.png' },
-    { code: 'MAR', name: 'Marruecos', flagUrl: 'https://flagcdn.com/w40/ma.png' },
-    { code: 'SEN', name: 'Senegal', flagUrl: 'https://flagcdn.com/w40/sn.png' },
-    { code: 'AUS', name: 'Australia', flagUrl: 'https://flagcdn.com/w40/au.png' },
-  ];
 
-  // Cache for consistent match data
-  private liveMatchesCache: LiveMatch[] | null = null;
-  private upcomingMatchesCache: LiveMatch[] | null = null;
+  private baseUrl: string;
+  private token: string | null = null;
+  private mock = new MockedMatchService();
 
-  private generateOdds(homeTeam: Country, awayTeam: Country): MatchOdds {
-    const strongTeams = ['ARG', 'BRA', 'FRA', 'ENG', 'ESP', 'GER', 'POR', 'NED'];
-    const mediumTeams = ['URU', 'COL', 'BEL', 'CRO', 'ITA', 'MEX', 'USA', 'JPN', 'KOR', 'MAR'];
-    
-    const getTeamStrength = (country: Country): number => {
-      if (strongTeams.includes(country.code)) return 1;
-      if (mediumTeams.includes(country.code)) return 2;
-      return 3;
-    };
+  private matchesCache$: Observable<TournamentMatchesResponse> | null = null;
 
-    const homeStrength = getTeamStrength(homeTeam);
-    const awayStrength = getTeamStrength(awayTeam);
-    const diff = awayStrength - homeStrength;
+  constructor(
+    private http: HttpClient,
+    private config: EnvironmentConfig
+  ) {
+    this.baseUrl = config.grondonaUrl || '';
+    this.token = localStorage.getItem('auth_token');
+  }
 
-    let homeOdds: number, drawOdds: number, awayOdds: number;
-
-    if (diff > 1) {
-      homeOdds = 1.1 + Math.random() * 0.3;
-      drawOdds = 3.5 + Math.random() * 1.5;
-      awayOdds = 5.0 + Math.random() * 3.0;
-    } else if (diff > 0) {
-      homeOdds = 1.4 + Math.random() * 0.4;
-      drawOdds = 3.0 + Math.random() * 1.0;
-      awayOdds = 3.5 + Math.random() * 2.0;
-    } else if (diff === 0) {
-      homeOdds = 2.0 + Math.random() * 0.6;
-      drawOdds = 2.8 + Math.random() * 0.8;
-      awayOdds = 2.2 + Math.random() * 0.6;
-    } else if (diff > -2) {
-      homeOdds = 3.0 + Math.random() * 1.5;
-      drawOdds = 2.8 + Math.random() * 0.8;
-      awayOdds = 1.6 + Math.random() * 0.4;
-    } else {
-      homeOdds = 4.5 + Math.random() * 2.5;
-      drawOdds = 3.2 + Math.random() * 1.2;
-      awayOdds = 1.2 + Math.random() * 0.3;
+  private getAuthHeaders(): HttpHeaders {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (this.token) {
+      headers = headers.set('Authorization', `Bearer ${this.token}`);
     }
+    return headers;
+  }
 
+  private mapTeam(team: TeamResponse): Country {
     return {
-      home: Math.round(homeOdds * 10) / 10,
-      draw: Math.round(drawOdds * 10) / 10,
-      away: Math.round(awayOdds * 10) / 10
+      code: team.code,
+      name: team.name,
+      flagUrl: team.icon
     };
   }
 
-  private getRandomCountry(exclude?: string): Country {
-    let country: Country;
-    do {
-      country = this.countries[Math.floor(Math.random() * this.countries.length)];
-    } while (exclude && country.code === exclude);
-    return country;
-  }
+  private mapMatch(match: TournamentMatchResponse): LiveMatch {
+    const status: LiveMatch['status'] =
+      match.status === 'IN_PROGRESS' ? 'live' :
+      match.status === 'FINISHED'    ? 'finished' :
+                                       'upcoming';
 
-  private generateLiveMatches(): LiveMatch[] {
-    if (this.liveMatchesCache) return this.liveMatchesCache;
+    const result: LiveMatch = {
+      id: match.id,
+      matchCode: match.match_key,
+      homeTeam: this.mapTeam(match.home_team),
+      awayTeam: this.mapTeam(match.away_team),
+      matchDate: match.started_at ? new Date(match.started_at) : new Date(),
+      status,
+      stage: 'group_stage',
+      odds: {
+        home: match.home_quota,
+        draw: match.tie_quota,
+        away: match.away_quota
+      },
+      tournamentIds: [WORLD_CUP_ID]
+    };
 
-    const matches: LiveMatch[] = [];
-    const liveMatchTimes = ["45'+2", "67'", "23'", "HT", "78'", "31'"];
-
-    for (let i = 0; i < 2; i++) {
-      const homeTeam = this.getRandomCountry();
-      const awayTeam = this.getRandomCountry(homeTeam.code);
-
-      matches.push({
-        id: `live-${i + 1}`,
-        matchCode: `L${String(i + 1).padStart(2, '0')}`,
-        homeTeam,
-        awayTeam,
-        currentScore: {
-          home: Math.floor(Math.random() * 3),
-          away: Math.floor(Math.random() * 3)
-        },
-        matchTime: liveMatchTimes[Math.floor(Math.random() * liveMatchTimes.length)],
-        matchDate: new Date(),
-        status: 'live',
-        stage: 'group_stage',
-        group: String.fromCharCode(65 + Math.floor(Math.random() * 8)),
-        odds: this.generateOdds(homeTeam, awayTeam),
-        tournamentIds: [] // Will be populated based on user's tournaments
-      });
+    if (match.home_goals !== undefined && match.away_goals !== undefined) {
+      result.currentScore = { home: match.home_goals, away: match.away_goals };
     }
 
-    this.liveMatchesCache = matches;
-    return matches;
+    return result;
   }
 
-  private generateUpcomingMatches(): LiveMatch[] {
-    if (this.upcomingMatchesCache) return this.upcomingMatchesCache;
-
-    const matches: LiveMatch[] = [];
-    const baseDate = new Date();
-
-    for (let i = 0; i < 3; i++) {
-      const homeTeam = this.getRandomCountry();
-      const awayTeam = this.getRandomCountry(homeTeam.code);
-
-      const matchDate = new Date(baseDate);
-      matchDate.setHours(matchDate.getHours() + (i + 1) * 3);
-
-      matches.push({
-        id: `upcoming-${i + 1}`,
-        matchCode: `U${String(i + 1).padStart(2, '0')}`,
-        homeTeam,
-        awayTeam,
-        matchDate,
-        status: 'upcoming',
-        stage: 'group_stage',
-        group: String.fromCharCode(65 + Math.floor(Math.random() * 8)),
-        odds: this.generateOdds(homeTeam, awayTeam),
-        tournamentIds: [] // Will be populated based on user's tournaments
-      });
+  private fetchTournamentMatches(): Observable<TournamentMatchesResponse> {
+    if (!this.matchesCache$) {
+      this.token = localStorage.getItem('auth_token');
+      this.matchesCache$ = this.http.get<TournamentMatchesResponse>(
+        `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/matches`,
+        { headers: this.getAuthHeaders() }
+      ).pipe(
+        shareReplay(1),
+        catchError(error => {
+          this.matchesCache$ = null;
+          console.error('Error fetching tournament matches:', error);
+          return throwError(() => new Error('Error al obtener los partidos'));
+        })
+      );
     }
-
-    this.upcomingMatchesCache = matches;
-    return matches;
+    return this.matchesCache$;
   }
 
   getLiveMatches(): Observable<LiveMatch[]> {
-    return of(this.generateLiveMatches()).pipe(delay(200));
+    return this.fetchTournamentMatches().pipe(
+      map(response => (response.live_matches ?? []).map(m => this.mapMatch(m)))
+    );
   }
 
   getUpcomingMatches(): Observable<LiveMatch[]> {
-    return of(this.generateUpcomingMatches()).pipe(delay(200));
+    return this.fetchTournamentMatches().pipe(
+      map(response => (response.next_matches ?? []).map(m => this.mapMatch(m)))
+    );
   }
 
   getMatchById(matchId: string): Observable<LiveMatch | null> {
-    const allMatches = [...this.generateLiveMatches(), ...this.generateUpcomingMatches()];
-    const match = allMatches.find(m => m.id === matchId);
-    return of(match || null).pipe(delay(100));
+    return this.fetchTournamentMatches().pipe(
+      map(response => {
+        const all = [
+          ...(response.live_matches ?? []),
+          ...(response.next_matches ?? []),
+          ...(response.past_matches ?? [])
+        ];
+        const found = all.find(m => m.id === matchId);
+        return found ? this.mapMatch(found) : null;
+      })
+    );
   }
 
-  // Get predictions for a match, divided by tournament
   getMatchPredictionsByTournament(
-    matchId: string, 
+    matchId: string,
     joinedTournaments: { id: string; name: string }[],
     currentUsername: string
   ): Observable<MatchPredictionsByTournament | null> {
-    const allMatches = [...this.generateLiveMatches(), ...this.generateUpcomingMatches()];
-    const match = allMatches.find(m => m.id === matchId);
-    
-    if (!match) return of(null);
-
-    // Generate predictions for each tournament
-    const memberNames = [
-      'Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S',
-      'Lucía_F', 'Diego_L', 'Sofía_V', 'Martín_C', 'Valentina_H'
-    ];
-
-    const tournamentPredictions: TournamentPredictions[] = joinedTournaments.map(tournament => {
-      // Generate different number of members per tournament
-      const memberCount = 5 + Math.floor(Math.random() * 5);
-      const selectedMembers = memberNames.slice(0, memberCount);
-
-      const predictions: MemberPrediction[] = selectedMembers.map((name, index) => ({
-        oddsId: `pred-${tournament.id}-${index}`,
-        username: name,
-        avatarInitials: name.substring(0, 2).toUpperCase(),
-        predictedScore: {
-          home: Math.floor(Math.random() * 4),
-          away: Math.floor(Math.random() * 4)
-        },
-        isCurrentUser: false
-      }));
-
-      // Add current user prediction
-      predictions.unshift({
-        oddsId: `pred-${tournament.id}-current`,
-        username: currentUsername,
-        avatarInitials: currentUsername.substring(0, 2).toUpperCase(),
-        predictedScore: {
-          home: Math.floor(Math.random() * 4),
-          away: Math.floor(Math.random() * 4)
-        },
-        isCurrentUser: true
-      });
-
-      return {
-        tournamentId: tournament.id,
-        tournamentName: tournament.name,
-        predictions
-      };
-    });
-
-    const result: MatchPredictionsByTournament = {
-      match,
-      tournamentPredictions
-    };
-
-    return of(result).pipe(delay(300));
+    return this.mock.getMatchPredictionsByTournament(matchId, joinedTournaments, currentUsername);
   }
 
-  // Get user's prediction for a match in a specific tournament
   getUserPredictionForMatch(matchId: string, tournamentId: string): Observable<MatchScore | null> {
-    // Mock: return a random prediction or null
-    if (Math.random() > 0.3) {
-      return of({
-        home: Math.floor(Math.random() * 4),
-        away: Math.floor(Math.random() * 4)
-      }).pipe(delay(100));
-    }
-    return of(null).pipe(delay(100));
+    return this.mock.getUserPredictionForMatch(matchId, tournamentId);
   }
 
-  // Clear cache (useful for testing or refreshing data)
   clearCache(): void {
-    this.liveMatchesCache = null;
-    this.upcomingMatchesCache = null;
+    this.matchesCache$ = null;
+    this.mock.clearCache();
   }
 }

@@ -7,6 +7,7 @@ import {
   MemberPrediction
 } from '../../models/tournament.model';
 import { IMatchService, TournamentPredictions, MatchPredictionsByTournament } from '../match-service.interface';
+import { WORLD_CUP_ID } from '../match.service';
 
 // Not using @Injectable since this is created via factory
 export class MockedMatchService implements IMatchService {
@@ -170,17 +171,17 @@ export class MockedMatchService implements IMatchService {
   }
 
   getLiveMatches(): Observable<LiveMatch[]> {
-    this.logApiCall('GET', '/api/matches/live');
+    this.logApiCall('GET', `/api/tournaments/${WORLD_CUP_ID}/matches (live_matches)`);
     return of(this.generateLiveMatches()).pipe(delay(200));
   }
 
   getUpcomingMatches(): Observable<LiveMatch[]> {
-    this.logApiCall('GET', '/api/matches/upcoming');
+    this.logApiCall('GET', `/api/tournaments/${WORLD_CUP_ID}/matches (next_matches)`);
     return of(this.generateUpcomingMatches()).pipe(delay(200));
   }
 
   getMatchById(matchId: string): Observable<LiveMatch | null> {
-    this.logApiCall('GET', `/api/matches/${matchId}`);
+    this.logApiCall('GET', `/api/tournaments/${WORLD_CUP_ID}/matches (id: ${matchId})`);
     const allMatches = [...this.generateLiveMatches(), ...this.generateUpcomingMatches()];
     const match = allMatches.find(m => m.id === matchId);
     return of(match || null).pipe(delay(100));

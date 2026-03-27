@@ -26,9 +26,11 @@ interface ConflictErrorResponse {
   status: number;
   error: string;
   message: string;
-  field: 'username' | 'email';
-  rejected_value: string;
   timestamp: string;
+  data?: {
+    field: string;
+    rejected_value: string;
+  };
 }
 
 // Not using @Injectable since this is created via factory
@@ -107,33 +109,26 @@ export class UserService implements IUserService {
       catchError((error: HttpErrorResponse) => {
         console.error('Registration error:', error);
 
-        // Handle 409 Conflict - username or email already exists
         if (error.status === 409) {
           const conflictError = error.error as ConflictErrorResponse;
+          const field = conflictError.data?.field;
           const registrationError: RegistrationError = {
-            message: conflictError.message || this.getConflictMessage(conflictError.field, conflictError.rejected_value),
-            field: conflictError.field,
-            rejectedValue: conflictError.rejected_value
+            message: field === 'username' ? 'Usuario ya registrado'
+                   : field === 'email'    ? 'Email ya registrado'
+                   : 'Dato ya registrado',
+            field: (field === 'username' || field === 'email') ? field : undefined,
+            rejectedValue: conflictError.data?.rejected_value
           };
           return throwError(() => registrationError);
         }
 
-        // Handle other errors
         const genericError: RegistrationError = {
-          message: error.error?.message || 'Registration failed'
+          message: error.status >= 500 ? 'Error del servidor, por favor intenta más tarde'
+                 : 'Error al crear la cuenta'
         };
         return throwError(() => genericError);
       })
     );
-  }
-
-  private getConflictMessage(field: 'username' | 'email', value: string): string {
-    if (field === 'username') {
-      return `El nombre de usuario '${value}' ya está en uso`;
-    } else if (field === 'email') {
-      return `El correo electrónico '${value}' ya está registrado`;
-    }
-    return 'El valor ya existe';
   }
 
   login(email: string, password: string): Observable<UserProfile> {
@@ -152,9 +147,15 @@ export class UserService implements IUserService {
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapAuthResponse(response)),
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Login error:', error);
-        return throwError(() => new Error(error.error?.message || 'Invalid username or password'));
+        if (error.status === 400 || error.status === 401) {
+          return throwError(() => new Error('Usuario o contraseña incorrecto'));
+        }
+        if (error.status >= 500) {
+          return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
+        }
+        return throwError(() => new Error('Error al iniciar sesión'));
       })
     );
   }
@@ -178,9 +179,12 @@ export class UserService implements IUserService {
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapUserResponse(response)),
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Get profile error:', error);
-        return throwError(() => new Error(error.error?.message || 'Failed to get user profile'));
+        if (error.status === 401) return throwError(() => new Error('Sesión expirada, por favor iniciá sesión nuevamente'));
+        if (error.status === 404) return throwError(() => new Error('Usuario no encontrado'));
+        if (error.status >= 500) return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
+        return throwError(() => new Error('Error al obtener el perfil'));
       })
     );
   }
@@ -200,9 +204,19 @@ export class UserService implements IUserService {
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapUserResponse(response)),
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Update profile error:', error);
-        return throwError(() => new Error(error.error?.message || 'Failed to update profile'));
+        if (error.status === 409) {
+          const conflictError = error.error as ConflictErrorResponse;
+          const field = conflictError.data?.field;
+          const message = field === 'username' ? 'Usuario ya registrado'
+                        : field === 'email'    ? 'Email ya registrado'
+                        : 'Dato ya registrado';
+          return throwError(() => new Error(message));
+        }
+        if (error.status === 401) return throwError(() => new Error('Sesión expirada, por favor iniciá sesión nuevamente'));
+        if (error.status >= 500) return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
+        return throwError(() => new Error('Error al actualizar el perfil'));
       })
     );
   }
@@ -217,9 +231,11 @@ export class UserService implements IUserService {
       headers: this.getAuthHeaders()
     }).pipe(
       map(() => true),
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Change password error:', error);
-        return throwError(() => new Error(error.error?.message || 'Failed to change password'));
+        if (error.status === 401) return throwError(() => new Error('Sesión expirada, por favor iniciá sesión nuevamente'));
+        if (error.status >= 500) return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
+        return throwError(() => new Error('Error al cambiar la contraseña'));
       })
     );
   }
@@ -241,9 +257,12 @@ export class UserService implements IUserService {
         this.userSubject.next(this.currentUser);
       }),
       map(() => true),
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Delete user error:', error);
-        return throwError(() => new Error(error.error?.message || 'Failed to delete user'));
+        if (error.status === 401) return throwError(() => new Error('Sesión expirada, por favor iniciá sesión nuevamente'));
+        if (error.status === 404) return throwError(() => new Error('Usuario no encontrado'));
+        if (error.status >= 500) return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
+        return throwError(() => new Error('Error al eliminar la cuenta'));
       })
     );
   }

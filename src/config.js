@@ -15,5 +15,5 @@ window.__APP_CONFIG__ = {
   // Service mocking flags (true = use mock, false = use real service)
   'mocked-user-service': false,
   'mocked-tournament-service': false,
-  'mocked-match-service': true
+  'mocked-match-service': false
 };
