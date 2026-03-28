@@ -22,13 +22,14 @@ interface TeamResponse {
 
 interface TournamentMatchResponse {
   id: string;
-  match_key: string;
+  code: string;
   home_team: TeamResponse;
   away_team: TeamResponse;
   home_quota: number;
   away_quota: number;
   tie_quota: number;
   status: 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED';
+  substatus?: string;
   started_at?: string;
   finished_at?: string;
   home_goals?: number;
@@ -38,11 +39,11 @@ interface TournamentMatchResponse {
 }
 
 interface TournamentMatchesResponse {
-  id: string;
-  name: string;
-  past_matches?: TournamentMatchResponse[];
-  live_matches?: TournamentMatchResponse[];
-  next_matches?: TournamentMatchResponse[];
+  tournament_id: string;
+  tournament_name: string;
+  past_matches: TournamentMatchResponse[];
+  live_matches: TournamentMatchResponse[];
+  next_matches: TournamentMatchResponse[];
 }
 
 // Not using @Injectable since this is created via factory
@@ -86,10 +87,11 @@ export class MatchService implements IMatchService {
 
     const result: LiveMatch = {
       id: match.id,
-      matchCode: match.match_key,
+      matchCode: match.code,
       homeTeam: this.mapTeam(match.home_team),
       awayTeam: this.mapTeam(match.away_team),
       matchDate: match.started_at ? new Date(match.started_at) : new Date(),
+      matchTime: match.substatus,
       status,
       stage: 'group_stage',
       odds: {
@@ -134,6 +136,12 @@ export class MatchService implements IMatchService {
   getUpcomingMatches(): Observable<LiveMatch[]> {
     return this.fetchTournamentMatches().pipe(
       map(response => (response.next_matches ?? []).map(m => this.mapMatch(m)))
+    );
+  }
+
+  getPastMatches(): Observable<LiveMatch[]> {
+    return this.fetchTournamentMatches().pipe(
+      map(response => (response.past_matches ?? []).map(m => this.mapMatch(m)))
     );
   }
 

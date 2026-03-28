@@ -20,6 +20,7 @@ import {
   DashboardLiveData
 } from '../../models/tournament.model';
 import { ITournamentService } from '../tournament-service.interface';
+import { TournamentPredictions } from '../match-service.interface';
 
 // Not using @Injectable since this is created via factory
 export class MockedTournamentService implements ITournamentService {
@@ -718,5 +719,38 @@ export class MockedTournamentService implements ITournamentService {
 
   getJoinedTournamentIds(): string[] {
     return Array.from(this.joinedTournamentIds);
+  }
+
+  getMatchGroupPredictions(groupId: string, matchId: string): Observable<TournamentPredictions | null> {
+    this.logApiCall('GET', `/api/tournaments/{tournamentId}/groups/${groupId}/match/${matchId}/predictions`, undefined, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
+
+    const memberNames = ['Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S', 'Lucía_F'];
+    const predictions: MemberPrediction[] = memberNames.map((name, i) => ({
+      oddsId: `mock-${groupId}-${i}`,
+      username: name,
+      avatarInitials: name.substring(0, 2).toUpperCase(),
+      predictedScore: { home: Math.floor(Math.random() * 4), away: Math.floor(Math.random() * 4) },
+      isCurrentUser: name === this.currentUsername
+    }));
+
+    return of({
+      tournamentId: groupId,
+      tournamentName: 'Grupo (mock)',
+      predictions
+    }).pipe(delay(200));
+  }
+
+  updateGroup(groupId: string, update: { name?: string; maxMembers?: number; isPrivate?: boolean }): Observable<boolean> {
+    this.logApiCall('PATCH', `/api/tournaments/{tournamentId}/groups/${groupId}`, update, {
+      'Authorization': 'Bearer <jwt-token>'
+    });
+    const tournament = this.availableTournaments.find((t: Tournament) => t.id === groupId);
+    if (tournament) {
+      if (update.name) tournament.name = update.name;
+      if (update.maxMembers) tournament.maxParticipants = update.maxMembers;
+    }
+    return of(true).pipe(delay(200));
   }
 }

@@ -17,9 +17,9 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
   
   return {
     grondonaUrl: windowConfig?.['grondona-url'] || 'http://localhost:8080',
-    mockedUserService: false,
-    mockedTournamentService: false,
-    mockedMatchService: true
+    mockedUserService: windowConfig?.['mocked-user-service'] ?? true,
+    mockedTournamentService: windowConfig?.['mocked-tournament-service'] ?? true,
+    mockedMatchService: windowConfig?.['mocked-match-service'] ?? true
   };
 }
 

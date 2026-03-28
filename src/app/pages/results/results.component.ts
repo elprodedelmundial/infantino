@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
-import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament } from '../../services/match-service.interface';
+import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament, TournamentPredictions } from '../../services/match-service.interface';
 import { JoinedTournament, LiveMatch, MatchScore } from '../../models/tournament.model';
 
 @Component({
@@ -19,9 +19,10 @@ export class ResultsComponent implements OnInit {
   joinedTournaments: JoinedTournament[] = [];
   isLoading: boolean = true;
   
-  // Live data
+  // Match data
   liveMatches: LiveMatch[] = [];
   upcomingMatches: LiveMatch[] = [];
+  pastMatches: LiveMatch[] = [];
   userPredictions: Map<string, Map<string, MatchScore>> = new Map();
   
   // Modal states
@@ -54,11 +55,13 @@ export class ResultsComponent implements OnInit {
     forkJoin({
       tournaments: this.tournamentService.getJoinedTournaments(),
       liveMatches: this.matchService.getLiveMatches(),
-      upcomingMatches: this.matchService.getUpcomingMatches()
-    }).subscribe(({ tournaments, liveMatches, upcomingMatches }) => {
+      upcomingMatches: this.matchService.getUpcomingMatches(),
+      pastMatches: this.matchService.getPastMatches()
+    }).subscribe(({ tournaments, liveMatches, upcomingMatches, pastMatches }) => {
       this.joinedTournaments = tournaments;
       this.liveMatches = liveMatches;
       this.upcomingMatches = upcomingMatches;
+      this.pastMatches = pastMatches;
       
       if (tournaments.length > 0) {
         this.loadUserPredictions();
@@ -69,18 +72,29 @@ export class ResultsComponent implements OnInit {
   }
 
   loadUserPredictions(): void {
-    this.upcomingMatches.forEach(match => {
-      const matchPredictions = new Map<string, MatchScore>();
-      this.joinedTournaments.forEach(joined => {
-        if (Math.random() > 0.3) {
-          matchPredictions.set(joined.tournament.id, {
-            home: Math.floor(Math.random() * 4),
-            away: Math.floor(Math.random() * 4)
-          });
-        }
+    if (this.joinedTournaments.length === 0) return;
+
+    const predictionRequests = this.joinedTournaments.map(j =>
+      this.tournamentService.getAllPredictions(j.tournament.id)
+    );
+
+    forkJoin(predictionRequests).subscribe(allGroupPredictions => {
+      this.joinedTournaments.forEach((j, idx) => {
+        const groupData = allGroupPredictions[idx];
+        groupData.matches.forEach(match => {
+          if (!this.userPredictions.has(match.id)) {
+            this.userPredictions.set(match.id, new Map());
+          }
+          this.userPredictions.get(match.id)!.set(j.tournament.id, match.predictedScore);
+        });
       });
-      this.userPredictions.set(match.id, matchPredictions);
     });
+  }
+
+  isMatchActive(match: LiveMatch): boolean {
+    if (match.status === 'live' || match.status === 'finished') return true;
+    const fifteenMin = 15 * 60 * 1000;
+    return new Date(match.matchDate).getTime() - Date.now() <= fifteenMin;
   }
 
   goBack(): void {
@@ -93,10 +107,11 @@ export class ResultsComponent implements OnInit {
     return this.joinedTournaments.length > 0;
   }
 
-  // Live match functions
+  // Active match predictions modal
   viewPredictions(match: LiveMatch): void {
     if (!this.hasJoinedTournaments()) return;
-    
+    if (!this.isMatchActive(match)) return;
+
     this.selectedMatch = match;
     this.isLoadingPredictions = true;
     this.showPredictionsModal = true;
@@ -105,17 +120,16 @@ export class ResultsComponent implements OnInit {
     if (this.joinedTournaments.length > 0) {
       this.expandedTournaments.add(this.joinedTournaments[0].tournament.id);
     }
-    
-    const tournamentInfo = this.joinedTournaments.map(j => ({
-      id: j.tournament.id,
-      name: j.tournament.name
-    }));
-    
-    this.matchService.getMatchPredictionsByTournament(match.id, tournamentInfo, this.username)
-      .subscribe(predictions => {
-        this.matchPredictionsByTournament = predictions;
-        this.isLoadingPredictions = false;
-      });
+
+    const groupRequests = this.joinedTournaments.map(j =>
+      this.tournamentService.getMatchGroupPredictions(j.tournament.id, match.id)
+    );
+
+    forkJoin(groupRequests).subscribe(results => {
+      const tournamentPredictions = results.filter((r): r is TournamentPredictions => r !== null);
+      this.matchPredictionsByTournament = { match, tournamentPredictions };
+      this.isLoadingPredictions = false;
+    });
   }
 
   closePredictionsModal(): void {

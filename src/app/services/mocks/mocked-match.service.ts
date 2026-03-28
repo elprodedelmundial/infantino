@@ -180,6 +180,11 @@ export class MockedMatchService implements IMatchService {
     return of(this.generateUpcomingMatches()).pipe(delay(200));
   }
 
+  getPastMatches(): Observable<LiveMatch[]> {
+    this.logApiCall('GET', `/api/tournaments/${WORLD_CUP_ID}/matches (past_matches)`);
+    return of([]).pipe(delay(200));
+  }
+
   getMatchById(matchId: string): Observable<LiveMatch | null> {
     this.logApiCall('GET', `/api/tournaments/${WORLD_CUP_ID}/matches (id: ${matchId})`);
     const allMatches = [...this.generateLiveMatches(), ...this.generateUpcomingMatches()];

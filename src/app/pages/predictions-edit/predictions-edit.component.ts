@@ -147,8 +147,15 @@ export class PredictionsEditComponent implements OnInit {
     return stage.hasStarted;
   }
 
+  isMatchLocked(match: MatchPrediction): boolean {
+    if (match.isPlayed) return true;
+    if (match.matchStatus === 'IN_PROGRESS') return true;
+    const fifteenMin = 15 * 60 * 1000;
+    return new Date(match.matchDate).getTime() - Date.now() <= fifteenMin;
+  }
+
   startEditing(match: EditablePrediction): void {
-    if (match.isPlayed) return;
+    if (this.isMatchLocked(match)) return;
     match.isEditing = true;
   }
 
@@ -160,7 +167,7 @@ export class PredictionsEditComponent implements OnInit {
   }
 
   saveMatch(match: EditablePrediction): void {
-    if (match.isPlayed) return;
+    if (this.isMatchLocked(match)) return;
     
     const newScore: MatchScore = {
       home: match.editedHomeScore,
@@ -201,7 +208,7 @@ export class PredictionsEditComponent implements OnInit {
   }
 
   saveAllChanges(): void {
-    const changedMatches = this.allMatches.filter(m => m.hasChanges && !m.isPlayed);
+    const changedMatches = this.allMatches.filter(m => m.hasChanges && !this.isMatchLocked(m));
     if (changedMatches.length === 0) return;
     
     this.isSaving = true;

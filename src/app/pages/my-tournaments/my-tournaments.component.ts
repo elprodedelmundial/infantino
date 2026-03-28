@@ -54,7 +54,7 @@ export class MyTournamentsComponent implements OnInit {
 
   openTournament(tournament: JoinedTournament): void {
     this.router.navigate(['/tournament', tournament.tournament.id], {
-      state: { username: this.username }
+      state: { username: this.username, role: tournament.role }
     });
   }
 

@@ -13,6 +13,7 @@ import {
   DashboardLiveData,
   AllPredictionsData
 } from '../models/tournament.model';
+import { TournamentPredictions } from './match-service.interface';
 
 export interface ITournamentService {
   setCurrentUser(username: string): void;
@@ -36,6 +37,8 @@ export interface ITournamentService {
   getMemberPredictions(matchId: string, tournamentId?: string): Observable<MatchWithPredictions | null>;
   getLiveMatchesForTournament(tournamentId: string): Observable<LiveMatch[]>;
   getJoinedTournamentIds(): string[];
+  updateGroup(groupId: string, update: { name?: string; maxMembers?: number; isPrivate?: boolean }): Observable<boolean>;
+  getMatchGroupPredictions(groupId: string, matchId: string): Observable<TournamentPredictions | null>;
 }
 
 export const TOURNAMENT_SERVICE = 'TOURNAMENT_SERVICE';
