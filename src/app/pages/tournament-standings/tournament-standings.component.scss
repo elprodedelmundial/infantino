@@ -512,6 +512,14 @@
   color: var(--accent);
 }
 
+.col-prediction,
+.col-result {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .col-match {
   display: flex;
   align-items: center;
@@ -574,6 +582,51 @@
   justify-content: center;
 }
 
+.section-title-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  // The inner .section-title.standalone already provides all visual styling.
+  // We override its border-bottom so the button itself controls it.
+  .section-title.standalone {
+    border-bottom: none;
+    flex: 1;
+    pointer-events: none;
+  }
+
+  &:hover .section-title {
+    color: var(--text-primary);
+  }
+}
+
+.section-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.section-chevron {
+  color: var(--text-muted);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  margin-right: 24px;
+
+  &.expanded {
+    transform: rotate(180deg);
+  }
+}
+
 .result-badge {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
@@ -599,6 +652,12 @@
     background: rgba(251, 191, 36, 0.15);
     color: #fbbf24;
     border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+
+  &.live {
+    background: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.35);
   }
 }
 

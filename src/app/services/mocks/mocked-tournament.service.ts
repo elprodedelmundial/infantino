@@ -21,6 +21,7 @@ import {
 } from '../../models/tournament.model';
 import { ITournamentService } from '../tournament-service.interface';
 import { TournamentPredictions } from '../match-service.interface';
+import { PredictionStatus } from '../../models/tournament.model';
 
 // Not using @Injectable since this is created via factory
 export class MockedTournamentService implements ITournamentService {
@@ -722,17 +723,19 @@ export class MockedTournamentService implements ITournamentService {
   }
 
   getMatchGroupPredictions(groupId: string, matchId: string): Observable<TournamentPredictions | null> {
-    this.logApiCall('GET', `/api/tournaments/{tournamentId}/groups/${groupId}/match/${matchId}/predictions`, undefined, {
+    this.logApiCall('GET', `/api/tournaments/{tournamentId}/groups/${groupId}/matches/${matchId}/predictions`, undefined, {
       'Authorization': 'Bearer <jwt-token>'
     });
 
     const memberNames = ['Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S', 'Lucía_F'];
+    const statuses: PredictionStatus[] = ['CORRECT', 'PARTIAL', 'INCORRECT', 'PENDING'];
     const predictions: MemberPrediction[] = memberNames.map((name, i) => ({
       oddsId: `mock-${groupId}-${i}`,
       username: name,
       avatarInitials: name.substring(0, 2).toUpperCase(),
       predictedScore: { home: Math.floor(Math.random() * 4), away: Math.floor(Math.random() * 4) },
-      isCurrentUser: name === this.currentUsername
+      isCurrentUser: name === this.currentUsername,
+      predictionStatus: statuses[i % statuses.length]
     }));
 
     return of({

@@ -56,18 +56,16 @@ interface UserApiResponse {
 }
 
 interface ScorePredictionResponse {
-  home_goals_predicted?: number;
-  away_goals_predicted?: number;
-  home_goals?: number;
-  away_goals?: number;
+  home_goals: number;
+  away_goals: number;
+  status?: 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT';
 }
 
 interface MatchPredictionApiResponse {
   id?: string;
   user: UserApiResponse;
   match: MatchApiResponse;
-  predicted_score?: ScorePredictionResponse;
-  status?: 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT';
+  prediction?: ScorePredictionResponse;
 }
 
 interface GroupPredictionsApiResponse {
@@ -165,20 +163,21 @@ export class TournamentService implements ITournamentService {
 
   private mapPredictionToMatchPrediction(p: MatchPredictionApiResponse): MatchPrediction {
     const m = p.match;
-    const ps = p.predicted_score;
+    const pred = p.prediction;
     const resultMap: Record<string, 'correct' | 'half' | 'incorrect'> = {
       CORRECT: 'correct',
       PARTIAL: 'half',
       INCORRECT: 'incorrect'
     };
+    const status = pred?.status;
     return {
       id: m.id,
       matchCode: m.code ?? '',
       homeTeam: { code: m.home_team.code, name: m.home_team.name, flagUrl: m.home_team.icon },
       awayTeam: { code: m.away_team.code, name: m.away_team.name, flagUrl: m.away_team.icon },
       predictedScore: {
-        home: ps?.home_goals_predicted ?? ps?.home_goals ?? 0,
-        away: ps?.away_goals_predicted ?? ps?.away_goals ?? 0
+        home: pred?.home_goals ?? 0,
+        away: pred?.away_goals ?? 0
       },
       actualScore: (m.home_goals !== undefined && m.away_goals !== undefined)
         ? { home: m.home_goals, away: m.away_goals }
@@ -186,7 +185,7 @@ export class TournamentService implements ITournamentService {
       isPlayed: m.status === 'FINISHED',
       matchStatus: m.status,
       matchDate: m.started_at ? new Date(m.started_at) : new Date(0),
-      result: p.status && p.status !== 'PENDING' ? resultMap[p.status] : undefined,
+      result: status && status !== 'PENDING' ? resultMap[status] : undefined,
       stage: 'group_stage',
       odds: (m.home_quota !== undefined)
         ? { home: m.home_quota, draw: m.tie_quota ?? 0, away: m.away_quota ?? 0 }
@@ -195,17 +194,18 @@ export class TournamentService implements ITournamentService {
   }
 
   private mapToPredictionsMember(p: MatchPredictionApiResponse): MemberPrediction {
-    const ps = p.predicted_score;
+    const pred = p.prediction;
     const username = p.user.username;
     return {
       oddsId: p.id ?? `${p.user.id}-${p.match.id}`,
       username,
       avatarInitials: username.substring(0, 2).toUpperCase(),
       predictedScore: {
-        home: ps?.home_goals_predicted ?? ps?.home_goals ?? 0,
-        away: ps?.away_goals_predicted ?? ps?.away_goals ?? 0
+        home: pred?.home_goals ?? 0,
+        away: pred?.away_goals ?? 0
       },
-      isCurrentUser: username === this.currentUsername
+      isCurrentUser: username === this.currentUsername,
+      predictionStatus: pred?.status ?? 'PENDING'
     };
   }
 
@@ -343,8 +343,8 @@ export class TournamentService implements ITournamentService {
       map(response => {
         const all = response.predictions.map(p => this.mapPredictionToMatchPrediction(p));
         return {
-          pastPredictions: all.filter(m => m.isPlayed),
-          upcomingPredictions: all.filter(m => !m.isPlayed)
+          pastPredictions: all.filter(m => m.isPlayed || m.matchStatus === 'IN_PROGRESS'),
+          upcomingPredictions: all.filter(m => !m.isPlayed && m.matchStatus !== 'IN_PROGRESS')
         };
       }),
       catchError(error => {
@@ -358,7 +358,7 @@ export class TournamentService implements ITournamentService {
     this.token = localStorage.getItem('auth_token');
     const body = { match_id: matchId, home_goals: newScore.home, away_goals: newScore.away };
     return this.http.post<void>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/match/${matchId}/predictions`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/matches/${matchId}`,
       body,
       { headers: this.getAuthHeaders() }
     ).pipe(
@@ -402,7 +402,7 @@ export class TournamentService implements ITournamentService {
   getMatchGroupPredictions(groupId: string, matchId: string): Observable<TournamentPredictions | null> {
     this.token = localStorage.getItem('auth_token');
     return this.http.get<GroupPredictionsApiResponse>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/match/${matchId}/predictions`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/matches/${matchId}`,
       { headers: this.getAuthHeaders() }
     ).pipe(
       map(response => ({

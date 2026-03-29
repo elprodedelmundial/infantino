@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, shareReplay, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
@@ -112,9 +112,10 @@ export class MatchService implements IMatchService {
   private fetchTournamentMatches(): Observable<TournamentMatchesResponse> {
     if (!this.matchesCache$) {
       this.token = localStorage.getItem('auth_token');
+      const params = new HttpParams().set('next', '5');
       this.matchesCache$ = this.http.get<TournamentMatchesResponse>(
         `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/matches`,
-        { headers: this.getAuthHeaders() }
+        { headers: this.getAuthHeaders(), params }
       ).pipe(
         shareReplay(1),
         catchError(error => {

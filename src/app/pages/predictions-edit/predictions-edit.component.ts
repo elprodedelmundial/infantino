@@ -237,7 +237,7 @@ export class PredictionsEditComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/tournament', this.tournamentId], {
-      state: { username: this.username }
+      state: { username: this.username, activeTab: 'predictions' }
     });
   }
 

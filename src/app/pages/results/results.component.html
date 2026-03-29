@@ -86,55 +86,23 @@
             </div>
           </div>
 
-          <ng-container *ngIf="hasJoinedTournaments()">
-            <!-- Match locked (< 15 min or started): no prediction editing allowed -->
-            <ng-container *ngIf="isMatchActive(match)">
-              <div class="locked-badge-small">
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                  <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M4.5 6V4C4.5 2.619 5.619 1.5 7 1.5C8.381 1.5 9.5 2.619 9.5 4V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                Bloqueado
-              </div>
-            </ng-container>
-
-            <!-- Predictions available (> 15 min) -->
-            <ng-container *ngIf="!isMatchActive(match)">
-              <!-- Single group: show inline prediction preview -->
-              <ng-container *ngIf="joinedTournaments.length === 1">
-                <div class="prediction-status" *ngIf="getFirstPrediction(match) as pred; else noPredSingle">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  {{ pred.home }} - {{ pred.away }}
-                </div>
-                <ng-template #noPredSingle>
-                  <div class="prediction-placeholder"></div>
-                </ng-template>
-                <button 
-                  class="predict-btn" 
-                  [class.has-prediction]="hasPrediction(match)"
-                  (click)="predictMatch(match)">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                  </svg>
-                  {{ hasPrediction(match) ? 'Editar' : 'Predecir' }}
-                </button>
-              </ng-container>
-
-              <!-- Multiple groups: show edit button only -->
-              <ng-container *ngIf="joinedTournaments.length > 1">
-                <div class="multi-group-actions">
-                  <button class="predict-btn" (click)="predictMatch(match)">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                    </svg>
-                    Predecir / Editar
-                  </button>
-                </div>
-              </ng-container>
-            </ng-container>
-          </ng-container>
+          <div class="match-action" *ngIf="hasJoinedTournaments()">
+            <!-- Match locked (< 15 min or started) -->
+            <div class="locked-badge-small" *ngIf="isMatchActive(match)">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M4.5 6V4C4.5 2.619 5.619 1.5 7 1.5C8.381 1.5 9.5 2.619 9.5 4V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Bloqueado
+            </div>
+            <!-- Predict button (> 15 min away) -->
+            <button class="predict-btn" *ngIf="!isMatchActive(match)" (click)="predictMatch(match)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+              Predecir
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -217,7 +185,8 @@
         </div>
         <div class="match-score">
           <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
-          <span class="match-time-label live">{{ selectedMatch.matchTime }}</span>
+          <span class="match-time-label live" *ngIf="selectedMatch.status === 'live'">{{ selectedMatch.matchTime }}</span>
+          <span class="match-time-label finished" *ngIf="selectedMatch.status === 'finished'">FT</span>
         </div>
         <div class="team away">
           <span>{{ selectedMatch.awayTeam.name }}</span>
@@ -262,8 +231,20 @@
                   <span class="you-tag" *ngIf="pred.isCurrentUser">Tú</span>
                 </span>
               </div>
-              <div class="member-prediction">
-                {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+              <div class="member-right">
+                <span class="member-prediction">
+                  {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+                </span>
+                <span
+                  *ngIf="pred.predictionStatus && pred.predictionStatus !== 'PENDING'"
+                  class="pred-status-badge"
+                  [class.correct]="pred.predictionStatus === 'CORRECT'"
+                  [class.partial]="pred.predictionStatus === 'PARTIAL'"
+                  [class.incorrect]="pred.predictionStatus === 'INCORRECT'">
+                  {{ pred.predictionStatus === 'CORRECT' ? 'Correcto'
+                     : pred.predictionStatus === 'PARTIAL' ? 'Parcial'
+                     : 'Incorrecto' }}
+                </span>
               </div>
             </div>
           </div>

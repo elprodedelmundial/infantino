@@ -155,17 +155,24 @@
         </svg>
       </div>
       
-      <!-- Past Predictions -->
+      <!-- Past Predictions (collapsible) -->
       <div class="predictions-section">
-        <h3 class="section-title standalone">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M9 5V9L12 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <button class="section-title-toggle" (click)="showPastPredictions = !showPastPredictions">
+          <div class="section-title standalone">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M9 5V9L12 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Últimos Partidos
+            <span class="section-count">{{ predictions.pastPredictions.length }}</span>
+          </div>
+          <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"
+               [class.expanded]="showPastPredictions">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Últimos Partidos
-        </h3>
-        
-        <div class="predictions-table">
+        </button>
+
+        <div class="predictions-table" *ngIf="showPastPredictions">
           <div class="table-header">
             <span class="col-code">Código</span>
             <span class="col-match">Partido</span>
@@ -173,7 +180,7 @@
             <span class="col-result">Resultado</span>
             <span class="col-status">Estado</span>
           </div>
-          
+
           <div class="table-row" *ngFor="let pred of predictions.pastPredictions">
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
@@ -187,15 +194,27 @@
                 <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag">
               </div>
             </div>
-            <span class="col-prediction score">
-              {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
-            </span>
-            <span class="col-result score actual">
-              {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
-            </span>
+            <!-- Live match: no scores shown -->
+            <ng-container *ngIf="pred.matchStatus === 'IN_PROGRESS'; else finishedRow">
+              <span class="col-prediction score">–</span>
+              <span class="col-result score">–</span>
+            </ng-container>
+            <ng-template #finishedRow>
+              <span class="col-prediction score">
+                {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+              </span>
+              <span class="col-result score actual">
+                {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
+              </span>
+            </ng-template>
             <div class="col-status">
-              <span [ngClass]="getResultBadgeClass(pred)">
-                {{ pred.result === 'correct' ? 'Correcto' : pred.result === 'half' ? 'Parcial' : 'Incorrecto' }}
+              <span
+                *ngIf="pred.matchStatus === 'IN_PROGRESS' || pred.result"
+                [ngClass]="getResultBadgeClass(pred)">
+                {{ pred.matchStatus === 'IN_PROGRESS' ? 'Jugando'
+                   : pred.result === 'correct' ? 'Correcto'
+                   : pred.result === 'half' ? 'Parcial'
+                   : 'Incorrecto' }}
               </span>
             </div>
           </div>

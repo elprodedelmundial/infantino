@@ -27,6 +27,7 @@ export class TournamentStandingsComponent implements OnInit {
   isLoading: boolean = true;
   tournamentId: string = '';
   activeTab: 'standings' | 'predictions' = 'standings';
+  showPastPredictions: boolean = false;
   showLeaveConfirm: boolean = false;
   isLeaving: boolean = false;
 
@@ -46,13 +47,16 @@ export class TournamentStandingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const historyState = history.state as { username: string; role?: GroupRole } | undefined;
+    const historyState = history.state as { username: string; role?: GroupRole; activeTab?: 'standings' | 'predictions' } | undefined;
     if (historyState?.username) {
       this.username = historyState.username;
       this.tournamentService.setCurrentUser(this.username);
     }
     if (historyState?.role) {
       this.userRole = historyState.role;
+    }
+    if (historyState?.activeTab) {
+      this.activeTab = historyState.activeTab;
     }
 
     this.route.params.subscribe(params => {
@@ -196,6 +200,7 @@ export class TournamentStandingsComponent implements OnInit {
   }
 
   getResultBadgeClass(prediction: MatchPrediction): string {
+    if (prediction.matchStatus === 'IN_PROGRESS') return 'result-badge live';
     if (!prediction.result) return '';
     return `result-badge ${prediction.result}`;
   }

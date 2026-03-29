@@ -5,7 +5,7 @@ import { forkJoin } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament, TournamentPredictions } from '../../services/match-service.interface';
-import { JoinedTournament, LiveMatch, MatchScore } from '../../models/tournament.model';
+import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
 
 @Component({
   selector: 'app-results',
@@ -23,7 +23,6 @@ export class ResultsComponent implements OnInit {
   liveMatches: LiveMatch[] = [];
   upcomingMatches: LiveMatch[] = [];
   pastMatches: LiveMatch[] = [];
-  userPredictions: Map<string, Map<string, MatchScore>> = new Map();
   
   // Modal states
   showPredictionsModal: boolean = false;
@@ -62,32 +61,7 @@ export class ResultsComponent implements OnInit {
       this.liveMatches = liveMatches;
       this.upcomingMatches = upcomingMatches;
       this.pastMatches = pastMatches;
-      
-      if (tournaments.length > 0) {
-        this.loadUserPredictions();
-      }
-      
       this.isLoading = false;
-    });
-  }
-
-  loadUserPredictions(): void {
-    if (this.joinedTournaments.length === 0) return;
-
-    const predictionRequests = this.joinedTournaments.map(j =>
-      this.tournamentService.getAllPredictions(j.tournament.id)
-    );
-
-    forkJoin(predictionRequests).subscribe(allGroupPredictions => {
-      this.joinedTournaments.forEach((j, idx) => {
-        const groupData = allGroupPredictions[idx];
-        groupData.matches.forEach(match => {
-          if (!this.userPredictions.has(match.id)) {
-            this.userPredictions.set(match.id, new Map());
-          }
-          this.userPredictions.get(match.id)!.set(j.tournament.id, match.predictedScore);
-        });
-      });
     });
   }
 
@@ -205,16 +179,4 @@ export class ResultsComponent implements OnInit {
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
   }
 
-  hasPrediction(match: LiveMatch): boolean {
-    const matchPredictions = this.userPredictions.get(match.id);
-    return matchPredictions !== undefined && matchPredictions.size > 0;
-  }
-
-  getFirstPrediction(match: LiveMatch): MatchScore | null {
-    const matchPredictions = this.userPredictions.get(match.id);
-    if (matchPredictions && matchPredictions.size > 0) {
-      return matchPredictions.values().next().value;
-    }
-    return null;
-  }
 }

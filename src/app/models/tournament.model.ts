@@ -140,12 +140,15 @@ export interface LiveMatch {
 }
 
 // Member Predictions
+export type PredictionStatus = 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT';
+
 export interface MemberPrediction {
   oddsId: string;
   username: string;
   avatarInitials: string;
   predictedScore: MatchScore;
   isCurrentUser: boolean;
+  predictionStatus?: PredictionStatus;
 }
 
 export interface MatchWithPredictions {
