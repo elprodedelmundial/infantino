@@ -18,6 +18,7 @@ export interface MatchPredictionsByTournament {
 export interface IMatchService {
   getLiveMatches(): Observable<LiveMatch[]>;
   getUpcomingMatches(): Observable<LiveMatch[]>;
+  getPastMatches(): Observable<LiveMatch[]>;
   getMatchById(matchId: string): Observable<LiveMatch | null>;
   getMatchPredictionsByTournament(
     matchId: string, 

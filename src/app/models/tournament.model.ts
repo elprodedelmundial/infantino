@@ -5,12 +5,16 @@ export interface Tournament {
   maxParticipants: number;
   startDate: Date;
   isJoined?: boolean;
+  tournamentId?: string;
 }
+
+export type GroupRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 
 export interface JoinedTournament {
   tournament: Tournament;
   userRanking: number | null;
   userPoints: number;
+  role?: GroupRole;
 }
 
 export type PredictionResult = 'correct' | 'incorrect' | 'half';
@@ -63,6 +67,8 @@ export interface TournamentStageInfo {
   matchCount: number;
 }
 
+export type MatchApiStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED';
+
 export interface MatchPrediction {
   id: string;
   matchCode: string;
@@ -76,6 +82,7 @@ export interface MatchPrediction {
   stage: TournamentStage;
   group?: string;
   odds?: MatchOdds;
+  matchStatus?: MatchApiStatus;
 }
 
 export interface UserPredictions {
@@ -133,12 +140,15 @@ export interface LiveMatch {
 }
 
 // Member Predictions
+export type PredictionStatus = 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT';
+
 export interface MemberPrediction {
   oddsId: string;
   username: string;
   avatarInitials: string;
   predictedScore: MatchScore;
   isCurrentUser: boolean;
+  predictionStatus?: PredictionStatus;
 }
 
 export interface MatchWithPredictions {

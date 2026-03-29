@@ -76,9 +76,9 @@ export class AuthFormComponent {
           state: { username: user.username } 
         });
       },
-      error: () => {
+      error: (error: Error) => {
         this.isSubmitting = false;
-        this.errorMessage = 'Error al iniciar sesión';
+        this.errorMessage = error?.message || 'Error al iniciar sesión';
       }
     });
   }

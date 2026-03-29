@@ -94,6 +94,7 @@
         [id]="'match-' + match.id"
         class="match-card"
         [class.played]="match.isPlayed"
+        [class.locked]="isMatchLocked(match) && !match.isPlayed"
         [class.editing]="match.isEditing"
         [class.has-changes]="match.hasChanges">
         
@@ -107,7 +108,7 @@
           <div class="team home">
             <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
             <span class="team-name">{{ match.homeTeam.name }}</span>
-            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">×{{ match.odds.home.toFixed(1) }}</span>
+            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">+{{ match.odds.home.toFixed(1) }}</span>
           </div>
 
           <!-- Score Display/Edit -->
@@ -116,7 +117,7 @@
               <span class="predicted-score">
                 {{ match.predictedScore.home }} - {{ match.predictedScore.away }}
               </span>
-              <span class="draw-odds" *ngIf="match.odds && !match.isPlayed">Empate ×{{ match.odds.draw.toFixed(1) }}</span>
+              <span class="draw-odds" *ngIf="match.odds && !match.isPlayed">Empate +{{ match.odds.draw.toFixed(1) }}</span>
               <span class="actual-score" *ngIf="match.isPlayed && match.actualScore">
                 Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
               </span>
@@ -150,7 +151,7 @@
           </div>
 
           <div class="team away">
-            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">×{{ match.odds.away.toFixed(1) }}</span>
+            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">+{{ match.odds.away.toFixed(1) }}</span>
             <span class="team-name">{{ match.awayTeam.name }}</span>
             <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
           </div>
@@ -162,8 +163,17 @@
             {{ match.result === 'correct' ? 'Correcto' : match.result === 'half' ? 'Parcial' : 'Incorrecto' }}
           </span>
 
-          <!-- Edit controls for future matches -->
-          <div class="edit-controls" *ngIf="!match.isPlayed">
+          <!-- Locked badge for active matches (started or < 15 min) -->
+          <div class="locked-badge" *ngIf="isMatchLocked(match) && !match.isPlayed">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M4.5 6V4C4.5 2.619 5.619 1.5 7 1.5C8.381 1.5 9.5 2.619 9.5 4V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Bloqueado — partido activo
+          </div>
+
+          <!-- Edit controls for non-locked future matches -->
+          <div class="edit-controls" *ngIf="!isMatchLocked(match)">
             <button 
               class="edit-btn" 
               *ngIf="!match.isEditing"

@@ -244,6 +244,14 @@
     }
   }
 
+  &.locked {
+    border-color: rgba(255, 165, 0, 0.3);
+
+    .match-content {
+      opacity: 0.85;
+    }
+  }
+
   &.editing {
     border-color: var(--accent);
     box-shadow: 0 0 20px rgba(232, 255, 71, 0.1);
@@ -474,6 +482,21 @@
     color: #fbbf24;
     border: 1px solid rgba(251, 191, 36, 0.3);
   }
+}
+
+.locked-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.1);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  padding: 5px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .edit-controls {
