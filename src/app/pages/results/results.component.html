@@ -240,9 +240,11 @@
                   class="pred-status-badge"
                   [class.correct]="pred.predictionStatus === 'CORRECT'"
                   [class.partial]="pred.predictionStatus === 'PARTIAL'"
-                  [class.incorrect]="pred.predictionStatus === 'INCORRECT'">
+                  [class.incorrect]="pred.predictionStatus === 'INCORRECT'"
+                  [class.bonus]="pred.predictionStatus === 'BONUS'">
                   {{ pred.predictionStatus === 'CORRECT' ? 'Correcto'
                      : pred.predictionStatus === 'PARTIAL' ? 'Parcial'
+                     : pred.predictionStatus === 'BONUS' ? 'Bonus'
                      : 'Incorrecto' }}
                 </span>
               </div>

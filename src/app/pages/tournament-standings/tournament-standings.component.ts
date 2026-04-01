@@ -28,6 +28,7 @@ export class TournamentStandingsComponent implements OnInit {
   tournamentId: string = '';
   activeTab: 'standings' | 'predictions' = 'standings';
   showPastPredictions: boolean = false;
+  isLoadingPredictions: boolean = false;
   showLeaveConfirm: boolean = false;
   isLeaving: boolean = false;
 
@@ -67,23 +68,34 @@ export class TournamentStandingsComponent implements OnInit {
 
   loadData(): void {
     this.isLoading = true;
-    
     this.tournamentService.getTournamentStandings(this.tournamentId).subscribe(standings => {
       this.standings = standings;
-      
-      this.tournamentService.getUserPredictions(this.tournamentId).subscribe(predictions => {
-        this.predictions = predictions;
-        this.isLoading = false;
-      });
+      this.isLoading = false;
+      // If navigated directly to predictions tab (e.g. back from edit), load immediately
+      if (this.activeTab === 'predictions') {
+        this.loadPredictions();
+      }
+    });
+  }
+
+  loadPredictions(): void {
+    if (this.predictions || this.isLoadingPredictions) return;
+    this.isLoadingPredictions = true;
+    this.tournamentService.getUserPredictions(this.tournamentId).subscribe(predictions => {
+      this.predictions = predictions;
+      this.isLoadingPredictions = false;
     });
   }
 
   setActiveTab(tab: 'standings' | 'predictions'): void {
     this.activeTab = tab;
+    if (tab === 'predictions') {
+      this.loadPredictions();
+    }
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard'], {
+    this.router.navigate(['/my-tournaments'], {
       state: { username: this.username }
     });
   }
@@ -188,6 +200,7 @@ export class TournamentStandingsComponent implements OnInit {
       case 'correct': return 'prediction correct';
       case 'incorrect': return 'prediction incorrect';
       case 'half': return 'prediction half';
+      case 'bonus': return 'prediction bonus';
       default: return 'prediction';
     }
   }
@@ -201,6 +214,7 @@ export class TournamentStandingsComponent implements OnInit {
 
   getResultBadgeClass(prediction: MatchPrediction): string {
     if (prediction.matchStatus === 'IN_PROGRESS') return 'result-badge live';
+    if (prediction.result === 'bonus') return 'result-badge bonus';
     if (!prediction.result) return '';
     return `result-badge ${prediction.result}`;
   }

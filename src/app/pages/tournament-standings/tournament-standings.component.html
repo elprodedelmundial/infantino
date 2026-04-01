@@ -68,7 +68,7 @@
       <div class="standings-header">
         <span class="header-pos">#</span>
         <span class="header-player">Jugador</span>
-        <span class="header-predictions">Últimas 5</span>
+        <span class="header-predictions">Últimas</span>
         <span class="header-points">Pts</span>
       </div>
 
@@ -93,7 +93,7 @@
             <div 
               *ngFor="let pred of player.lastPredictions"
               [ngClass]="getPredictionClass(pred)"
-              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : 'Incorrecto'">
+              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : pred === 'bonus' ? 'Bonus' : 'Incorrecto'">
             </div>
           </div>
           <div class="points">
@@ -119,8 +119,14 @@
       </div>
     </div>
 
+    <!-- Predictions Tab loading -->
+    <div class="loading-state" *ngIf="!isLoading && activeTab === 'predictions' && isLoadingPredictions">
+      <div class="spinner"></div>
+      <p>Cargando predicciones...</p>
+    </div>
+
     <!-- Predictions Tab -->
-    <div class="predictions-container" *ngIf="!isLoading && predictions && activeTab === 'predictions'">
+    <div class="predictions-container" *ngIf="!isLoading && predictions && activeTab === 'predictions' && !isLoadingPredictions">
       
       <!-- Predictions Banner -->
       <div class="predictions-banner" (click)="editAllPredictions()">
@@ -214,6 +220,7 @@
                 {{ pred.matchStatus === 'IN_PROGRESS' ? 'Jugando'
                    : pred.result === 'correct' ? 'Correcto'
                    : pred.result === 'half' ? 'Parcial'
+                   : pred.result === 'bonus' ? 'Bonus'
                    : 'Incorrecto' }}
               </span>
             </div>

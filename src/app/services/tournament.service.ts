@@ -6,6 +6,8 @@ import {
   Tournament,
   JoinedTournament,
   TournamentStandings,
+  TournamentPlayer,
+  PredictionResult,
   UserPredictions,
   MatchScore,
   MatchPrediction,
@@ -79,12 +81,21 @@ interface SubmitBulkPredictionsRequest {
 }
 
 // API Response interfaces (snake_case matching grondona API)
+interface GroupStandingResponse {
+  user_id: string;
+  username: string;
+  rank: number;
+  points: number;
+  last_predictions: ('PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT')[];
+}
+
 interface GroupResponse {
   id: string;
   tournament_id: string;
   name: string;
   is_private: boolean;
   max_members: number;
+  standings?: GroupStandingResponse[];
 }
 
 interface UserGroupResponse {
@@ -130,11 +141,39 @@ export class TournamentService implements ITournamentService {
     return {
       id: group.id,
       name: group.name,
-      participantsCount: 0,
+      participantsCount: group.standings?.length ?? 0,
       maxParticipants: group.max_members,
       startDate: new Date(),
-      isJoined: false,
+      isJoined: true,
       tournamentId: group.tournament_id
+    };
+  }
+
+  private mapGroupToStandings(group: GroupResponse): TournamentStandings {
+    const predResultMap: Record<string, PredictionResult> = {
+      CORRECT: 'correct',
+      PARTIAL: 'half',
+      INCORRECT: 'incorrect',
+      BONUS: 'bonus'
+    };
+
+    const players: TournamentPlayer[] = (group.standings ?? []).map(s => ({
+      id: s.user_id,
+      username: s.username,
+      position: s.rank,
+      points: s.points,
+      lastPredictions: s.last_predictions
+        .filter(p => p !== 'PENDING')
+        .map(p => predResultMap[p] as PredictionResult),
+      avatarInitials: s.username.substring(0, 2).toUpperCase()
+    }));
+
+    const currentUser = players.find(p => p.username === this.currentUsername);
+
+    return {
+      tournament: this.mapGroupToTournament(group),
+      players,
+      currentUserId: currentUser?.id ?? ''
     };
   }
 
@@ -164,10 +203,11 @@ export class TournamentService implements ITournamentService {
   private mapPredictionToMatchPrediction(p: MatchPredictionApiResponse): MatchPrediction {
     const m = p.match;
     const pred = p.prediction;
-    const resultMap: Record<string, 'correct' | 'half' | 'incorrect'> = {
+    const resultMap: Record<string, PredictionResult> = {
       CORRECT: 'correct',
       PARTIAL: 'half',
-      INCORRECT: 'incorrect'
+      INCORRECT: 'incorrect',
+      BONUS: 'bonus'
     };
     const status = pred?.status;
     return {
@@ -309,10 +349,22 @@ export class TournamentService implements ITournamentService {
     return this.joinedGroupIds;
   }
 
-  // Methods below are not yet in the grondona API — delegate to mock for realistic UI data
-  getTournamentStandings(tournamentId: string): Observable<TournamentStandings | null> {
-    return this.mock.getTournamentStandings(tournamentId);
+  getTournamentStandings(groupId: string): Observable<TournamentStandings | null> {
+    this.token = localStorage.getItem('auth_token');
+    const params = new HttpParams().set('standings', 'true');
+    return this.http.get<GroupResponse>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}`,
+      { headers: this.getAuthHeaders(), params }
+    ).pipe(
+      map(response => this.mapGroupToStandings(response)),
+      catchError(error => {
+        console.error('Get group standings error:', error);
+        return of(null);
+      })
+    );
   }
+
+  // Methods below are not yet in the grondona API — delegate to mock for realistic UI data
 
   private fetchGroupPredictions(groupId: string): Observable<GroupPredictionsApiResponse> {
     this.token = localStorage.getItem('auth_token');
