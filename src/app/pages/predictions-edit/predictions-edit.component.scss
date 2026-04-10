@@ -337,6 +337,11 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+.flag.flag--ch {
+  width: 22px;
+  height: 22px;
+}
+
 .team-name {
   font-size: 0.95rem;
   font-weight: 600;
@@ -376,9 +381,11 @@
 }
 
 .predicted-score {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.5rem;
+  font-family: var(--score-font-numeric);
+  font-size: var(--score-size-hero);
   font-weight: 800;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
@@ -401,12 +408,12 @@
 }
 
 .score-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: 600;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
@@ -421,12 +428,14 @@
 }
 
 .score-input {
-  width: 50px;
-  height: 40px;
+  width: 56px;
+  height: 46px;
   text-align: center;
-  font-family: 'Syne', sans-serif;
-  font-size: 1.3rem;
+  font-family: var(--score-font-numeric);
+  font-size: 1.65rem;
   font-weight: 800;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   background: var(--bg-secondary);
   border: 2px solid var(--accent);
   color: var(--accent);
@@ -440,9 +449,11 @@
 }
 
 .score-separator {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.3rem;
+  font-family: var(--score-font-numeric);
+  font-size: 1.65rem;
   font-weight: 800;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 
@@ -719,19 +730,32 @@
     height: 19px;
   }
 
+  .flag.flag--ch {
+    width: 19px;
+    height: 19px;
+  }
+
   .team-name {
     font-size: 0.85rem;
   }
 
   .score-input {
-    width: 44px;
-    height: 36px;
-    font-size: 1.1rem;
+    width: 48px;
+    height: 40px;
+    font-size: 1.35rem;
   }
 
   .score-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 1rem;
+    width: 32px;
+    height: 32px;
+    font-size: 1.15rem;
+  }
+
+  .predicted-score {
+    font-size: 1.55rem;
+  }
+
+  .score-separator {
+    font-size: 1.35rem;
   }
 }

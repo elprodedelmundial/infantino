@@ -369,7 +369,7 @@ export class TournamentService implements ITournamentService {
   private fetchGroupPredictions(groupId: string): Observable<GroupPredictionsApiResponse> {
     this.token = localStorage.getItem('auth_token');
     return this.http.get<GroupPredictionsApiResponse>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/matches`,
       { headers: this.getAuthHeaders() }
     );
   }

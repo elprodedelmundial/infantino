@@ -23,38 +23,43 @@
       </div>
 
       <div class="live-matches-list">
-        <div class="live-match-card" *ngFor="let match of liveMatches">
-          <div class="match-time-badge live">
-            <span class="live-indicator"></span>
-            {{ match.matchTime }}
-          </div>
-          
-          <div class="match-teams">
-            <div class="team home">
-              <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
-              <span class="team-name">{{ match.homeTeam.name }}</span>
-            </div>
-            
-            <div class="score-display">
-              <span class="current-score">{{ match.currentScore?.home }} - {{ match.currentScore?.away }}</span>
-            </div>
-            
-            <div class="team away">
-              <span class="team-name">{{ match.awayTeam.name }}</span>
-              <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
+        <div class="live-match-card results-match-grid" *ngFor="let match of liveMatches">
+          <div class="match-schedule match-schedule--live">
+            <div class="match-time-badge live">
+              <span class="live-indicator"></span>
+              {{ match.matchTime }}
             </div>
           </div>
 
-          <button 
-            class="view-predictions-btn" 
-            *ngIf="hasJoinedTournaments()"
-            (click)="viewPredictions(match)">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            Ver Predicciones
-          </button>
+          <div class="team-stack team-stack--home">
+            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name"
+                 class="flag flag-stack" [class.flag--ch]="isSwitzerland(match.homeTeam)">
+            <span class="team-name-stack">{{ match.homeTeam.name }}</span>
+          </div>
+
+          <div class="match-center-col">
+            <div class="score-display score-display--inline">
+              <span class="current-score">{{ match.currentScore?.home }} - {{ match.currentScore?.away }}</span>
+            </div>
+          </div>
+
+          <div class="team-stack team-stack--away">
+            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name"
+                 class="flag flag-stack" [class.flag--ch]="isSwitzerland(match.awayTeam)">
+            <span class="team-name-stack">{{ match.awayTeam.name }}</span>
+          </div>
+
+          <div class="match-action" *ngIf="hasJoinedTournaments()">
+            <button
+              class="view-predictions-btn"
+              (click)="viewPredictions(match)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Ver Predicciones
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -66,24 +71,26 @@
       </div>
 
       <div class="upcoming-matches-list">
-        <div class="upcoming-match-card" *ngFor="let match of upcomingMatches">
+        <div class="upcoming-match-card results-match-grid" *ngFor="let match of upcomingMatches">
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time">{{ formatMatchTime(match) }}</span>
           </div>
-          
-          <div class="match-teams compact">
-            <div class="team home">
-              <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
-              <span class="team-name">{{ match.homeTeam.name }}</span>
-            </div>
-            
+
+          <div class="team-stack team-stack--home">
+            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name"
+                 class="flag flag-stack" [class.flag--ch]="isSwitzerland(match.homeTeam)">
+            <span class="team-name-stack">{{ match.homeTeam.name }}</span>
+          </div>
+
+          <div class="match-center-col">
             <span class="vs">vs</span>
-            
-            <div class="team away">
-              <span class="team-name">{{ match.awayTeam.name }}</span>
-              <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
-            </div>
+          </div>
+
+          <div class="team-stack team-stack--away">
+            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name"
+                 class="flag flag-stack" [class.flag--ch]="isSwitzerland(match.awayTeam)">
+            <span class="team-name-stack">{{ match.awayTeam.name }}</span>
           </div>
 
           <div class="match-action" *ngIf="hasJoinedTournaments()">
@@ -114,36 +121,41 @@
       </div>
 
       <div class="past-matches-list">
-        <div class="past-match-card" *ngFor="let match of pastMatches">
+        <div class="past-match-card results-match-grid" *ngFor="let match of pastMatches">
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time finished-tag">FT</span>
           </div>
 
-          <div class="match-teams compact">
-            <div class="team home">
-              <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag">
-              <span class="team-name">{{ match.homeTeam.name }}</span>
-            </div>
-            <div class="score-display past-score">
+          <div class="team-stack team-stack--home">
+            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name"
+                 class="flag flag-stack" [class.flag--ch]="isSwitzerland(match.homeTeam)">
+            <span class="team-name-stack">{{ match.homeTeam.name }}</span>
+          </div>
+
+          <div class="match-center-col">
+            <div class="score-display past-score score-display--inline">
               <span class="current-score">{{ match.currentScore?.home }} - {{ match.currentScore?.away }}</span>
-            </div>
-            <div class="team away">
-              <span class="team-name">{{ match.awayTeam.name }}</span>
-              <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag">
             </div>
           </div>
 
-          <button
-            class="view-predictions-btn small"
-            *ngIf="hasJoinedTournaments()"
-            (click)="viewPredictions(match)">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            Ver Predicciones
-          </button>
+          <div class="team-stack team-stack--away">
+            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name"
+                 class="flag flag-stack" [class.flag--ch]="isSwitzerland(match.awayTeam)">
+            <span class="team-name-stack">{{ match.awayTeam.name }}</span>
+          </div>
+
+          <div class="match-action" *ngIf="hasJoinedTournaments()">
+            <button
+              class="view-predictions-btn"
+              (click)="viewPredictions(match)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Ver Predicciones
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -178,19 +190,21 @@
     </button>
 
     <div class="modal-header" *ngIf="selectedMatch">
-      <div class="match-info-header">
-        <div class="team home">
-          <img [src]="selectedMatch.homeTeam.flagUrl" [alt]="selectedMatch.homeTeam.name" class="flag">
-          <span>{{ selectedMatch.homeTeam.name }}</span>
+      <div class="match-info-header match-info-header--stacked">
+        <div class="team-stack team-stack--home">
+          <img [src]="selectedMatch.homeTeam.flagUrl" [alt]="selectedMatch.homeTeam.name"
+               class="flag flag-stack modal-team-flag" [class.flag--ch]="isSwitzerland(selectedMatch.homeTeam)">
+          <span class="team-name-stack">{{ selectedMatch.homeTeam.name }}</span>
         </div>
         <div class="match-score">
           <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
           <span class="match-time-label live" *ngIf="selectedMatch.status === 'live'">{{ selectedMatch.matchTime }}</span>
           <span class="match-time-label finished" *ngIf="selectedMatch.status === 'finished'">FT</span>
         </div>
-        <div class="team away">
-          <span>{{ selectedMatch.awayTeam.name }}</span>
-          <img [src]="selectedMatch.awayTeam.flagUrl" [alt]="selectedMatch.awayTeam.name" class="flag">
+        <div class="team-stack team-stack--away">
+          <img [src]="selectedMatch.awayTeam.flagUrl" [alt]="selectedMatch.awayTeam.name"
+               class="flag flag-stack modal-team-flag" [class.flag--ch]="isSwitzerland(selectedMatch.awayTeam)">
+          <span class="team-name-stack">{{ selectedMatch.awayTeam.name }}</span>
         </div>
       </div>
     </div>

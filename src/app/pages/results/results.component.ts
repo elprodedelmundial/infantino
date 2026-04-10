@@ -6,6 +6,7 @@ import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament, TournamentPredictions } from '../../services/match-service.interface';
 import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
+import { isSwitzerland } from '../../utils/flag.utils';
 
 @Component({
   selector: 'app-results',
@@ -16,6 +17,9 @@ import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
 })
 export class ResultsComponent implements OnInit, OnDestroy {
   private static readonly MATCH_REFRESH_MS = 10_000;
+
+  /** Exposed for template: Swiss flag needs rectangular crop. */
+  readonly isSwitzerland = isSwitzerland;
 
   username: string = 'Usuario';
   joinedTournaments: JoinedTournament[] = [];

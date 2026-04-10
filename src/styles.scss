@@ -1,4 +1,13 @@
 // PRODE Global Styles
+
+// Switzerland (CH): render as a true square; size is set per layout (component SCSS)
+img.flag.flag--ch {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center center;
+  flex-shrink: 0;
+}
+
 :root {
   --bg-primary: #0a0a0b;
   --bg-secondary: #111113;
@@ -11,6 +20,17 @@
   --border: #2a2a2d;
   --error: #ff6b6b;
   --success: #4ade80;
+
+  /* Match / prediction numeric scores (larger for readability) */
+  --score-line-height: 1.18;
+  --score-font-numeric: 'Syne', sans-serif;
+  --score-size-table: 1.22rem;
+  --score-size-row: 1.38rem;
+  --score-size-display: 1.48rem;
+  --score-size-muted: 1.3rem;
+  --score-size-modal: 1.62rem;
+  --score-size-hero: 1.9rem;
+  --score-mono: 1.1rem;
 }
 
 * {

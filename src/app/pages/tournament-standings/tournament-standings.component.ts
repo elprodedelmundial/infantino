@@ -12,6 +12,7 @@ import {
   MatchPrediction,
   GroupRole
 } from '../../models/tournament.model';
+import { isSwitzerland } from '../../utils/flag.utils';
 
 @Component({
   selector: 'app-tournament-standings',
@@ -21,6 +22,8 @@ import {
   styleUrl: './tournament-standings.component.scss'
 })
 export class TournamentStandingsComponent implements OnInit {
+  readonly isSwitzerland = isSwitzerland;
+
   username: string = 'Usuario';
   standings: TournamentStandings | null = null;
   predictions: UserPredictions | null = null;

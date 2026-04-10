@@ -210,14 +210,15 @@
 }
 
 .position {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.9rem;
+  font-family: var(--score-font-numeric);
+  font-size: 1.05rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
   background: var(--bg-tertiary);
   border-radius: 4px;
@@ -331,9 +332,11 @@
 }
 
 .points {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.1rem;
+  font-family: var(--score-font-numeric);
+  font-size: var(--score-size-table);
   font-weight: 800;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   text-align: center;
 
@@ -549,6 +552,11 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+.flag.flag--ch {
+  width: 16px;
+  height: 16px;
+}
+
 .team-name {
   font-size: 0.85rem;
   font-weight: 500;
@@ -564,9 +572,11 @@
 }
 
 .score {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
+  font-family: var(--score-font-numeric);
+  font-size: var(--score-size-table);
   font-weight: 700;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   text-align: center;
 
@@ -755,8 +765,13 @@
     height: 14px;
   }
 
+  .flag.flag--ch {
+    width: 14px;
+    height: 14px;
+  }
+
   .score {
-    font-size: 0.85rem;
+    font-size: 1.05rem;
   }
 
   .result-badge {
@@ -851,14 +866,22 @@
       height: 16px;
       object-fit: cover;
     }
+
+    .flag.flag--ch {
+      width: 16px;
+      height: 16px;
+    }
   }
 }
 
 .live-score {
-  font-size: 1.25rem;
+  font-family: var(--score-font-numeric);
+  font-size: var(--score-size-modal);
   font-weight: 800;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   min-width: 60px;
   text-align: center;
 }
@@ -954,6 +977,11 @@
       height: 16px;
       object-fit: cover;
     }
+
+    .flag.flag--ch {
+      width: 16px;
+      height: 16px;
+    }
   }
 }
 
@@ -965,8 +993,11 @@
 }
 
 .current-score {
-  font-size: 1.25rem;
+  font-family: var(--score-font-numeric);
+  font-size: var(--score-size-modal);
   font-weight: 800;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
@@ -1062,8 +1093,10 @@
 
 .member-score {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: var(--score-mono);
   font-weight: 700;
+  line-height: var(--score-line-height);
+  font-variant-numeric: tabular-nums;
   color: var(--accent);
 }
 
@@ -1365,9 +1398,9 @@
   }
 
   .position {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
   }
 
   .player-avatar {
@@ -1398,7 +1431,7 @@
   }
 
   .points {
-    font-size: 0.95rem;
+    font-size: 1.12rem;
   }
 
   .legend {

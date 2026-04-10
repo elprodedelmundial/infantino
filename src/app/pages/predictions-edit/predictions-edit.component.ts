@@ -12,6 +12,7 @@ import {
   PredictionFilter,
   MatchScore
 } from '../../models/tournament.model';
+import { isSwitzerland } from '../../utils/flag.utils';
 
 interface EditablePrediction extends MatchPrediction {
   editedHomeScore: number;
@@ -28,6 +29,8 @@ interface EditablePrediction extends MatchPrediction {
   styleUrl: './predictions-edit.component.scss'
 })
 export class PredictionsEditComponent implements OnInit {
+  readonly isSwitzerland = isSwitzerland;
+
   username: string = 'Usuario';
   tournament: Tournament | null = null;
   allMatches: EditablePrediction[] = [];
