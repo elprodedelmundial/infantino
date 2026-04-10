@@ -60,7 +60,7 @@ interface UserApiResponse {
 interface ScorePredictionResponse {
   home_goals: number;
   away_goals: number;
-  status?: 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT';
+  status?: 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS';
 }
 
 interface MatchPredictionApiResponse {
@@ -86,7 +86,7 @@ interface GroupStandingResponse {
   username: string;
   rank: number;
   points: number;
-  last_predictions: ('PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT')[];
+  last_predictions: ('PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS')[];
 }
 
 interface GroupResponse {
@@ -144,7 +144,7 @@ export class TournamentService implements ITournamentService {
       participantsCount: group.standings?.length ?? 0,
       maxParticipants: group.max_members,
       startDate: new Date(),
-      isJoined: true,
+      isJoined: false,
       tournamentId: group.tournament_id
     };
   }
@@ -171,7 +171,11 @@ export class TournamentService implements ITournamentService {
     const currentUser = players.find(p => p.username === this.currentUsername);
 
     return {
-      tournament: this.mapGroupToTournament(group),
+      tournament: {
+        ...this.mapGroupToTournament(group),
+        isJoined: true,
+        participantsCount: group.standings?.length ?? 0
+      },
       players,
       currentUserId: currentUser?.id ?? ''
     };
