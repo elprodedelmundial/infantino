@@ -1,11 +1,12 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, interval, Subscription } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament, TournamentPredictions } from '../../services/match-service.interface';
 import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
+import { isSwitzerland } from '../../utils/flag.utils';
 
 @Component({
   selector: 'app-results',
@@ -14,10 +15,16 @@ import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
   templateUrl: './results.component.html',
   styleUrl: './results.component.scss'
 })
-export class ResultsComponent implements OnInit {
+export class ResultsComponent implements OnInit, OnDestroy {
+  private static readonly MATCH_REFRESH_MS = 10_000;
+
+  /** Exposed for template: Swiss flag needs rectangular crop. */
+  readonly isSwitzerland = isSwitzerland;
+
   username: string = 'Usuario';
   joinedTournaments: JoinedTournament[] = [];
   isLoading: boolean = true;
+  private matchRefreshSub?: Subscription;
   
   // Match data
   liveMatches: LiveMatch[] = [];
@@ -46,6 +53,13 @@ export class ResultsComponent implements OnInit {
     }
     
     this.loadData();
+    this.matchRefreshSub = interval(ResultsComponent.MATCH_REFRESH_MS).subscribe(() =>
+      this.refreshMatchLists()
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.matchRefreshSub?.unsubscribe();
   }
 
   loadData(): void {
@@ -62,6 +76,20 @@ export class ResultsComponent implements OnInit {
       this.upcomingMatches = upcomingMatches;
       this.pastMatches = pastMatches;
       this.isLoading = false;
+    });
+  }
+
+  /** Clears match cache and refetches live / upcoming / past (one HTTP round-trip). */
+  private refreshMatchLists(): void {
+    this.matchService.clearCache();
+    forkJoin({
+      liveMatches: this.matchService.getLiveMatches(),
+      upcomingMatches: this.matchService.getUpcomingMatches(),
+      pastMatches: this.matchService.getPastMatches()
+    }).subscribe(({ liveMatches, upcomingMatches, pastMatches }) => {
+      this.liveMatches = liveMatches;
+      this.upcomingMatches = upcomingMatches;
+      this.pastMatches = pastMatches;
     });
   }
 

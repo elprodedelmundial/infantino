@@ -85,13 +85,17 @@ export class MatchService implements IMatchService {
       match.status === 'FINISHED'    ? 'finished' :
                                        'upcoming';
 
+    const substatus = match.substatus
+      ? match.substatus.replace(/\s+/g, ' ').trim()
+      : undefined;
+
     const result: LiveMatch = {
       id: match.id,
       matchCode: match.code,
       homeTeam: this.mapTeam(match.home_team),
       awayTeam: this.mapTeam(match.away_team),
       matchDate: match.started_at ? new Date(match.started_at) : new Date(),
-      matchTime: match.substatus,
+      matchTime: substatus,
       status,
       stage: 'group_stage',
       odds: {

@@ -68,7 +68,7 @@
       <div class="standings-header">
         <span class="header-pos">#</span>
         <span class="header-player">Jugador</span>
-        <span class="header-predictions">Últimas 5</span>
+        <span class="header-predictions">Últimas</span>
         <span class="header-points">Pts</span>
       </div>
 
@@ -93,7 +93,7 @@
             <div 
               *ngFor="let pred of player.lastPredictions"
               [ngClass]="getPredictionClass(pred)"
-              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : 'Incorrecto'">
+              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : pred === 'bonus' ? 'Bonus' : 'Incorrecto'">
             </div>
           </div>
           <div class="points">
@@ -119,8 +119,14 @@
       </div>
     </div>
 
+    <!-- Predictions Tab loading -->
+    <div class="loading-state" *ngIf="!isLoading && activeTab === 'predictions' && isLoadingPredictions">
+      <div class="spinner"></div>
+      <p>Cargando predicciones...</p>
+    </div>
+
     <!-- Predictions Tab -->
-    <div class="predictions-container" *ngIf="!isLoading && predictions && activeTab === 'predictions'">
+    <div class="predictions-container" *ngIf="!isLoading && predictions && activeTab === 'predictions' && !isLoadingPredictions">
       
       <!-- Predictions Banner -->
       <div class="predictions-banner" (click)="editAllPredictions()">
@@ -155,8 +161,8 @@
         </svg>
       </div>
       
-      <!-- Past Predictions (collapsible) -->
-      <div class="predictions-section">
+      <!-- Past Predictions (collapsible) — hidden when there are no past / in-progress rows -->
+      <div class="predictions-section" *ngIf="predictions.pastPredictions.length > 0">
         <button class="section-title-toggle" (click)="showPastPredictions = !showPastPredictions">
           <div class="section-title standalone">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -185,13 +191,13 @@
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="team home">
-                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <span class="vs">vs</span>
               <div class="team away">
                 <span class="team-name">{{ pred.awayTeam.name }}</span>
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
             <!-- Live match: no scores shown -->
@@ -214,6 +220,7 @@
                 {{ pred.matchStatus === 'IN_PROGRESS' ? 'Jugando'
                    : pred.result === 'correct' ? 'Correcto'
                    : pred.result === 'half' ? 'Parcial'
+                   : pred.result === 'bonus' ? 'Bonus'
                    : 'Incorrecto' }}
               </span>
             </div>
@@ -245,13 +252,13 @@
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="team home">
-                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <span class="vs">vs</span>
               <div class="team away">
                 <span class="team-name">{{ pred.awayTeam.name }}</span>
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
             <span class="col-prediction score pending">

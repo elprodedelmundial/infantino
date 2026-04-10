@@ -17,7 +17,7 @@ export interface JoinedTournament {
   role?: GroupRole;
 }
 
-export type PredictionResult = 'correct' | 'incorrect' | 'half';
+export type PredictionResult = 'correct' | 'incorrect' | 'half' | 'bonus';
 
 export interface TournamentPlayer {
   id: string;
@@ -140,7 +140,7 @@ export interface LiveMatch {
 }
 
 // Member Predictions
-export type PredictionStatus = 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT';
+export type PredictionStatus = 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS';
 
 export interface MemberPrediction {
   oddsId: string;
