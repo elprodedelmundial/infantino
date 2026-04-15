@@ -128,6 +128,13 @@
   }
 }
 
+// Standings tab: Premios banner (separate card) + standings table card
+.standings-tab-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 // Standings Container
 .standings-container {
   background: rgba(17, 17, 19, 0.6);
@@ -1147,6 +1154,7 @@
 .awards-banner {
   background: linear-gradient(135deg, rgba(232, 255, 71, 0.1) 0%, rgba(232, 255, 71, 0.02) 100%);
   border: 1px solid rgba(232, 255, 71, 0.3);
+  box-sizing: border-box;
 
   &:hover {
     background: linear-gradient(135deg, rgba(232, 255, 71, 0.15) 0%, rgba(232, 255, 71, 0.05) 100%);
@@ -1159,6 +1167,22 @@
 
   .banner-arrow {
     color: var(--accent);
+  }
+}
+
+/* Clasificación: mismo patrón visual que Editar Predicciones, en amarillo — borde completo, bloque aparte del standings */
+.awards-banner--standings {
+  background: linear-gradient(135deg, rgba(232, 255, 71, 0.12) 0%, rgba(232, 255, 71, 0.02) 100%);
+  border: 1px solid rgba(232, 255, 71, 0.4);
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(232, 255, 71, 0.18) 0%, rgba(232, 255, 71, 0.06) 100%);
+    border-color: var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 }
 

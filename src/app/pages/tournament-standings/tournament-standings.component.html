@@ -63,8 +63,31 @@
       </button>
     </div>
 
-    <!-- Standings Tab -->
-    <div class="standings-container" *ngIf="!isLoading && standings && activeTab === 'standings'">
+    <!-- Standings Tab: Premios card and tabla are separate blocks (gap between, full banner border) -->
+    <div class="standings-tab-layout" *ngIf="!isLoading && standings && activeTab === 'standings'">
+      <div
+        class="awards-banner awards-banner--standings"
+        *ngIf="tournamentHasStarted"
+        (click)="goToAwards()"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="goToAwards()"
+        (keydown.space)="$event.preventDefault(); goToAwards()">
+        <div class="banner-icon awards">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="banner-text">
+          <h4>Premios del Torneo</h4>
+          <p>Ver las predicciones de premios de todos los jugadores del grupo</p>
+        </div>
+        <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="standings-container">
       <div class="standings-header">
         <span class="header-pos">#</span>
         <span class="header-player">Jugador</span>
@@ -117,6 +140,7 @@
           <span>Incorrecto</span>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- Predictions Tab loading -->
@@ -145,8 +169,8 @@
         </svg>
       </div>
 
-      <!-- Awards Button -->
-      <div class="awards-banner" (click)="goToAwards()">
+      <!-- Awards (solo antes del inicio del torneo) -->
+      <div class="awards-banner" *ngIf="!tournamentHasStarted" (click)="goToAwards()">
         <div class="banner-icon awards">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>

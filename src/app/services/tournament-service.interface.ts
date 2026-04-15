@@ -8,6 +8,7 @@ import {
   Country,
   Player,
   TournamentAwardPrediction,
+  GroupAwardPredictionsLoadPayload,
   LiveMatch,
   MatchWithPredictions,
   DashboardLiveData,
@@ -27,12 +28,14 @@ export interface ITournamentService {
   updatePrediction(tournamentId: string, matchId: string, newScore: MatchScore): Observable<boolean>;
   updateMultiplePredictions(tournamentId: string, updates: { matchId: string; score: MatchScore }[]): Observable<boolean>;
   getTournamentById(tournamentId: string): Observable<Tournament | null>;
-  getCountriesForAwards(): Observable<Country[]>;
-  getPlayersForAwards(): Observable<Player[]>;
-  getGoalkeepersForAwards(): Observable<Player[]>;
-  getYoungPlayersForAwards(): Observable<Player[]>;
-  getUserAwardPredictions(tournamentId: string): Observable<TournamentAwardPrediction | null>;
-  saveAwardPredictions(tournamentId: string, predictions: TournamentAwardPrediction): Observable<boolean>;
+  getCountriesForAwards(tournamentId: string): Observable<Country[]>;
+  /** GET /api/tournaments/{id}/players — all players; filter client-side for GK / U21 */
+  getTournamentPlayersForAwards(tournamentId: string): Observable<Player[]>;
+  /** GET .../predictions/awards/me — current user's award picks */
+  getMyAwardPredictions(groupId: string): Observable<TournamentAwardPrediction>;
+  /** GET .../predictions/awards — all members (tournament started); includes standings */
+  getGroupAwardPredictions(groupId: string): Observable<GroupAwardPredictionsLoadPayload>;
+  saveAwardPredictions(groupId: string, predictions: TournamentAwardPrediction): Observable<boolean>;
   getDashboardLiveData(): Observable<DashboardLiveData>;
   getMemberPredictions(matchId: string, tournamentId?: string): Observable<MatchWithPredictions | null>;
   getLiveMatchesForTournament(tournamentId: string): Observable<LiveMatch[]>;
