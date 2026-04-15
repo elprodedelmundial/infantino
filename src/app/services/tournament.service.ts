@@ -15,6 +15,12 @@ import {
   Country,
   Player,
   TournamentAwardPrediction,
+  GroupAwardPredictionsResult,
+  GroupAwardPredictionsLoadPayload,
+  MemberAwardPrediction,
+  MemberPrediction,
+  PlayerPositionCode,
+  PLAYER_POSITION_LABELS,
   LiveMatch,
   MatchWithPredictions,
   DashboardLiveData,
@@ -23,7 +29,6 @@ import {
 } from '../models/tournament.model';
 import { ITournamentService } from './tournament-service.interface';
 import { TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
-import { MemberPrediction } from '../models/tournament.model';
 import { EnvironmentConfig } from '../config/environment.config';
 import { MockedTournamentService } from './mocks/mocked-tournament.service';
 
@@ -95,6 +100,7 @@ interface GroupResponse {
   name: string;
   is_private: boolean;
   max_members: number;
+  has_started: boolean;
   standings?: GroupStandingResponse[];
 }
 
@@ -108,6 +114,62 @@ interface UserGroupResponse {
   points: number;
   rank: number | null;
   role: string;
+}
+
+interface AwardPlayerApiResponse {
+  id: string;
+  name: string;
+  team: TeamApiResponse;
+  position?: PlayerPositionCode;
+  /** Legacy API shape */
+  is_goalkeeper?: boolean;
+  birthdate: string;
+}
+
+interface AwardPredictionsApiResponse {
+  champions: TeamApiResponse[];
+  top_scorers: AwardPlayerApiResponse[];
+  best_players: AwardPlayerApiResponse[];
+  best_goalkeepers: AwardPlayerApiResponse[];
+  best_young_players: AwardPlayerApiResponse[];
+}
+
+/** grondona UserResponse (SNAKE_CASE JSON) */
+interface UserResponseApi {
+  id: string;
+  fullname?: string;
+  username: string;
+  email?: string;
+}
+
+/**
+ * grondona AwardPredictionsResponse: user + SubmittedAwardPredictionsResponse fields
+ * (GET .../groups/{id}/predictions/awards → GroupAwardPredictionsResponse.predictions[])
+ */
+interface AwardPredictionsWithUserRow {
+  user: UserResponseApi;
+  champions: TeamApiResponse[];
+  top_scorers: AwardPlayerApiResponse[];
+  best_players: AwardPlayerApiResponse[];
+  best_goalkeepers: AwardPlayerApiResponse[];
+  best_young_players: AwardPlayerApiResponse[];
+}
+
+/** Legacy alternate shapes (pre-official list) */
+interface GroupAwardMemberApiResponse {
+  user_id?: string;
+  user?: { id: string; username: string };
+  username?: string;
+  awards?: AwardPredictionsApiResponse;
+  predictions?: AwardPredictionsApiResponse;
+}
+
+interface TournamentTeamsApiResponse {
+  teams: TeamApiResponse[];
+}
+
+interface TournamentPlayersApiResponse {
+  players: AwardPlayerApiResponse[];
 }
 
 // Not using @Injectable since this is created via factory
@@ -145,7 +207,8 @@ export class TournamentService implements ITournamentService {
       maxParticipants: group.max_members,
       startDate: new Date(),
       isJoined: false,
-      tournamentId: group.tournament_id
+      tournamentId: group.tournament_id,
+      hasStarted: group.has_started
     };
   }
 
@@ -368,18 +431,188 @@ export class TournamentService implements ITournamentService {
     );
   }
 
-  // Methods below are not yet in the grondona API — delegate to mock for realistic UI data
+  private mapTeamToCountry(t: TeamApiResponse): Country {
+    return {
+      id: t.id,
+      code: t.code,
+      name: t.name,
+      flagUrl: t.icon
+    };
+  }
 
-  private fetchGroupPredictions(groupId: string): Observable<GroupPredictionsApiResponse> {
+  private mapAwardPlayerToPlayer(p: AwardPlayerApiResponse): Player {
+    const code: PlayerPositionCode =
+      p.position ??
+      (p.is_goalkeeper ? 'GOALKEEPER' : 'MIDFIELDER');
+    return {
+      id: p.id,
+      name: p.name,
+      country: this.mapTeamToCountry(p.team),
+      position: PLAYER_POSITION_LABELS[code] ?? code,
+      positionCode: code,
+      birthdate: p.birthdate
+    };
+  }
+
+  private emptyAwardApiResponse(): AwardPredictionsApiResponse {
+    return {
+      champions: [],
+      top_scorers: [],
+      best_players: [],
+      best_goalkeepers: [],
+      best_young_players: []
+    };
+  }
+
+  /** Accepts root body or nested { awards | predictions | data } from API variants */
+  private normalizeAwardPredictionsPayload(body: unknown): AwardPredictionsApiResponse {
+    if (!body || typeof body !== 'object') return this.emptyAwardApiResponse();
+    const o = body as Record<string, unknown>;
+    const inner = (o['awards'] ?? o['predictions'] ?? o['award_predictions'] ?? o['data'] ?? o) as unknown;
+    if (!inner || typeof inner !== 'object') return this.emptyAwardApiResponse();
+    const a = inner as Record<string, unknown>;
+    if (
+      Array.isArray(a['champions']) ||
+      Array.isArray(a['best_players']) ||
+      Array.isArray(a['top_scorers'])
+    ) {
+      return inner as AwardPredictionsApiResponse;
+    }
+    return this.emptyAwardApiResponse();
+  }
+
+  private mapAwardResponseToPredictions(r: AwardPredictionsApiResponse): TournamentAwardPrediction {
+    return {
+      champion: (r.champions ?? []).map(t => this.mapTeamToCountry(t)),
+      goldenBall: (r.best_players ?? []).map(p => this.mapAwardPlayerToPlayer(p)),
+      goldenBoot: (r.top_scorers ?? []).map(p => this.mapAwardPlayerToPlayer(p)),
+      goldenGlove: (r.best_goalkeepers ?? []).map(p => this.mapAwardPlayerToPlayer(p)),
+      bestYoungPlayer: (r.best_young_players ?? []).map(p => this.mapAwardPlayerToPlayer(p))
+    };
+  }
+
+  private emptyTournamentAwardPrediction(): TournamentAwardPrediction {
+    return this.mapAwardResponseToPredictions(this.emptyAwardApiResponse());
+  }
+
+  private isAwardPredictionsWithUserRow(item: unknown): item is AwardPredictionsWithUserRow {
+    if (!item || typeof item !== 'object') return false;
+    const r = item as Record<string, unknown>;
+    const u = r['user'];
+    if (!u || typeof u !== 'object') return false;
+    const user = u as Record<string, unknown>;
+    return typeof user['id'] === 'string' && typeof user['username'] === 'string';
+  }
+
+  /**
+   * grondona GroupAwardPredictionsResponse: { group_id, group_name, predictions: AwardPredictionsResponse[] }
+   */
+  private parseOfficialGroupAwardPredictionRows(body: unknown): AwardPredictionsWithUserRow[] {
+    if (!body || typeof body !== 'object') return [];
+    const o = body as Record<string, unknown>;
+    const preds = o['predictions'];
+    if (!Array.isArray(preds) || preds.length === 0) return [];
+    if (!this.isAwardPredictionsWithUserRow(preds[0])) return [];
+    return preds as AwardPredictionsWithUserRow[];
+  }
+
+  private rowToMemberAwardPrediction(row: AwardPredictionsWithUserRow): MemberAwardPrediction {
+    const u = row.user;
+    const label = u.username || u.fullname || '??';
+    return {
+      userId: u.id,
+      username: u.username,
+      avatarInitials: label.substring(0, 2).toUpperCase(),
+      predictions: this.mapAwardResponseToPredictions({
+        champions: row.champions ?? [],
+        top_scorers: row.top_scorers ?? [],
+        best_players: row.best_players ?? [],
+        best_goalkeepers: row.best_goalkeepers ?? [],
+        best_young_players: row.best_young_players ?? []
+      })
+    };
+  }
+
+  private orderMembersByStandings(
+    members: MemberAwardPrediction[],
+    standings: TournamentStandings | null
+  ): MemberAwardPrediction[] {
+    if (!standings?.players?.length) return members;
+    const rank = new Map(standings.players.map((p, i) => [p.id, i]));
+    return [...members].sort((a, b) => {
+      const ia = rank.get(a.userId) ?? 9999;
+      const ib = rank.get(b.userId) ?? 9999;
+      return ia - ib;
+    });
+  }
+
+  /** Legacy: arrays not using official `predictions`+`user` rows (do not read `predictions` key — reserved for GroupAwardPredictionsResponse) */
+  private parseLegacyGroupAwardMemberEntries(body: unknown): GroupAwardMemberApiResponse[] {
+    if (Array.isArray(body)) return body as GroupAwardMemberApiResponse[];
+    if (body && typeof body === 'object') {
+      const o = body as Record<string, unknown>;
+      const arr =
+        o['members'] ?? o['group_awards'] ?? o['users'] ?? o['data'] ?? o['awards'];
+      if (Array.isArray(arr)) return arr as GroupAwardMemberApiResponse[];
+    }
+    return [];
+  }
+
+  private mapGroupAwardMembersToMeOthers(
+    entries: GroupAwardMemberApiResponse[],
+    currentUserId: string,
+    currentUsername: string
+  ): GroupAwardPredictionsResult {
+    const uid = (e: GroupAwardMemberApiResponse) => e.user_id ?? e.user?.id ?? '';
+    const uname = (e: GroupAwardMemberApiResponse) =>
+      (e.username ?? e.user?.username ?? '').toLowerCase();
+
+    let meEntry: GroupAwardMemberApiResponse | undefined;
+    if (currentUserId) {
+      meEntry = entries.find(e => uid(e) === currentUserId);
+    }
+    if (!meEntry && currentUsername) {
+      meEntry = entries.find(e => uname(e) === currentUsername.toLowerCase());
+    }
+
+    const rawMe =
+      meEntry?.awards ?? meEntry?.predictions ?? this.emptyAwardApiResponse();
+    const me = this.mapAwardResponseToPredictions(rawMe);
+
+    const others = entries
+      .filter(e => e !== meEntry)
+      .map(e =>
+        this.mapAwardResponseToPredictions(
+          e.awards ?? e.predictions ?? this.emptyAwardApiResponse()
+        )
+      );
+
+    return { me, others };
+  }
+
+  private mapPredictionsToSubmitPayload(p: TournamentAwardPrediction): Record<string, string[]> {
+    const teamId = (c: Country) => c.id ?? '';
+    const playerId = (pl: Player) => pl.id;
+    return {
+      champions: p.champion.map(teamId).filter(Boolean),
+      top_scorers: p.goldenBoot.map(playerId),
+      best_players: p.goldenBall.map(playerId),
+      best_goalkeepers: p.goldenGlove.map(playerId),
+      best_young_players: p.bestYoungPlayer.map(playerId)
+    };
+  }
+
+  /** Current user's match predictions for the group (Mis Predicciones / edit) */
+  private fetchUserMatchPredictionsMe(groupId: string): Observable<GroupPredictionsApiResponse> {
     this.token = localStorage.getItem('auth_token');
     return this.http.get<GroupPredictionsApiResponse>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/matches`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/matches/me`,
       { headers: this.getAuthHeaders() }
     );
   }
 
   getAllPredictions(groupId: string): Observable<AllPredictionsData> {
-    return this.fetchGroupPredictions(groupId).pipe(
+    return this.fetchUserMatchPredictionsMe(groupId).pipe(
       map(response => {
         const matches = response.predictions.map(p => this.mapPredictionToMatchPrediction(p));
         return {
@@ -395,7 +628,7 @@ export class TournamentService implements ITournamentService {
   }
 
   getUserPredictions(groupId: string): Observable<UserPredictions> {
-    return this.fetchGroupPredictions(groupId).pipe(
+    return this.fetchUserMatchPredictionsMe(groupId).pipe(
       map(response => {
         const all = response.predictions.map(p => this.mapPredictionToMatchPrediction(p));
         return {
@@ -473,28 +706,124 @@ export class TournamentService implements ITournamentService {
     );
   }
 
-  getCountriesForAwards(): Observable<Country[]> {
-    return this.mock.getCountriesForAwards();
+  getCountriesForAwards(tournamentId: string): Observable<Country[]> {
+    return this.http
+      .get<TournamentTeamsApiResponse>(`${this.baseUrl}/api/tournaments/${tournamentId}/teams`, {
+        headers: this.getAuthHeaders()
+      })
+      .pipe(
+        map(r => r.teams.map(t => this.mapTeamToCountry(t))),
+        catchError(error => {
+          console.error('Get tournament teams error:', error);
+          return this.mock.getCountriesForAwards(tournamentId);
+        })
+      );
   }
 
-  getPlayersForAwards(): Observable<Player[]> {
-    return this.mock.getPlayersForAwards();
+  getTournamentPlayersForAwards(tournamentId: string): Observable<Player[]> {
+    return this.http
+      .get<TournamentPlayersApiResponse>(`${this.baseUrl}/api/tournaments/${tournamentId}/players`, {
+        headers: this.getAuthHeaders()
+      })
+      .pipe(
+        map(r => r.players.map(p => this.mapAwardPlayerToPlayer(p))),
+        catchError(error => {
+          console.error('Get tournament players error:', error);
+          return this.mock.getTournamentPlayersForAwards(tournamentId);
+        })
+      );
   }
 
-  getGoalkeepersForAwards(): Observable<Player[]> {
-    return this.mock.getGoalkeepersForAwards();
+  getMyAwardPredictions(groupId: string): Observable<TournamentAwardPrediction> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http
+      .get<unknown>(
+        `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/awards/me`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map(body => this.mapAwardResponseToPredictions(this.normalizeAwardPredictionsPayload(body))),
+        catchError(error => {
+          console.error('Get my award predictions error:', error);
+          return this.mock.getMyAwardPredictions(groupId);
+        })
+      );
   }
 
-  getYoungPlayersForAwards(): Observable<Player[]> {
-    return this.mock.getYoungPlayersForAwards();
+  getGroupAwardPredictions(groupId: string): Observable<GroupAwardPredictionsLoadPayload> {
+    this.token = localStorage.getItem('auth_token');
+    return forkJoin({
+      standings: this.getTournamentStandings(groupId).pipe(catchError(() => of(null))),
+      body: this.http.get<unknown>(
+        `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/awards`,
+        { headers: this.getAuthHeaders() }
+      )
+    }).pipe(
+      map(({ standings, body }) => {
+        const officialRows = this.parseOfficialGroupAwardPredictionRows(body);
+        if (officialRows.length > 0) {
+          const membersUnordered = officialRows.map(r => this.rowToMemberAwardPrediction(r));
+          const members = this.orderMembersByStandings(membersUnordered, standings);
+          const currentId = standings?.currentUserId ?? '';
+          const meMember =
+            members.find(m => m.userId === currentId) ??
+            members.find(
+              m => m.username.toLowerCase() === this.currentUsername.toLowerCase()
+            );
+          const me = meMember?.predictions ?? this.emptyTournamentAwardPrediction();
+          const others = members
+            .filter(m => m.userId !== meMember?.userId)
+            .map(m => m.predictions);
+          return { members, awards: { me, others }, standings };
+        }
+
+        if (body && typeof body === 'object' && 'me' in (body as object)) {
+          const o = body as Record<string, unknown>;
+          const meRaw = this.normalizeAwardPredictionsPayload(o['me']);
+          const othersRaw = Array.isArray(o['others']) ? o['others'] : [];
+          return {
+            members: [],
+            awards: {
+              me: this.mapAwardResponseToPredictions(meRaw),
+              others: othersRaw.map(x =>
+                this.mapAwardResponseToPredictions(this.normalizeAwardPredictionsPayload(x))
+              )
+            },
+            standings
+          };
+        }
+
+        const entries = this.parseLegacyGroupAwardMemberEntries(body);
+        const awards = this.mapGroupAwardMembersToMeOthers(
+          entries,
+          standings?.currentUserId ?? '',
+          this.currentUsername
+        );
+        return { members: [], awards, standings };
+      }),
+      catchError(error => {
+        console.error('Get group award predictions error:', error);
+        return this.mock.getGroupAwardPredictions(groupId);
+      })
+    );
   }
 
-  getUserAwardPredictions(tournamentId: string): Observable<TournamentAwardPrediction | null> {
-    return this.mock.getUserAwardPredictions(tournamentId);
-  }
-
-  saveAwardPredictions(tournamentId: string, predictions: TournamentAwardPrediction): Observable<boolean> {
-    return this.mock.saveAwardPredictions(tournamentId, predictions);
+  saveAwardPredictions(groupId: string, predictions: TournamentAwardPrediction): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    const body = this.mapPredictionsToSubmitPayload(predictions);
+    return this.http
+      .post<AwardPredictionsApiResponse>(
+        `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/awards`,
+        body,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map(() => true),
+        catchError(error => {
+          console.error('Post award predictions error:', error);
+          return this.mock.saveAwardPredictions(groupId, predictions);
+        })
+      );
   }
 
   getDashboardLiveData(): Observable<DashboardLiveData> {

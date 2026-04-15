@@ -6,6 +6,8 @@ export interface Tournament {
   startDate: Date;
   isJoined?: boolean;
   tournamentId?: string;
+  /** From GET group: tournament has started (award picks locked) */
+  hasStarted?: boolean;
 }
 
 export type GroupRole = 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -35,9 +37,29 @@ export interface TournamentStandings {
 }
 
 export interface Country {
+  /** Team UUID from API (required when submitting award picks) */
+  id?: string;
   code: string;
   name: string;
   flagUrl: string;
+}
+
+export type PlayerPositionCode = 'GOALKEEPER' | 'DEFENDER' | 'MIDFIELDER' | 'FORWARD';
+
+export const PLAYER_POSITION_LABELS: Record<PlayerPositionCode, string> = {
+  GOALKEEPER: 'Portero',
+  DEFENDER: 'Defensa',
+  MIDFIELDER: 'Mediocampista',
+  FORWARD: 'Delantero'
+};
+
+/** Same birthdate floor as backend WorldCupEngine.BEST_YOUNG_PLAYER_DATE_LIMIT */
+export const YOUNG_PLAYER_AWARD_BIRTHDATE_MIN = '2005-01-01';
+
+export function isYoungPlayerAwardEligible(birthdate?: string): boolean {
+  if (!birthdate) return false;
+  const day = birthdate.slice(0, 10);
+  return day >= YOUNG_PLAYER_AWARD_BIRTHDATE_MIN;
 }
 
 export interface MatchScore {
@@ -102,16 +124,44 @@ export interface Player {
   id: string;
   name: string;
   country: Country;
+  /** Localized label (e.g. Portero) */
   position: string;
+  positionCode?: PlayerPositionCode;
+  birthdate?: string;
   imageUrl?: string;
 }
 
 export interface TournamentAwardPrediction {
-  champion: Country[];  // 2 allowed
-  goldenBall: Player[];  // 3 allowed (Balón de Oro)
-  goldenBoot: Player[];  // 3 allowed (Bota de Oro)
-  goldenGlove: Player[];  // 3 allowed (Guante de Oro - best goalkeeper)
-  bestYoungPlayer: Player[];  // 3 allowed (Mejor Jugador Joven)
+  champion: Country[];  // 2 allowed — maps to API champions
+  goldenBall: Player[];  // 3 — maps to API best_players (Balón de Oro)
+  goldenBoot: Player[];  // 3 — maps to API top_scorers (Bota de Oro)
+  goldenGlove: Player[];  // 3 — maps to API best_goalkeepers
+  bestYoungPlayer: Player[];  // 3 — maps to API best_young_players
+}
+
+/** Group member + resolved award picks (browse mode when tournament is locked) */
+export interface MemberAwardPrediction {
+  userId: string;
+  username: string;
+  avatarInitials: string;
+  predictions: TournamentAwardPrediction;
+}
+
+/** Parsed from GET .../predictions/awards/me or split from group list */
+export interface GroupAwardPredictionsResult {
+  me: TournamentAwardPrediction;
+  others: TournamentAwardPrediction[];
+}
+
+/** GET .../predictions/awards (group) + standings in one load */
+export interface GroupAwardPredictionsLoadPayload {
+  /**
+   * From API `predictions[]`: each row includes `user` + award picks (grondona GroupAwardPredictionsResponse).
+   * Empty when only legacy `{ me, others }` shape was returned.
+   */
+  members: MemberAwardPrediction[];
+  awards: GroupAwardPredictionsResult;
+  standings: TournamentStandings | null;
 }
 
 export interface AwardOption {

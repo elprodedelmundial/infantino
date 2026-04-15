@@ -69,6 +69,10 @@ export class TournamentStandingsComponent implements OnInit {
     });
   }
 
+  get tournamentHasStarted(): boolean {
+    return this.standings?.tournament?.hasStarted === true;
+  }
+
   loadData(): void {
     this.isLoading = true;
     this.tournamentService.getTournamentStandings(this.tournamentId).subscribe(standings => {
@@ -120,7 +124,10 @@ export class TournamentStandingsComponent implements OnInit {
 
   goToAwards(): void {
     this.router.navigate(['/tournament', this.tournamentId, 'awards'], {
-      state: { username: this.username }
+      state: {
+        username: this.username,
+        ...(this.tournamentHasStarted ? { openGroupAwardsBrowse: true } : {})
+      }
     });
   }
 

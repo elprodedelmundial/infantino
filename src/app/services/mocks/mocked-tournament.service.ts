@@ -1,4 +1,5 @@
-import { Observable, of, delay } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, delay } from 'rxjs/operators';
 import { 
   Tournament, 
   JoinedTournament, 
@@ -14,7 +15,11 @@ import {
   MatchOdds,
   Player,
   TournamentAwardPrediction,
+  GroupAwardPredictionsLoadPayload,
+  MemberAwardPrediction,
   LiveMatch,
+  PLAYER_POSITION_LABELS,
+  isYoungPlayerAwardEligible,
   MemberPrediction,
   MatchWithPredictions,
   DashboardLiveData
@@ -36,28 +41,32 @@ export class MockedTournamentService implements ITournamentService {
       name: 'General',
       participantsCount: 16,
       maxParticipants: 50,
-      startDate: new Date('2026-03-01')
+      startDate: new Date('2026-03-01'),
+      hasStarted: false
     },
     {
       id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       name: 'EPO',
       participantsCount: 14,
       maxParticipants: 25,
-      startDate: new Date('2026-02-15')
+      startDate: new Date('2026-02-15'),
+      hasStarted: false
     },
     {
       id: 'e8d7c6b5-a4f3-4e2d-9c1b-0a8f7e6d5c4b',
       name: 'Maldolar',
       participantsCount: 4,
       maxParticipants: 10,
-      startDate: new Date('2026-02-20')
+      startDate: new Date('2026-02-20'),
+      hasStarted: false
     },
     {
       id: 'b5d4c3a2-1e0f-4d9c-8b7a-6f5e4d3c2b1a',
       name: 'Baldosa',
       participantsCount: 16,
       maxParticipants: 37,
-      startDate: new Date('2026-03-01')
+      startDate: new Date('2026-03-01'),
+      hasStarted: false
     },
   ];
 
@@ -119,32 +128,30 @@ export class MockedTournamentService implements ITournamentService {
     { code: 'JAM', name: 'Jamaica', flagUrl: 'https://flagcdn.com/w40/jm.png' },
   ];
 
-  // Mocked players for awards
+  // Mocked players for awards (single list; filter client-side)
   private players: Player[] = [
-    { id: 'p1', name: 'Lionel Messi', country: this.countries[0], position: 'Delantero' },
-    { id: 'p2', name: 'Kylian Mbappé', country: this.countries[12], position: 'Delantero' },
-    { id: 'p3', name: 'Erling Haaland', country: this.countries[21], position: 'Delantero' },
-    { id: 'p4', name: 'Vinícius Jr.', country: this.countries[1], position: 'Delantero' },
-    { id: 'p5', name: 'Jude Bellingham', country: this.countries[14], position: 'Mediocampista' },
-    { id: 'p6', name: 'Kevin De Bruyne', country: this.countries[17], position: 'Mediocampista' },
-    { id: 'p7', name: 'Rodri', country: this.countries[10], position: 'Mediocampista' },
-    { id: 'p8', name: 'Florian Wirtz', country: this.countries[11], position: 'Mediocampista' },
-    { id: 'p9', name: 'Lamine Yamal', country: this.countries[10], position: 'Delantero' },
-    { id: 'p10', name: 'Pedri', country: this.countries[10], position: 'Mediocampista' },
-    { id: 'p11', name: 'Phil Foden', country: this.countries[14], position: 'Mediocampista' },
-    { id: 'p12', name: 'Harry Kane', country: this.countries[14], position: 'Delantero' },
-    // Goalkeepers
-    { id: 'gk1', name: 'Thibaut Courtois', country: this.countries[17], position: 'Portero' },
-    { id: 'gk2', name: 'Alisson Becker', country: this.countries[1], position: 'Portero' },
-    { id: 'gk3', name: 'Emiliano Martínez', country: this.countries[0], position: 'Portero' },
-    { id: 'gk4', name: 'Marc-André ter Stegen', country: this.countries[11], position: 'Portero' },
-    { id: 'gk5', name: 'Gianluigi Donnarumma', country: this.countries[13], position: 'Portero' },
-    // Young players (U23)
-    { id: 'y1', name: 'Lamine Yamal', country: this.countries[10], position: 'Delantero' },
-    { id: 'y2', name: 'Florian Wirtz', country: this.countries[11], position: 'Mediocampista' },
-    { id: 'y3', name: 'Jamal Musiala', country: this.countries[11], position: 'Mediocampista' },
-    { id: 'y4', name: 'Endrick', country: this.countries[1], position: 'Delantero' },
-    { id: 'y5', name: 'Alejandro Garnacho', country: this.countries[0], position: 'Delantero' },
+    { id: 'p1', name: 'Lionel Messi', country: this.countries[0], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '1987-06-24' },
+    { id: 'p2', name: 'Kylian Mbappé', country: this.countries[12], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '1998-12-20' },
+    { id: 'p3', name: 'Erling Haaland', country: this.countries[21], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '2000-07-21' },
+    { id: 'p4', name: 'Vinícius Jr.', country: this.countries[1], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '2000-07-12' },
+    { id: 'p5', name: 'Jude Bellingham', country: this.countries[14], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '2003-06-29' },
+    { id: 'p6', name: 'Kevin De Bruyne', country: this.countries[17], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '1991-06-28' },
+    { id: 'p7', name: 'Rodri', country: this.countries[10], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '1996-06-22' },
+    { id: 'p8', name: 'Florian Wirtz', country: this.countries[11], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '2003-05-03' },
+    { id: 'p9', name: 'Lamine Yamal', country: this.countries[10], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '2007-07-13' },
+    { id: 'p10', name: 'Pedri', country: this.countries[10], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '2002-11-25' },
+    { id: 'p11', name: 'Phil Foden', country: this.countries[14], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '2000-05-28' },
+    { id: 'p12', name: 'Harry Kane', country: this.countries[14], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '1993-07-28' },
+    { id: 'gk1', name: 'Thibaut Courtois', country: this.countries[17], position: PLAYER_POSITION_LABELS.GOALKEEPER, positionCode: 'GOALKEEPER', birthdate: '1992-05-11' },
+    { id: 'gk2', name: 'Alisson Becker', country: this.countries[1], position: PLAYER_POSITION_LABELS.GOALKEEPER, positionCode: 'GOALKEEPER', birthdate: '1992-10-02' },
+    { id: 'gk3', name: 'Emiliano Martínez', country: this.countries[0], position: PLAYER_POSITION_LABELS.GOALKEEPER, positionCode: 'GOALKEEPER', birthdate: '1992-09-02' },
+    { id: 'gk4', name: 'Marc-André ter Stegen', country: this.countries[11], position: PLAYER_POSITION_LABELS.GOALKEEPER, positionCode: 'GOALKEEPER', birthdate: '1992-04-30' },
+    { id: 'gk5', name: 'Gianluigi Donnarumma', country: this.countries[13], position: PLAYER_POSITION_LABELS.GOALKEEPER, positionCode: 'GOALKEEPER', birthdate: '1999-02-25' },
+    { id: 'y1', name: 'Lamine Yamal', country: this.countries[10], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '2007-07-13' },
+    { id: 'y2', name: 'Florian Wirtz', country: this.countries[11], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '2003-05-03' },
+    { id: 'y3', name: 'Jamal Musiala', country: this.countries[11], position: PLAYER_POSITION_LABELS.MIDFIELDER, positionCode: 'MIDFIELDER', birthdate: '2003-02-26' },
+    { id: 'y4', name: 'Endrick', country: this.countries[1], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '2006-07-21' },
+    { id: 'y5', name: 'Alejandro Garnacho', country: this.countries[0], position: PLAYER_POSITION_LABELS.FORWARD, positionCode: 'FORWARD', birthdate: '2004-07-01' },
   ];
 
   // Tournament stages configuration
@@ -520,32 +527,104 @@ export class MockedTournamentService implements ITournamentService {
     return of(tournament || null).pipe(delay(100));
   }
 
-  getCountriesForAwards(): Observable<Country[]> {
-    this.logApiCall('GET', '/api/countries');
-    return of(this.countries.slice(0, 32)).pipe(delay(200));
+  private countriesWithIds(): Country[] {
+    return this.countries.slice(0, 32).map((c, i) => ({
+      ...c,
+      id: `00000000-0000-4000-8000-${(i + 1).toString(16).padStart(12, '0')}`
+    }));
   }
 
-  getPlayersForAwards(): Observable<Player[]> {
-    this.logApiCall('GET', '/api/players');
+  private buildSyntheticAwardPredictions(username: string, seed: number): TournamentAwardPrediction {
+    const countries = this.countriesWithIds();
+    const pick = <T>(arr: T[], count: number, offset: number): T[] => {
+      if (arr.length === 0) return [];
+      const start = (username.charCodeAt(0) + seed * 11 + offset) % Math.max(1, arr.length - count + 1);
+      return arr.slice(start, start + count);
+    };
+    const field = this.players.filter(p => p.positionCode === 'GOALKEEPER');
+    const young = this.players.filter(p => isYoungPlayerAwardEligible(p.birthdate));
+    const outfield = this.players.filter(p => p.positionCode !== 'GOALKEEPER');
+    return {
+      champion: pick(countries, 2, 0),
+      goldenBall: pick(outfield, 3, 1),
+      goldenBoot: pick(outfield, 3, 2),
+      goldenGlove: pick(field, 3, 3),
+      bestYoungPlayer: pick(young.length ? young : outfield, 3, 4)
+    };
+  }
+
+  private emptyAwardPredictions(): TournamentAwardPrediction {
+    return {
+      champion: [],
+      goldenBall: [],
+      goldenBoot: [],
+      goldenGlove: [],
+      bestYoungPlayer: []
+    };
+  }
+
+  getCountriesForAwards(_tournamentId: string): Observable<Country[]> {
+    this.logApiCall('GET', `/api/tournaments/${_tournamentId}/teams`);
+    return of(this.countriesWithIds()).pipe(delay(200));
+  }
+
+  getTournamentPlayersForAwards(_tournamentId: string): Observable<Player[]> {
+    this.logApiCall('GET', `/api/tournaments/${_tournamentId}/players`);
     return of(this.players).pipe(delay(200));
   }
 
-  getGoalkeepersForAwards(): Observable<Player[]> {
-    this.logApiCall('GET', '/api/players?position=goalkeeper');
-    return of(this.players.filter(p => p.position === 'Portero')).pipe(delay(200));
+  getMyAwardPredictions(groupId: string): Observable<TournamentAwardPrediction> {
+    this.logApiCall('GET', `/api/tournaments/.../groups/${groupId}/predictions/awards/me`);
+    const me = this.userAwardPredictions.get(groupId) ?? this.emptyAwardPredictions();
+    return of(me).pipe(delay(200));
   }
 
-  getYoungPlayersForAwards(): Observable<Player[]> {
-    this.logApiCall('GET', '/api/players?category=young');
-    return of(this.players.filter(p => p.id.startsWith('y'))).pipe(delay(200));
-  }
-
-  getUserAwardPredictions(tournamentId: string): Observable<TournamentAwardPrediction | null> {
-    this.logApiCall('GET', `/api/tournaments/${tournamentId}/awards/me`, undefined, {
-      'Authorization': 'Bearer <jwt-token>'
-    });
-    const predictions = this.userAwardPredictions.get(tournamentId);
-    return of(predictions || null).pipe(delay(200));
+  getGroupAwardPredictions(groupId: string): Observable<GroupAwardPredictionsLoadPayload> {
+    this.logApiCall('GET', `/api/tournaments/.../groups/${groupId}/predictions/awards`);
+    const me = this.userAwardPredictions.get(groupId) ?? this.emptyAwardPredictions();
+    const t = this.availableTournaments.find(x => x.id === groupId);
+    const started = t?.hasStarted === true;
+    if (!started) {
+      return of({ members: [], awards: { me, others: [] }, standings: null }).pipe(delay(200));
+    }
+    return this.getTournamentStandings(groupId).pipe(
+      map(standings => {
+        if (!standings) {
+          return {
+            members: [],
+            awards: { me, others: [] as TournamentAwardPrediction[] },
+            standings: null
+          };
+        }
+        const othersPred = standings.players
+          .filter(p => p.id !== standings.currentUserId)
+          .map((p, i) => this.buildSyntheticAwardPredictions(p.username, i));
+        const membersBuilt: MemberAwardPrediction[] = [
+          {
+            userId: standings.currentUserId,
+            username: this.currentUsername,
+            avatarInitials: this.currentUsername.substring(0, 2).toUpperCase(),
+            predictions: me
+          },
+          ...standings.players
+            .filter(p => p.id !== standings.currentUserId)
+            .map((p, i) => ({
+              userId: p.id,
+              username: p.username,
+              avatarInitials: p.avatarInitials,
+              predictions: othersPred[i] ?? this.emptyAwardPredictions()
+            }))
+        ];
+        const byUserId = new Map(membersBuilt.map(m => [m.userId, m]));
+        const membersOrdered: MemberAwardPrediction[] = [];
+        for (const p of standings.players) {
+          const row = byUserId.get(p.id);
+          if (row) membersOrdered.push(row);
+        }
+        return { members: membersOrdered, awards: { me, others: othersPred }, standings };
+      }),
+      delay(200)
+    );
   }
 
   saveAwardPredictions(tournamentId: string, predictions: TournamentAwardPrediction): Observable<boolean> {

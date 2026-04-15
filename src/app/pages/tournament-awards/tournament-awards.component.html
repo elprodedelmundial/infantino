@@ -18,19 +18,99 @@
         <div>
           <h1 class="page-title">Premios del Torneo</h1>
           <p class="page-subtitle">{{ tournament.name }}</p>
+          <p class="page-hint" *ngIf="awardsLocked">
+            Las predicciones de premios están cerradas (el torneo ya comenzó).
+          </p>
         </div>
       </div>
     </div>
 
-    <div class="awards-layout" *ngIf="!isLoading">
+    <!-- Locked: CTA to browse group picks -->
+    <div class="locked-cta" *ngIf="!isLoading && awardsLocked && !browseGroupOpen">
+      <p class="locked-text">Ya no podés editar tus predicciones de premios.</p>
+      <button type="button" class="browse-group-btn" (click)="openGroupBrowse()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"/>
+          <path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        </svg>
+        Ver predicciones del grupo
+      </button>
+    </div>
+
+    <!-- Browse: toolbar -->
+    <div class="browse-toolbar" *ngIf="!isLoading && awardsLocked && browseGroupOpen">
+      <button type="button" class="browse-back" (click)="closeGroupBrowse()">← Volver</button>
+      <div class="browse-toggle">
+        <button
+          type="button"
+          class="toggle-btn"
+          [class.active]="browseLayout === 'per-member'"
+          (click)="setBrowseLayout('per-member')">
+          Por miembro
+        </button>
+        <button
+          type="button"
+          class="toggle-btn"
+          [class.active]="browseLayout === 'per-award'"
+          (click)="setBrowseLayout('per-award')">
+          Por premio
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="member-chips-carousel"
+      *ngIf="!isLoading && awardsLocked && browseGroupOpen && browseLayout === 'per-member'">
+      <button
+        type="button"
+        class="member-chips-nav member-chips-nav--prev"
+        *ngIf="memberChipsScrollOverflow"
+        (click)="scrollMemberChips(-1)"
+        [disabled]="!memberChipsCanScrollPrev"
+        aria-label="Miembros anteriores">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div
+        class="member-chips-scroll"
+        #memberChipsScroll
+        (scroll)="onMemberChipsScroll()">
+        <div class="member-chips">
+          <button
+            type="button"
+            class="member-chip"
+            *ngFor="let m of membersAwardPredictions"
+            [class.active]="selectedMemberId === m.userId"
+            (click)="setSelectedMember(m.userId)">
+            <span class="chip-avatar">{{ m.avatarInitials }}</span>
+            {{ m.username }}
+          </button>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="member-chips-nav member-chips-nav--next"
+        *ngIf="memberChipsScrollOverflow"
+        (click)="scrollMemberChips(1)"
+        [disabled]="!memberChipsCanScrollNext"
+        aria-label="Miembros siguientes">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="awards-layout" *ngIf="!isLoading && (!awardsLocked || browseGroupOpen)">
       <!-- Categories Sidebar -->
       <div class="categories-sidebar">
-        <h3 class="sidebar-title">Categorías</h3>
+        <h3 class="sidebar-title">Premios</h3>
         <button 
           *ngFor="let category of categories"
           class="category-btn"
           [class.active]="activeCategory.id === category.id"
           [class.has-selections]="getSelectionCount(category) > 0"
+          [class.category-complete]="getSelectionCount(category) === category.maxSelections"
           (click)="setActiveCategory(category)">
           <span class="category-name">{{ category.title }}</span>
           <span class="category-count" *ngIf="getSelectionCount(category) > 0">
@@ -42,16 +122,27 @@
         </button>
       </div>
 
-      <!-- Main Content -->
-      <div class="awards-main">
+      <!-- Main: per-member / edit (same grid) OR per-award table -->
+      <div class="awards-main" *ngIf="browseLayout === 'per-member' || !awardsLocked">
         <div class="category-header">
-          <h2 class="category-title">{{ activeCategory.title }}</h2>
-          <p class="category-description">{{ activeCategory.description }}</p>
+          <div class="category-header-row">
+            <div class="category-heading-text">
+              <h2 class="category-title">{{ activeCategory.title }}</h2>
+              <p class="category-description" *ngIf="canEdit">{{ activeCategory.description }}</p>
+            </div>
+            <div class="save-bar" *ngIf="canEdit && hasChanges && !isLoading">
+              <span class="save-info">Tienes cambios sin guardar</span>
+              <button class="save-btn" (click)="savePredictions()" [disabled]="isSaving">
+                <span class="spinner-small" *ngIf="isSaving"></span>
+                {{ isSaving ? 'Guardando...' : 'Guardar Predicciones' }}
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Current Selections -->
         <div class="selections-container" *ngIf="getCurrentSelections().length > 0">
-          <h4 class="selections-title">Tus selecciones</h4>
+          <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
           <div class="selections-list">
             <div 
               class="selection-item"
@@ -64,10 +155,10 @@
                 <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
                 <div class="selection-info">
                   <span class="selection-name">{{ asPlayer(item).name }}</span>
-                  <span class="selection-country">{{ asPlayer(item).country.name }}</span>
+                  <span class="selection-country">{{ asPlayer(item).country.name }} · {{ asPlayer(item).position }}</span>
                 </div>
               </ng-container>
-              <button class="remove-btn" (click)="removeSelection(item)">
+              <button class="remove-btn" *ngIf="canEdit" (click)="removeSelection(item)">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
@@ -76,35 +167,51 @@
           </div>
         </div>
 
-        <!-- Search -->
-        <div class="search-container">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <input 
-            type="text"
-            class="search-input"
-            [placeholder]="activeCategory.type === 'country' ? 'Buscar país...' : 'Buscar jugador...'"
-            [(ngModel)]="searchTerm">
+        <div class="empty-state empty-state--browse" *ngIf="!canEdit && getCurrentSelections().length === 0">
+          <p>No hay predicciones para este premio</p>
         </div>
 
-        <!-- Options Grid -->
-        <div class="options-grid" [class.countries-grid]="activeCategory.type === 'country'">
+        <!-- Search + country filter (player awards) -->
+        <div class="filters-row" *ngIf="canEdit">
+          <div class="search-container">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M12 12L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input 
+              type="text"
+              class="search-input"
+              [placeholder]="activeCategory.type === 'country' ? 'Buscar país...' : 'Buscar jugador...'"
+              [(ngModel)]="searchTerm">
+          </div>
+          <div class="country-filter" *ngIf="activeCategory.type === 'player'">
+            <label class="country-filter-label" for="award-country-filter">País</label>
+            <select id="award-country-filter" class="country-select" [(ngModel)]="countryFilterCode">
+              <option value="">Todos los países</option>
+              <option *ngFor="let c of countryFilterOptions" [value]="c.code">{{ c.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Options Grid (solo edición: en lectura no cargamos listas de equipos/jugadores) -->
+        <div
+          class="options-grid"
+          *ngIf="canEdit"
+          [class.countries-grid]="activeCategory.type === 'country'">
           <button 
             *ngFor="let option of getFilteredOptions()"
+            type="button"
             class="option-card"
             [class.selected]="isSelected(option)"
-            [class.disabled]="!isSelected(option) && !canSelect()"
+            [class.disabled]="canEdit && !isSelected(option) && !canSelect()"
+            [attr.aria-disabled]="!canEdit"
             (click)="toggleSelection(option)">
             
-            <!-- Country Option -->
             <ng-container *ngIf="activeCategory.type === 'country'">
               <img [src]="asCountry(option).flagUrl" [alt]="asCountry(option).name" class="option-flag">
               <span class="option-name">{{ asCountry(option).name }}</span>
             </ng-container>
 
-            <!-- Player Option -->
             <ng-container *ngIf="activeCategory.type === 'player'">
               <img [src]="asPlayer(option).country.flagUrl" [alt]="asPlayer(option).country.name" class="option-flag">
               <div class="option-info">
@@ -121,19 +228,46 @@
           </button>
         </div>
 
-        <div class="empty-state" *ngIf="getFilteredOptions().length === 0">
-          <p>No se encontraron resultados para "{{ searchTerm }}"</p>
+        <div class="empty-state" *ngIf="canEdit && getFilteredOptions().length === 0">
+          <p>{{ getNoResultsMessage() }}</p>
         </div>
       </div>
-    </div>
 
-    <!-- Save Bar -->
-    <div class="save-bar" *ngIf="hasChanges && !isLoading">
-      <span class="save-info">Tienes cambios sin guardar</span>
-      <button class="save-btn" (click)="savePredictions()" [disabled]="isSaving">
-        <span class="spinner-small" *ngIf="isSaving"></span>
-        {{ isSaving ? 'Guardando...' : 'Guardar Predicciones' }}
-      </button>
+      <!-- Per-award: list members and their picks for active category -->
+      <div class="awards-main per-award-main" *ngIf="awardsLocked && browseGroupOpen && browseLayout === 'per-award'">
+        <div class="category-header">
+          <h2 class="category-title">{{ activeCategory.title }}</h2>
+          <p class="category-description">Predicciones de todos los miembros en esta categoría</p>
+        </div>
+
+        <div class="empty-state" *ngIf="membersAwardPredictions.length === 0">
+          <p>No hay miembros para mostrar.</p>
+        </div>
+
+        <div class="per-award-list" *ngIf="membersAwardPredictions.length > 0">
+          <div class="per-award-row" *ngFor="let member of membersAwardPredictions">
+            <div class="per-award-user">
+              <span class="per-award-avatar">{{ member.avatarInitials }}</span>
+              <span class="per-award-name">{{ member.username }}</span>
+            </div>
+            <div class="per-award-picks">
+              <ng-container *ngIf="activeCategory.type === 'country'">
+                <span class="pick-chip" *ngFor="let c of getMemberCategorySelections(member, activeCategory)">
+                  <img [src]="asCountry(c).flagUrl" [alt]="asCountry(c).name" class="pick-flag">
+                  {{ asCountry(c).name }}
+                </span>
+              </ng-container>
+              <ng-container *ngIf="activeCategory.type === 'player'">
+                <span class="pick-chip" *ngFor="let pl of getMemberCategorySelections(member, activeCategory)">
+                  <img [src]="asPlayer(pl).country.flagUrl" [alt]="asPlayer(pl).country.name" class="pick-flag">
+                  <span class="pick-chip-text">{{ asPlayer(pl).name }} · {{ asPlayer(pl).position }}</span>
+                </span>
+              </ng-container>
+              <span class="pick-empty" *ngIf="getMemberCategorySelections(member, activeCategory).length === 0">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="loading-state" *ngIf="isLoading">
