@@ -63,6 +63,7 @@
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
+  max-width: min(420px, calc(100vw - 120px));
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
   font-weight: 500;
@@ -98,7 +99,6 @@
 }
 
 .username {
-  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

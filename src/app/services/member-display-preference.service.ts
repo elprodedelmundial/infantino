@@ -25,9 +25,11 @@ export class MemberDisplayPreferenceService {
 
   private readInitial(): boolean {
     try {
-      return localStorage.getItem(STORAGE_KEY) === 'fullName';
+      const stored = localStorage.getItem(STORAGE_KEY);
+      // Default is fullName unless the user has explicitly chosen username
+      return stored !== 'username';
     } catch {
-      return false;
+      return true;
     }
   }
 }
