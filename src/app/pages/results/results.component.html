@@ -241,7 +241,7 @@
               <div class="member-info">
                 <div class="member-avatar">{{ pred.avatarInitials }}</div>
                 <span class="member-name">
-                  {{ pred.username }}
+                  {{ predictionLabel(pred) }}
                   <span class="you-tag" *ngIf="pred.isCurrentUser">Tú</span>
                 </span>
               </div>

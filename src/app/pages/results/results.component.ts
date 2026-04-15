@@ -7,6 +7,8 @@ import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournamen
 import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament, TournamentPredictions } from '../../services/match-service.interface';
 import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
+import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
+import { MemberPrediction } from '../../models/tournament.model';
 
 @Component({
   selector: 'app-results',
@@ -42,8 +44,13 @@ export class ResultsComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
-    @Inject(MATCH_SERVICE) private matchService: IMatchService
+    @Inject(MATCH_SERVICE) private matchService: IMatchService,
+    readonly memberDisplay: MemberDisplayPreferenceService
   ) {}
+
+  predictionLabel(pred: MemberPrediction): string {
+    return this.memberDisplay.displayName(pred.username, pred.fullName);
+  }
 
   ngOnInit(): void {
     const historyState = history.state as { username: string } | undefined;

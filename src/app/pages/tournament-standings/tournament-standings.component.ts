@@ -13,6 +13,7 @@ import {
   GroupRole
 } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
+import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
 
 @Component({
   selector: 'app-tournament-standings',
@@ -47,8 +48,13 @@ export class TournamentStandingsComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService
+    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
+    readonly memberDisplay: MemberDisplayPreferenceService
   ) {}
+
+  playerLabel(player: TournamentPlayer): string {
+    return this.memberDisplay.displayName(player.username, player.fullName);
+  }
 
   ngOnInit(): void {
     const historyState = history.state as { username: string; role?: GroupRole; activeTab?: 'standings' | 'predictions' } | undefined;

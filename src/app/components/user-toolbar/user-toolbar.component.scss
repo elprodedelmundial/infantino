@@ -63,6 +63,7 @@
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
+  max-width: min(420px, calc(100vw - 120px));
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
   font-weight: 500;
@@ -98,7 +99,6 @@
 }
 
 .username {
-  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -116,7 +116,7 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 200px;
+  min-width: 270px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   opacity: 0;
@@ -129,6 +129,22 @@
     visibility: visible;
     transform: translateY(0);
   }
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.dropdown-label {
+  padding: 8px 18px 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .dropdown-item {
@@ -159,6 +175,21 @@
 
   &.logout:hover {
     color: var(--error);
+  }
+
+  &.display-toggle-item {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    white-space: nowrap;
+
+    &.active {
+      color: var(--accent);
+    }
+  }
+
+  .check-icon {
+    margin-left: auto;
+    color: var(--accent);
   }
 }
 

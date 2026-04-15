@@ -192,6 +192,23 @@ export class MockedMatchService implements IMatchService {
     return of(match || null).pipe(delay(100));
   }
 
+  private mockFullNameForUsername(username: string): string {
+    const map: Record<string, string> = {
+      Carlos_M: 'Carlos Martínez',
+      María_G: 'María García',
+      Juan_P: 'Juan Pérez',
+      Ana_R: 'Ana Rodríguez',
+      Pedro_S: 'Pedro Sánchez',
+      Lucía_F: 'Lucía Fernández',
+      Diego_L: 'Diego López',
+      Sofía_V: 'Sofía Vargas',
+      Martín_C: 'Martín Castro',
+      Valentina_H: 'Valentina Herrera',
+      Usuario: 'Usuario Demo'
+    };
+    return map[username] ?? username.replace(/_/g, ' ');
+  }
+
   getMatchPredictionsByTournament(
     matchId: string, 
     joinedTournaments: { id: string; name: string }[],
@@ -220,6 +237,7 @@ export class MockedMatchService implements IMatchService {
       const predictions: MemberPrediction[] = selectedMembers.map((name, index) => ({
         oddsId: `pred-${tournament.id}-${index}`,
         username: name,
+        fullName: this.mockFullNameForUsername(name),
         avatarInitials: name.substring(0, 2).toUpperCase(),
         predictedScore: {
           home: Math.floor(Math.random() * 4),
@@ -231,6 +249,7 @@ export class MockedMatchService implements IMatchService {
       predictions.unshift({
         oddsId: `pred-${tournament.id}-current`,
         username: currentUsername,
+        fullName: this.mockFullNameForUsername(currentUsername),
         avatarInitials: currentUsername.substring(0, 2).toUpperCase(),
         predictedScore: {
           home: Math.floor(Math.random() * 4),

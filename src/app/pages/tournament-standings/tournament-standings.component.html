@@ -108,7 +108,7 @@
               <span>{{ player.avatarInitials }}</span>
             </div>
             <span class="player-name">
-              {{ player.username }}
+              {{ playerLabel(player) }}
               <span class="you-badge" *ngIf="isCurrentUser(player)">Tú</span>
             </span>
           </div>

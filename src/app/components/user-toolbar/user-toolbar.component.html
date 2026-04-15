@@ -15,7 +15,7 @@
       <div class="avatar">
         <span class="avatar-initials">{{ initials }}</span>
       </div>
-      <span class="username">{{ username }}</span>
+      <span class="username">{{ displayedUsername }}</span>
       <svg class="chevron" [class.open]="isDropdownOpen" width="12" height="12" viewBox="0 0 12 12" fill="none">
         <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -29,6 +29,40 @@
         </svg>
         Editar Perfil
       </button>
+
+      <div class="dropdown-divider"></div>
+
+      <div class="dropdown-label">Mostrar miembros</div>
+      <button
+        class="dropdown-item display-toggle-item"
+        [class.active]="!memberDisplay.useFullName()"
+        (click)="memberDisplay.setUseFullName(false)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="4" width="7" height="1.5" rx="0.75" fill="currentColor"/>
+          <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+          <rect x="2" y="10.5" width="9" height="1.5" rx="0.75" fill="currentColor"/>
+        </svg>
+        Por nombre de usuario
+        <svg *ngIf="!memberDisplay.useFullName()" class="check-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button
+        class="dropdown-item display-toggle-item"
+        [class.active]="memberDisplay.useFullName()"
+        (click)="memberDisplay.setUseFullName(true)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Por nombre completo
+        <svg *ngIf="memberDisplay.useFullName()" class="check-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="dropdown-divider"></div>
+
       <button class="dropdown-item logout" (click)="logout()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M6 14H3C2.44772 14 2 13.5523 2 13V3C2 2.44772 2.44772 2 3 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
