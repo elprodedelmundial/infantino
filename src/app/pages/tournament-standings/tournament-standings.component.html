@@ -87,29 +87,6 @@
         </svg>
       </div>
 
-      <div class="member-display-toolbar" *ngIf="standings">
-        <span class="member-display-toolbar__label">Miembros</span>
-        <div
-          class="member-display-toggle"
-          role="group"
-          aria-label="Mostrar usuario o nombre completo">
-          <button
-            type="button"
-            class="member-display-toggle__btn"
-            [class.active]="!memberDisplay.useFullName()"
-            (click)="memberDisplay.setUseFullName(false)">
-            Usuario
-          </button>
-          <button
-            type="button"
-            class="member-display-toggle__btn"
-            [class.active]="memberDisplay.useFullName()"
-            (click)="memberDisplay.setUseFullName(true)">
-            Nombre completo
-          </button>
-        </div>
-      </div>
-
       <div class="standings-container">
       <div class="standings-header">
         <span class="header-pos">#</span>
