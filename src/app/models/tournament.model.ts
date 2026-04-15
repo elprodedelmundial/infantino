@@ -24,6 +24,8 @@ export type PredictionResult = 'correct' | 'incorrect' | 'half' | 'bonus';
 export interface TournamentPlayer {
   id: string;
   username: string;
+  /** From GET group standings (same response as username) */
+  fullName?: string;
   position: number;
   points: number;
   lastPredictions: PredictionResult[];
@@ -143,6 +145,8 @@ export interface TournamentAwardPrediction {
 export interface MemberAwardPrediction {
   userId: string;
   username: string;
+  /** From GET group award predictions `user` (same row as username) */
+  fullName?: string;
   avatarInitials: string;
   predictions: TournamentAwardPrediction;
 }
@@ -196,6 +200,8 @@ export interface MemberPrediction {
   oddsId: string;
   username: string;
   avatarInitials: string;
+  /** From match predictions API user payload when present */
+  fullName?: string;
   predictedScore: MatchScore;
   isCurrentUser: boolean;
   predictionStatus?: PredictionStatus;

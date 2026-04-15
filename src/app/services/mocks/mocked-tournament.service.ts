@@ -332,13 +332,35 @@ export class MockedTournamentService implements ITournamentService {
     return { pastPredictions, upcomingPredictions };
   }
 
+  /** Mock display names aligned with `username` keys (mirrors API fullname alongside username). */
+  private mockFullNameForUsername(username: string): string {
+    const map: Record<string, string> = {
+      Carlos_M: 'Carlos Martínez',
+      María_G: 'María García',
+      Juan_P: 'Juan Pérez',
+      Ana_R: 'Ana Rodríguez',
+      Pedro_S: 'Pedro Sánchez',
+      Lucía_F: 'Lucía Fernández',
+      Diego_L: 'Diego López',
+      Sofía_V: 'Sofía Vargas',
+      Martín_C: 'Martín Castro',
+      Valentina_H: 'Valentina Herrera',
+      Lucas_B: 'Lucas Benítez',
+      Camila_D: 'Camila Díaz',
+      Nicolás_A: 'Nicolás Álvarez',
+      Paula_E: 'Paula Estévez',
+      Mateo_O: 'Mateo Ortega',
+      Usuario: 'Usuario Demo'
+    };
+    return map[username] ?? username.replace(/_/g, ' ');
+  }
+
   private generateMockPlayers(tournamentId: string): TournamentPlayer[] {
     const names = [
       'Carlos_M', 'María_G', 'Juan_P', 'Ana_R', 'Pedro_S',
       'Lucía_F', 'Diego_L', 'Sofía_V', 'Martín_C', 'Valentina_H',
       'Lucas_B', 'Camila_D', 'Nicolás_A', 'Paula_E', 'Mateo_O'
     ];
-
     const players: TournamentPlayer[] = names.map((name, index) => {
       const predictions: PredictionResult[] = [];
       for (let i = 0; i < 5; i++) {
@@ -351,6 +373,7 @@ export class MockedTournamentService implements ITournamentService {
       return {
         id: `player-${index + 1}`,
         username: name,
+        fullName: this.mockFullNameForUsername(name),
         position: index + 1,
         points: Math.floor(Math.random() * 50) + 30,
         lastPredictions: predictions,
@@ -375,6 +398,7 @@ export class MockedTournamentService implements ITournamentService {
     const currentUser: TournamentPlayer = {
       id: this.currentUserId,
       username: this.currentUsername,
+      fullName: this.mockFullNameForUsername(this.currentUsername),
       position: userPosition,
       points: players[userPosition - 1]?.points || 45,
       lastPredictions: userPredictions,
@@ -599,10 +623,12 @@ export class MockedTournamentService implements ITournamentService {
         const othersPred = standings.players
           .filter(p => p.id !== standings.currentUserId)
           .map((p, i) => this.buildSyntheticAwardPredictions(p.username, i));
+        const meRow = standings.players.find(p => p.id === standings.currentUserId);
         const membersBuilt: MemberAwardPrediction[] = [
           {
             userId: standings.currentUserId,
             username: this.currentUsername,
+            fullName: meRow?.fullName,
             avatarInitials: this.currentUsername.substring(0, 2).toUpperCase(),
             predictions: me
           },
@@ -611,6 +637,7 @@ export class MockedTournamentService implements ITournamentService {
             .map((p, i) => ({
               userId: p.id,
               username: p.username,
+              fullName: p.fullName,
               avatarInitials: p.avatarInitials,
               predictions: othersPred[i] ?? this.emptyAwardPredictions()
             }))
@@ -757,6 +784,7 @@ export class MockedTournamentService implements ITournamentService {
     const memberPredictions: MemberPrediction[] = membersToShow.map((name, index) => ({
       oddsId: `pred-${index}`,
       username: name,
+      fullName: this.mockFullNameForUsername(name),
       avatarInitials: name.substring(0, 2).toUpperCase(),
       predictedScore: {
         home: Math.floor(Math.random() * 4),
@@ -768,6 +796,7 @@ export class MockedTournamentService implements ITournamentService {
     memberPredictions[0] = {
       oddsId: 'pred-current',
       username: this.currentUsername,
+      fullName: this.mockFullNameForUsername(this.currentUsername),
       avatarInitials: this.currentUsername.substring(0, 2).toUpperCase(),
       predictedScore: match.userPrediction || { home: 0, away: 0 },
       isCurrentUser: true
@@ -811,6 +840,7 @@ export class MockedTournamentService implements ITournamentService {
     const predictions: MemberPrediction[] = memberNames.map((name, i) => ({
       oddsId: `mock-${groupId}-${i}`,
       username: name,
+      fullName: this.mockFullNameForUsername(name),
       avatarInitials: name.substring(0, 2).toUpperCase(),
       predictedScore: { home: Math.floor(Math.random() * 4), away: Math.floor(Math.random() * 4) },
       isCurrentUser: name === this.currentUsername,

@@ -16,6 +16,7 @@ import {
   isYoungPlayerAwardEligible
 } from '../../models/tournament.model';
 import { WORLD_CUP_ID } from '../../services/match.service';
+import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
 
 interface AwardCategory {
   id: keyof TournamentAwardPrediction;
@@ -90,7 +91,8 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService
+    @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
+    readonly memberDisplay: MemberDisplayPreferenceService
   ) {}
 
   ngAfterViewInit(): void {
@@ -152,9 +154,11 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     others: TournamentAwardPrediction[],
     standings: TournamentStandings | null
   ): MemberAwardPrediction[] {
+    const mePlayer = standings?.players.find(p => p.id === standings.currentUserId);
     const meMember: MemberAwardPrediction = {
       userId: standings?.currentUserId ?? 'me',
       username: this.username,
+      fullName: mePlayer?.fullName,
       avatarInitials: this.username.substring(0, 2).toUpperCase(),
       predictions: me
     };
@@ -177,11 +181,16 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       return {
         userId: st?.id ?? `other-${i}`,
         username: st?.username ?? `Participante ${i + 1}`,
+        fullName: st?.fullName,
         avatarInitials: st?.avatarInitials ?? '··',
         predictions: pred
       };
     });
     return [meMember, ...otherMembers];
+  }
+
+  memberLabel(m: MemberAwardPrediction): string {
+    return this.memberDisplay.displayName(m.username, m.fullName);
   }
 
    loadData(): void {

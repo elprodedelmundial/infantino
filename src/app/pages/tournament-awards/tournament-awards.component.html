@@ -84,7 +84,7 @@
             [class.active]="selectedMemberId === m.userId"
             (click)="setSelectedMember(m.userId)">
             <span class="chip-avatar">{{ m.avatarInitials }}</span>
-            {{ m.username }}
+            {{ memberLabel(m) }}
           </button>
         </div>
       </div>
@@ -248,7 +248,7 @@
           <div class="per-award-row" *ngFor="let member of membersAwardPredictions">
             <div class="per-award-user">
               <span class="per-award-avatar">{{ member.avatarInitials }}</span>
-              <span class="per-award-name">{{ member.username }}</span>
+              <span class="per-award-name">{{ memberLabel(member) }}</span>
             </div>
             <div class="per-award-picks">
               <ng-container *ngIf="activeCategory.type === 'country'">

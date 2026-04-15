@@ -75,9 +75,9 @@ interface MatchPredictionApiResponse {
   prediction?: ScorePredictionResponse;
 }
 
+/** grondona GroupMatchPredictionsResponse: { group: GroupResponse, predictions[] } */
 interface GroupPredictionsApiResponse {
-  group_id: string;
-  group_name: string;
+  group: GroupResponse;
   predictions: MatchPredictionApiResponse[];
 }
 
@@ -86,9 +86,18 @@ interface SubmitBulkPredictionsRequest {
 }
 
 // API Response interfaces (snake_case matching grondona API)
-interface GroupStandingResponse {
-  user_id: string;
+
+/** grondona UserResponse */
+interface UserResponseApi {
+  id: string;
+  fullname: string;
   username: string;
+  email?: string;
+}
+
+/** grondona GroupStanding: { user: UserResponse, rank, points, last_predictions } */
+interface GroupStandingResponse {
+  user: UserResponseApi;
   rank: number;
   points: number;
   last_predictions: ('PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS')[];
@@ -104,13 +113,11 @@ interface GroupResponse {
   standings?: GroupStandingResponse[];
 }
 
+/** grondona UserGroupResponse: { group: GroupResponse, tournament_id, tournament_name?, points, rank, role } */
 interface UserGroupResponse {
-  group_id: string;
-  group_name?: string;
-  name?: string;
+  group: GroupResponse;
   tournament_id: string;
   tournament_name?: string;
-  member_count: number;
   points: number;
   rank: number | null;
   role: string;
@@ -132,14 +139,6 @@ interface AwardPredictionsApiResponse {
   best_players: AwardPlayerApiResponse[];
   best_goalkeepers: AwardPlayerApiResponse[];
   best_young_players: AwardPlayerApiResponse[];
-}
-
-/** grondona UserResponse (SNAKE_CASE JSON) */
-interface UserResponseApi {
-  id: string;
-  fullname?: string;
-  username: string;
-  email?: string;
 }
 
 /**
@@ -220,16 +219,20 @@ export class TournamentService implements ITournamentService {
       BONUS: 'bonus'
     };
 
-    const players: TournamentPlayer[] = (group.standings ?? []).map(s => ({
-      id: s.user_id,
-      username: s.username,
-      position: s.rank,
-      points: s.points,
-      lastPredictions: s.last_predictions
-        .filter(p => p !== 'PENDING')
-        .map(p => predResultMap[p] as PredictionResult),
-      avatarInitials: s.username.substring(0, 2).toUpperCase()
-    }));
+    const players: TournamentPlayer[] = (group.standings ?? []).map(s => {
+      const fullName = s.user.fullname?.trim();
+      return {
+        id: s.user.id,
+        username: s.user.username,
+        fullName: fullName || undefined,
+        position: s.rank,
+        points: s.points,
+        lastPredictions: s.last_predictions
+          .filter(p => p !== 'PENDING')
+          .map(p => predResultMap[p] as PredictionResult),
+        avatarInitials: s.user.username.substring(0, 2).toUpperCase()
+      };
+    });
 
     const currentUser = players.find(p => p.username === this.currentUsername);
 
@@ -247,13 +250,14 @@ export class TournamentService implements ITournamentService {
   private mapUserGroupToJoined(ug: UserGroupResponse): JoinedTournament {
     return {
       tournament: {
-        id: ug.group_id,
-        name: ug.group_name ?? ug.name ?? '',
-        participantsCount: ug.member_count,
-        maxParticipants: 0,
+        id: ug.group.id,
+        name: ug.group.name,
+        participantsCount: ug.group.standings?.length ?? 0,
+        maxParticipants: ug.group.max_members,
         startDate: new Date(),
         isJoined: true,
-        tournamentId: ug.tournament_id
+        tournamentId: ug.tournament_id,
+        hasStarted: ug.group.has_started
       },
       userRanking: ug.rank ?? null,
       userPoints: ug.points,
@@ -303,9 +307,11 @@ export class TournamentService implements ITournamentService {
   private mapToPredictionsMember(p: MatchPredictionApiResponse): MemberPrediction {
     const pred = p.prediction;
     const username = p.user.username;
+    const fullName = p.user.fullname?.trim();
     return {
       oddsId: p.id ?? `${p.user.id}-${p.match.id}`,
       username,
+      fullName: fullName || undefined,
       avatarInitials: username.substring(0, 2).toUpperCase(),
       predictedScore: {
         home: pred?.home_goals ?? 0,
@@ -335,7 +341,7 @@ export class TournamentService implements ITournamentService {
       headers: this.getAuthHeaders()
     }).pipe(
       tap(groups => {
-        this.joinedGroupIds = groups.map(g => g.group_id);
+        this.joinedGroupIds = groups.map(g => g.group.id);
       }),
       map(groups => groups.map(g => this.mapUserGroupToJoined(g))),
       catchError(error => {
@@ -519,9 +525,11 @@ export class TournamentService implements ITournamentService {
   private rowToMemberAwardPrediction(row: AwardPredictionsWithUserRow): MemberAwardPrediction {
     const u = row.user;
     const label = u.username || u.fullname || '??';
+    const fullName = u.fullname?.trim();
     return {
       userId: u.id,
       username: u.username,
+      fullName: fullName || undefined,
       avatarInitials: label.substring(0, 2).toUpperCase(),
       predictions: this.mapAwardResponseToPredictions({
         champions: row.champions ?? [],
@@ -695,8 +703,8 @@ export class TournamentService implements ITournamentService {
       { headers: this.getAuthHeaders() }
     ).pipe(
       map(response => ({
-        tournamentId: groupId,
-        tournamentName: response.group_name,
+        tournamentId: response.group.id,
+        tournamentName: response.group.name,
         predictions: response.predictions.map(p => this.mapToPredictionsMember(p))
       })),
       catchError(error => {
