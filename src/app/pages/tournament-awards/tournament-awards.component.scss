@@ -237,6 +237,12 @@
   border-color: rgba(220, 38, 38, 0.3);
 }
 
+.selection-item--is-winner {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
+}
+
 .selections-container {
   margin-bottom: 24px;
   padding: 20px;
@@ -880,6 +886,11 @@
   border: 1px solid var(--border);
 }
 
+.per-award-row--winner {
+  background: rgba(220, 38, 38, 0.07);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
 .per-award-user {
   display: flex;
   align-items: center;
@@ -898,6 +909,17 @@
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--accent);
+}
+
+
+.per-award-name--winner {
+  color: #f87171;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-left: 46px; /* align with member names: avatar(36px) + gap(10px) */
 }
 
 .per-award-name {
@@ -926,6 +948,19 @@
   border: 1px solid var(--border);
   border-radius: 2px;
   color: var(--text-secondary);
+}
+
+.pick-chip--winner-item {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.5);
+  color: #fca5a5;
+}
+
+.pick-chip--is-winner {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
+  color: #fca5a5;
 }
 
 .pick-chip-text {

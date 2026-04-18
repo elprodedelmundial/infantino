@@ -52,7 +52,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   }
 
   browseGroupOpen: boolean = false;
-  browseLayout: 'per-member' | 'per-award' = 'per-member';
+  browseLayout: 'per-member' | 'per-award' = 'per-award';
   membersAwardPredictions: MemberAwardPrediction[] = [];
   selectedMemberId: string | null = null;
 
@@ -288,6 +288,12 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   getWinnerForCategory(): Country | Player | null {
     if (!this.trueWinners) return null;
     return this.trueWinners[this.activeCategory.id] ?? null;
+  }
+
+  isWinnerItem(item: Country | Player): boolean {
+    const winner = this.getWinnerForCategory();
+    if (!winner) return false;
+    return (winner as Country | Player).id === item.id;
   }
 
   onMemberChipsScroll(): void {

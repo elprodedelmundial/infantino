@@ -168,6 +168,7 @@
           <div class="selections-list">
             <div 
               class="selection-item"
+              [class.selection-item--is-winner]="isWinnerItem(item)"
               *ngFor="let item of getCurrentSelections()">
               <ng-container *ngIf="activeCategory.type === 'country'">
                 <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
@@ -267,6 +268,31 @@
         </div>
 
         <div class="per-award-list" *ngIf="membersAwardPredictions.length > 0" [style.--max-picks]="activeCategory.maxSelections">
+
+          <!-- Winner row -->
+          <ng-container *ngIf="getWinnerForCategory(); let winner">
+            <div class="per-award-row per-award-row--winner">
+              <div class="per-award-user">
+                <span class="per-award-name per-award-name--winner">Ganador</span>
+              </div>
+              <div class="per-award-picks">
+                <ng-container *ngIf="activeCategory.type === 'country'">
+                  <span class="pick-chip pick-chip--winner-item">
+                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="pick-flag">
+                    {{ asCountry(winner).name }}
+                  </span>
+                </ng-container>
+                <ng-container *ngIf="activeCategory.type === 'player'">
+                  <span class="pick-chip pick-chip--winner-item">
+                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="pick-flag">
+                    <span class="pick-chip-text">{{ asPlayer(winner).name }}</span>
+                  </span>
+                </ng-container>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Member rows -->
           <div class="per-award-row" *ngFor="let member of membersAwardPredictions">
             <div class="per-award-user">
               <span class="per-award-avatar">{{ member.avatarInitials }}</span>
@@ -274,13 +300,13 @@
             </div>
             <div class="per-award-picks">
               <ng-container *ngIf="activeCategory.type === 'country'">
-                <span class="pick-chip" *ngFor="let c of getMemberCategorySelections(member, activeCategory)">
+                <span class="pick-chip" [class.pick-chip--is-winner]="isWinnerItem(c)" *ngFor="let c of getMemberCategorySelections(member, activeCategory)">
                   <img [src]="asCountry(c).flagUrl" [alt]="asCountry(c).name" class="pick-flag">
                   {{ asCountry(c).name }}
                 </span>
               </ng-container>
               <ng-container *ngIf="activeCategory.type === 'player'">
-                <span class="pick-chip" *ngFor="let pl of getMemberCategorySelections(member, activeCategory)">
+                <span class="pick-chip" [class.pick-chip--is-winner]="isWinnerItem(pl)" *ngFor="let pl of getMemberCategorySelections(member, activeCategory)">
                   <img [src]="asPlayer(pl).country.flagUrl" [alt]="asPlayer(pl).country.name" class="pick-flag">
                   <span class="pick-chip-text">{{ asPlayer(pl).name }}</span>
                 </span>
