@@ -1,0 +1,152 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <h1 class="page-title">Reglas del Prode</h1>
+      <p class="page-subtitle">Cómo se puntúa y cómo ganar</p>
+    </div>
+
+    <!-- Match Predictions -->
+    <section class="rules-section">
+      <div class="section-header">
+        <div class="section-icon section-icon--match">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 6V12L16 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2 class="section-title">Predicciones de Partidos</h2>
+      </div>
+
+      <p class="section-intro">Antes de cada partido podés predecir el marcador exacto. Los puntos se asignan según qué tan cerca estuviste del resultado real:</p>
+
+      <div class="points-table">
+        <div class="points-row points-row--header">
+          <span>Resultado</span>
+          <span>Puntos</span>
+        </div>
+        <div class="points-row">
+          <div class="points-label">
+            <span class="result-badge result-badge--incorrect">Incorrecta</span>
+            <span class="result-example">Predijiste 1-0, fue 1-1 o 1-2</span>
+          </div>
+          <span class="points-value points-value--zero">0 pts</span>
+        </div>
+        <div class="points-row">
+          <div class="points-label">
+            <span class="result-badge result-badge--partial">Parcial</span>
+            <span class="result-example">Acertaste el ganador pero no el marcador exacto</span>
+          </div>
+          <span class="points-value">1 pt</span>
+        </div>
+        <div class="points-row">
+          <div class="points-label">
+            <span class="result-badge result-badge--correct">Correcta</span>
+            <span class="result-example">Predijiste 2-0 y fue 2-0</span>
+          </div>
+          <span class="points-value">3 pts</span>
+        </div>
+        <div class="points-row points-row--bonus">
+          <div class="points-label">
+            <span class="result-badge result-badge--bonus">Bonus</span>
+            <span class="result-example">Marcador exacto <em>y</em> 5 o más goles en el partido</span>
+          </div>
+          <span class="points-value points-value--bonus">5 pts</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quotas -->
+    <section class="rules-section">
+      <div class="section-header">
+        <div class="section-icon section-icon--quota">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.09 8.26L21 9L15.5 13.74L17.18 21L12 17.27L6.82 21L8.5 13.74L3 9L9.91 8.26L12 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2 class="section-title">Puntos Extra por Cuotas</h2>
+      </div>
+
+      <p class="section-intro">Toda predicción parcial, correcta o bonus suma puntos adicionales en función de las cuotas del partido. Si predijiste que ganaba el equipo local, obtenés los puntos extra correspondientes a la cuota de victoria local.</p>
+
+      <div class="info-box">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="8" cy="5" r="0.75" fill="currentColor"/>
+        </svg>
+        Las cuotas se recalculan cada día a las 7:00 AM y se congelan al inicio de cada partido.
+      </div>
+    </section>
+
+    <!-- Award Predictions -->
+    <section class="rules-section">
+      <div class="section-header">
+        <div class="section-icon section-icon--awards">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M8 21H16M12 17V21M7 3H17L19 8C19 10.76 15.87 13 12 13C8.13 13 5 10.76 5 8L7 3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 8C3.5 8 2 9 2 10.5C2 12 3 13 5 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M19 8C20.5 8 22 9 22 10.5C22 12 21 13 19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="section-title">Predicciones de Premios</h2>
+      </div>
+
+      <p class="section-intro">Antes del inicio del torneo podés predecir los ganadores de 5 premios. Cuantos menos candidatos envíes, más puntos ganás si acertás.</p>
+
+      <div class="awards-grid">
+        <div class="award-card">
+          <h3 class="award-name">Campeón</h3>
+          <p class="award-desc">Hasta 2 selecciones candidatas</p>
+          <div class="award-points">
+            <div class="award-points-row">
+              <span class="candidates-count">2 candidatos</span>
+              <span class="award-pts">5 pts</span>
+            </div>
+            <div class="award-points-row">
+              <span class="candidates-count">1 candidato</span>
+              <span class="award-pts award-pts--higher">10 pts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="award-card">
+          <h3 class="award-name">Premios Individuales</h3>
+          <p class="award-desc">Bota de Oro · Balón de Oro · Guante de Oro · Mejor Juvenil — hasta 3 jugadores por premio</p>
+          <div class="award-points">
+            <div class="award-points-row">
+              <span class="candidates-count">3 candidatos</span>
+              <span class="award-pts">4 pts</span>
+            </div>
+            <div class="award-points-row">
+              <span class="candidates-count">2 candidatos</span>
+              <span class="award-pts">8 pts</span>
+            </div>
+            <div class="award-points-row">
+              <span class="candidates-count">1 candidato</span>
+              <span class="award-pts award-pts--higher">12 pts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box info-box--young">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="8" cy="5" r="0.75" fill="currentColor"/>
+        </svg>
+        Para el premio <strong>Mejor Juvenil</strong>, son elegibles los jugadores nacidos a partir del 1 de enero de 2005.
+      </div>
+    </section>
+
+  </div>
+</main>
