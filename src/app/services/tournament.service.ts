@@ -432,9 +432,9 @@ export class TournamentService implements ITournamentService {
     return this.joinedGroupIds;
   }
 
-  getTournamentStandings(groupId: string): Observable<TournamentStandings | null> {
+  getTournamentStandings(groupId: string, live: boolean = false): Observable<TournamentStandings | null> {
     this.token = localStorage.getItem('auth_token');
-    const params = new HttpParams().set('standings', 'true');
+    const params = new HttpParams().set('live', String(live));
     return this.http.get<GroupResponse>(
       `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}`,
       { headers: this.getAuthHeaders(), params }

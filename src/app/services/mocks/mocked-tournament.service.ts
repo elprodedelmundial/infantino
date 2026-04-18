@@ -468,7 +468,7 @@ export class MockedTournamentService implements ITournamentService {
     return of(true).pipe(delay(300));
   }
 
-  getTournamentStandings(tournamentId: string): Observable<TournamentStandings | null> {
+  getTournamentStandings(tournamentId: string, live: boolean = false): Observable<TournamentStandings | null> {
     this.logApiCall('GET', `/api/tournaments/${tournamentId}/standings`, undefined, {
       'Authorization': 'Bearer <jwt-token>'
     });

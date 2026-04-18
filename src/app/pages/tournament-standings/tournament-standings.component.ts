@@ -36,6 +36,9 @@ export class TournamentStandingsComponent implements OnInit {
   showLeaveConfirm: boolean = false;
   isLeaving: boolean = false;
 
+  liveMode: boolean = false;
+  isRefreshingLive: boolean = false;
+
   // Group role & edit
   userRole: GroupRole | null = null;
   showEditGroup: boolean = false;
@@ -81,13 +84,23 @@ export class TournamentStandingsComponent implements OnInit {
 
   loadData(): void {
     this.isLoading = true;
-    this.tournamentService.getTournamentStandings(this.tournamentId).subscribe(standings => {
+    this.tournamentService.getTournamentStandings(this.tournamentId, this.liveMode).subscribe(standings => {
       this.standings = standings;
       this.isLoading = false;
+      this.isRefreshingLive = false;
       // If navigated directly to predictions tab (e.g. back from edit), load immediately
       if (this.activeTab === 'predictions') {
         this.loadPredictions();
       }
+    });
+  }
+
+  toggleLiveMode(): void {
+    this.liveMode = !this.liveMode;
+    this.isRefreshingLive = true;
+    this.tournamentService.getTournamentStandings(this.tournamentId, this.liveMode).subscribe(standings => {
+      this.standings = standings;
+      this.isRefreshingLive = false;
     });
   }
 

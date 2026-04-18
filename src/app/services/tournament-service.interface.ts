@@ -22,7 +22,7 @@ export interface ITournamentService {
   getJoinedTournaments(): Observable<JoinedTournament[]>;
   joinTournament(tournamentId: string): Observable<boolean>;
   leaveTournament(tournamentId: string): Observable<boolean>;
-  getTournamentStandings(tournamentId: string): Observable<TournamentStandings | null>;
+  getTournamentStandings(tournamentId: string, live?: boolean): Observable<TournamentStandings | null>;
   getUserPredictions(tournamentId: string): Observable<UserPredictions>;
   getAllPredictions(tournamentId: string): Observable<AllPredictionsData>;
   updatePrediction(tournamentId: string, matchId: string, newScore: MatchScore): Observable<boolean>;
