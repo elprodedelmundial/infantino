@@ -15,6 +15,7 @@ import {
   MatchOdds,
   Player,
   TournamentAwardPrediction,
+  TournamentAwardWinners,
   GroupAwardPredictionsLoadPayload,
   MemberAwardPrediction,
   LiveMatch,
@@ -587,6 +588,20 @@ export class MockedTournamentService implements ITournamentService {
     };
   }
 
+  private buildMockAwardWinners(): TournamentAwardWinners {
+    const countries = this.countriesWithIds();
+    const outfield = this.players.filter(p => p.positionCode !== 'GOALKEEPER');
+    const goalkeepers = this.players.filter(p => p.positionCode === 'GOALKEEPER');
+    const young = this.players.filter(p => isYoungPlayerAwardEligible(p.birthdate));
+    return {
+      champion: countries[4] ?? countries[0] ?? null,
+      goldenBall: outfield[0] ?? null,
+      goldenBoot: outfield[1] ?? null,
+      goldenGlove: goalkeepers[0] ?? null,
+      bestYoungPlayer: (young.length ? young : outfield)[2] ?? null
+    };
+  }
+
   getCountriesForAwards(_tournamentId: string): Observable<Country[]> {
     this.logApiCall('GET', `/api/tournaments/${_tournamentId}/teams`);
     return of(this.countriesWithIds()).pipe(delay(200));
@@ -609,15 +624,17 @@ export class MockedTournamentService implements ITournamentService {
     const t = this.availableTournaments.find(x => x.id === groupId);
     const started = t?.hasStarted === true;
     if (!started) {
-      return of({ members: [], awards: { me, others: [] }, standings: null }).pipe(delay(200));
+      return of({ members: [], awards: { me, others: [] }, standings: null, trueWinners: null }).pipe(delay(200));
     }
+    const trueWinners = this.buildMockAwardWinners();
     return this.getTournamentStandings(groupId).pipe(
       map(standings => {
         if (!standings) {
           return {
             members: [],
             awards: { me, others: [] as TournamentAwardPrediction[] },
-            standings: null
+            standings: null,
+            trueWinners
           };
         }
         const othersPred = standings.players
@@ -648,7 +665,7 @@ export class MockedTournamentService implements ITournamentService {
           const row = byUserId.get(p.id);
           if (row) membersOrdered.push(row);
         }
-        return { members: membersOrdered, awards: { me, others: othersPred }, standings };
+        return { members: membersOrdered, awards: { me, others: othersPred }, standings, trueWinners };
       }),
       delay(200)
     );

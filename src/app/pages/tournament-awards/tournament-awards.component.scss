@@ -215,6 +215,28 @@
 }
 
 // Current Selections
+.winner-container {
+  margin-bottom: 16px;
+  padding: 20px;
+  background: rgba(220, 38, 38, 0.07);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+}
+
+.winner-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f87171;
+  margin-bottom: 12px;
+}
+
+.selection-item--winner {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
 .selections-container {
   margin-bottom: 24px;
   padding: 20px;
@@ -233,8 +255,8 @@
 }
 
 .selections-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(var(--max-picks, 3), 1fr);
   gap: 12px;
 }
 
@@ -886,13 +908,13 @@
 }
 
 .per-award-picks {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(var(--max-picks, 3), 1fr);
   gap: 8px;
 }
 
 .pick-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
@@ -918,6 +940,7 @@
 }
 
 .pick-empty {
+  grid-column: 1 / -1;
   color: var(--text-muted);
   font-size: 0.85rem;
 }

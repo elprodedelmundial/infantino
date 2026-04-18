@@ -11,6 +11,7 @@ import {
   Country,
   Player,
   TournamentAwardPrediction,
+  TournamentAwardWinners,
   MemberAwardPrediction,
   TournamentStandings,
   isYoungPlayerAwardEligible
@@ -78,12 +79,15 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     { id: 'goldenBall', title: 'Balón de Oro', description: 'Mejor jugador del torneo (hasta 3)', maxSelections: 3, type: 'player' },
     { id: 'goldenBoot', title: 'Bota de Oro', description: 'Máximo goleador del torneo (hasta 3)', maxSelections: 3, type: 'player' },
     { id: 'goldenGlove', title: 'Guante de Oro', description: 'Mejor portero del torneo (hasta 3)', maxSelections: 3, type: 'player' },
-    { id: 'bestYoungPlayer', title: 'Mejor Jugador Joven', description: 'Mejor jugador sub-23 (hasta 3)', maxSelections: 3, type: 'player' }
+    { id: 'bestYoungPlayer', title: 'Mejor Juvenil', description: 'Mejor jugador sub-23 (hasta 3)', maxSelections: 3, type: 'player' }
   ];
 
   activeCategory: AwardCategory = this.categories[0];
   searchTerm: string = '';
   hasChanges: boolean = false;
+
+  /** True award winners from the API; null until published */
+  trueWinners: TournamentAwardWinners | null = null;
 
   /** From router state: abrir vista de predicciones del grupo al cargar (torneo iniciado) */
   private openBrowseFromRoute = false;
@@ -202,11 +206,12 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
 
       if (tournament?.hasStarted) {
         this.tournamentService.getGroupAwardPredictions(this.tournamentId).subscribe({
-          next: ({ members, awards, standings }) => {
+          next: ({ members, awards, standings, trueWinners }) => {
             this.countries = [];
             this.allPlayers = [];
             this.predictions = this.cloneAwardPredictions(awards.me);
             this.hasChanges = false;
+            this.trueWinners = trueWinners ?? null;
             this.membersAwardPredictions =
               members.length > 0
                 ? members
@@ -277,10 +282,12 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   }
 
   getSelectionsSectionTitle(): string {
-    if (this.activeCategory.type === 'player') {
-      return this.canEdit ? 'Tus jugadores' : 'Jugadores';
-    }
-    return this.canEdit ? 'Tus selecciones' : 'Selecciones';
+    return 'Candidatos';
+  }
+
+  getWinnerForCategory(): Country | Player | null {
+    if (!this.trueWinners) return null;
+    return this.trueWinners[this.activeCategory.id] ?? null;
   }
 
   onMemberChipsScroll(): void {

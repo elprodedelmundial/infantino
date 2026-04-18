@@ -140,8 +140,30 @@
           </div>
         </div>
 
+        <!-- True Winner -->
+        <ng-container *ngIf="getWinnerForCategory(); let winner">
+          <div class="winner-container" [style.--max-picks]="activeCategory.maxSelections">
+            <h4 class="winner-title">Ganador</h4>
+            <div class="selections-list">
+              <div class="selection-item selection-item--winner">
+                <ng-container *ngIf="activeCategory.type === 'country'">
+                  <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag">
+                  <span class="selection-name">{{ asCountry(winner).name }}</span>
+                </ng-container>
+                <ng-container *ngIf="activeCategory.type === 'player'">
+                  <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag">
+                  <div class="selection-info">
+                    <span class="selection-name">{{ asPlayer(winner).name }}</span>
+                    <span class="selection-country">{{ asPlayer(winner).country.name }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
         <!-- Current Selections -->
-        <div class="selections-container" *ngIf="getCurrentSelections().length > 0">
+        <div class="selections-container" *ngIf="getCurrentSelections().length > 0" [style.--max-picks]="activeCategory.maxSelections">
           <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
           <div class="selections-list">
             <div 
@@ -155,7 +177,7 @@
                 <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
                 <div class="selection-info">
                   <span class="selection-name">{{ asPlayer(item).name }}</span>
-                  <span class="selection-country">{{ asPlayer(item).country.name }} · {{ asPlayer(item).position }}</span>
+                  <span class="selection-country">{{ asPlayer(item).country.name }}</span>
                 </div>
               </ng-container>
               <button class="remove-btn" *ngIf="canEdit" (click)="removeSelection(item)">
@@ -244,7 +266,7 @@
           <p>No hay miembros para mostrar.</p>
         </div>
 
-        <div class="per-award-list" *ngIf="membersAwardPredictions.length > 0">
+        <div class="per-award-list" *ngIf="membersAwardPredictions.length > 0" [style.--max-picks]="activeCategory.maxSelections">
           <div class="per-award-row" *ngFor="let member of membersAwardPredictions">
             <div class="per-award-user">
               <span class="per-award-avatar">{{ member.avatarInitials }}</span>
@@ -260,7 +282,7 @@
               <ng-container *ngIf="activeCategory.type === 'player'">
                 <span class="pick-chip" *ngFor="let pl of getMemberCategorySelections(member, activeCategory)">
                   <img [src]="asPlayer(pl).country.flagUrl" [alt]="asPlayer(pl).country.name" class="pick-flag">
-                  <span class="pick-chip-text">{{ asPlayer(pl).name }} · {{ asPlayer(pl).position }}</span>
+                  <span class="pick-chip-text">{{ asPlayer(pl).name }}</span>
                 </span>
               </ng-container>
               <span class="pick-empty" *ngIf="getMemberCategorySelections(member, activeCategory).length === 0">—</span>

@@ -157,6 +157,15 @@ export interface GroupAwardPredictionsResult {
   others: TournamentAwardPrediction[];
 }
 
+/** True award winners from the API `awards` field (null when tournament hasn't concluded) */
+export interface TournamentAwardWinners {
+  champion: Country | null;
+  goldenBall: Player | null;
+  goldenBoot: Player | null;
+  goldenGlove: Player | null;
+  bestYoungPlayer: Player | null;
+}
+
 /** GET .../predictions/awards (group) + standings in one load */
 export interface GroupAwardPredictionsLoadPayload {
   /**
@@ -166,6 +175,8 @@ export interface GroupAwardPredictionsLoadPayload {
   members: MemberAwardPrediction[];
   awards: GroupAwardPredictionsResult;
   standings: TournamentStandings | null;
+  /** True winners from the API `awards` field; null when not yet published */
+  trueWinners: TournamentAwardWinners | null;
 }
 
 export interface AwardOption {
