@@ -17,6 +17,7 @@ import {
   TournamentAwardPrediction,
   GroupAwardPredictionsResult,
   GroupAwardPredictionsLoadPayload,
+  TournamentAwardWinners,
   MemberAwardPrediction,
   MemberPrediction,
   PlayerPositionCode,
@@ -169,6 +170,15 @@ interface TournamentTeamsApiResponse {
 
 interface TournamentPlayersApiResponse {
   players: AwardPlayerApiResponse[];
+}
+
+/** grondona AwardsResponse: true winners published by the API (all fields are singular) */
+interface AwardsApiResponse {
+  champion?: TeamApiResponse;
+  top_scorer?: AwardPlayerApiResponse;
+  best_player?: AwardPlayerApiResponse;
+  best_goalkeeper?: AwardPlayerApiResponse;
+  best_young_player?: AwardPlayerApiResponse;
 }
 
 // Not using @Injectable since this is created via factory
@@ -457,6 +467,16 @@ export class TournamentService implements ITournamentService {
       position: PLAYER_POSITION_LABELS[code] ?? code,
       positionCode: code,
       birthdate: p.birthdate
+    };
+  }
+
+  private mapAwardsApiToWinners(a: AwardsApiResponse): TournamentAwardWinners {
+    return {
+      champion: a.champion ? this.mapTeamToCountry(a.champion) : null,
+      goldenBall: a.best_player ? this.mapAwardPlayerToPlayer(a.best_player) : null,
+      goldenBoot: a.top_scorer ? this.mapAwardPlayerToPlayer(a.top_scorer) : null,
+      goldenGlove: a.best_goalkeeper ? this.mapAwardPlayerToPlayer(a.best_goalkeeper) : null,
+      bestYoungPlayer: a.best_young_player ? this.mapAwardPlayerToPlayer(a.best_young_player) : null
     };
   }
 
@@ -768,6 +788,13 @@ export class TournamentService implements ITournamentService {
       )
     }).pipe(
       map(({ standings, body }) => {
+        const rawAwards = body && typeof body === 'object'
+          ? (body as Record<string, unknown>)['winners'] as AwardsApiResponse | undefined
+          : undefined;
+        const trueWinners: TournamentAwardWinners | null = rawAwards
+          ? this.mapAwardsApiToWinners(rawAwards)
+          : null;
+
         const officialRows = this.parseOfficialGroupAwardPredictionRows(body);
         if (officialRows.length > 0) {
           const membersUnordered = officialRows.map(r => this.rowToMemberAwardPrediction(r));
@@ -782,7 +809,7 @@ export class TournamentService implements ITournamentService {
           const others = members
             .filter(m => m.userId !== meMember?.userId)
             .map(m => m.predictions);
-          return { members, awards: { me, others }, standings };
+          return { members, awards: { me, others }, standings, trueWinners };
         }
 
         if (body && typeof body === 'object' && 'me' in (body as object)) {
@@ -797,7 +824,8 @@ export class TournamentService implements ITournamentService {
                 this.mapAwardResponseToPredictions(this.normalizeAwardPredictionsPayload(x))
               )
             },
-            standings
+            standings,
+            trueWinners
           };
         }
 
@@ -807,7 +835,7 @@ export class TournamentService implements ITournamentService {
           standings?.currentUserId ?? '',
           this.currentUsername
         );
-        return { members: [], awards, standings };
+        return { members: [], awards, standings, trueWinners };
       }),
       catchError(error => {
         console.error('Get group award predictions error:', error);
