@@ -1,7 +1,6 @@
 import { Provider } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TournamentService } from './tournament.service';
-import { MockedTournamentService } from './mocks/mocked-tournament.service';
 import { ITournamentService, TOURNAMENT_SERVICE } from './tournament-service.interface';
 import { ENVIRONMENT_CONFIG, EnvironmentConfig } from '../config/environment.config';
 
@@ -9,13 +8,7 @@ export function tournamentServiceFactory(
   config: EnvironmentConfig,
   http: HttpClient
 ): ITournamentService {
-  if (config.mockedTournamentService) {
-    console.log('🧪 Using MockedTournamentService');
-    return new MockedTournamentService();
-  } else {
-    console.log('🔌 Using real TournamentService with API:', config.grondonaUrl);
-    return new TournamentService(http, config);
-  }
+  return new TournamentService(http, config);
 }
 
 export const tournamentServiceProvider: Provider = {

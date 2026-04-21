@@ -114,6 +114,7 @@
   white-space: nowrap;
   flex-wrap: nowrap;
   flex-shrink: 0;
+  min-width: max-content;
   background: rgba(255, 107, 107, 0.2);
   color: #ff6b6b;
   align-self: flex-start;
@@ -203,7 +204,7 @@
 // schedule | home | vs/score | away | action
 // Fixed-width action column so 1fr team columns stay identical across all cards (vertical flag alignment).
 .results-match-grid {
-  --results-schedule: 100px;
+  --results-schedule: 120px;
   --results-center: 92px;
   --results-action: 152px;
   --results-action-btn-height: 48px;
@@ -1068,7 +1069,7 @@
   }
 
   .results-match-grid {
-    --results-schedule: 74px;
+    --results-schedule: 92px;
     --results-center: 50px;
     --results-action: 118px;
     --results-action-btn-height: 44px;

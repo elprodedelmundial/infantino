@@ -99,6 +99,7 @@ export interface MatchPrediction {
   homeTeam: Country;
   awayTeam: Country;
   predictedScore: MatchScore;
+  hasPrediction: boolean;
   actualScore?: MatchScore;
   isPlayed: boolean;
   matchDate: Date;

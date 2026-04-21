@@ -295,8 +295,8 @@
                 <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
-            <span class="col-prediction score pending">
-              {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+            <span class="col-prediction score" [class.pending]="pred.hasPrediction">
+              {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
             </span>
             <span class="col-date">{{ formatMatchDate(pred.matchDate) }}</span>
             <div class="col-actions">

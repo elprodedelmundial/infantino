@@ -31,7 +31,6 @@ import {
 import { ITournamentService } from './tournament-service.interface';
 import { TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
-import { MockedTournamentService } from './mocks/mocked-tournament.service';
 
 // Prediction API response interfaces
 interface TeamApiResponse {
@@ -114,11 +113,12 @@ interface GroupResponse {
   standings?: GroupStandingResponse[];
 }
 
-/** grondona UserGroupResponse: { group: GroupResponse, tournament_id, tournament_name?, points, rank, role } */
+/** grondona UserGroupResponse: { group: GroupResponse, tournament_id, tournament_name?, member_count, points, rank, role } */
 interface UserGroupResponse {
   group: GroupResponse;
   tournament_id: string;
   tournament_name?: string;
+  member_count?: number;
   points: number;
   rank: number | null;
   role: string;
@@ -188,9 +188,6 @@ export class TournamentService implements ITournamentService {
   private token: string | null = null;
   private joinedGroupIds: string[] = [];
   private currentUsername: string = '';
-
-  // Delegate methods not yet in the grondona API to the mock for realistic data
-  private mock = new MockedTournamentService();
 
   constructor(
     private http: HttpClient,
@@ -262,7 +259,7 @@ export class TournamentService implements ITournamentService {
       tournament: {
         id: ug.group.id,
         name: ug.group.name,
-        participantsCount: ug.group.standings?.length ?? 0,
+        participantsCount: ug.member_count ?? ug.group.standings?.length ?? 0,
         maxParticipants: ug.group.max_members,
         startDate: new Date(),
         isJoined: true,
@@ -278,7 +275,6 @@ export class TournamentService implements ITournamentService {
   setCurrentUser(username: string): void {
     this.token = localStorage.getItem('auth_token');
     this.currentUsername = username;
-    this.mock.setCurrentUser(username);
   }
 
   private mapPredictionToMatchPrediction(p: MatchPredictionApiResponse): MatchPrediction {
@@ -300,6 +296,7 @@ export class TournamentService implements ITournamentService {
         home: pred?.home_goals ?? 0,
         away: pred?.away_goals ?? 0
       },
+      hasPrediction: pred != null,
       actualScore: (m.home_goals !== undefined && m.away_goals !== undefined)
         ? { home: m.home_goals, away: m.away_goals }
         : undefined,
@@ -650,7 +647,7 @@ export class TournamentService implements ITournamentService {
       }),
       catchError(error => {
         console.error('Get predictions error:', error);
-        return this.mock.getAllPredictions(groupId);
+        return of({ matches: [], stages: [] });
       })
     );
   }
@@ -666,7 +663,7 @@ export class TournamentService implements ITournamentService {
       }),
       catchError(error => {
         console.error('Get user predictions error:', error);
-        return this.mock.getUserPredictions(groupId);
+        return of({ pastPredictions: [], upcomingPredictions: [] });
       })
     );
   }
@@ -743,7 +740,7 @@ export class TournamentService implements ITournamentService {
         map(r => r.teams.map(t => this.mapTeamToCountry(t))),
         catchError(error => {
           console.error('Get tournament teams error:', error);
-          return this.mock.getCountriesForAwards(tournamentId);
+          return of([]);
         })
       );
   }
@@ -757,7 +754,7 @@ export class TournamentService implements ITournamentService {
         map(r => r.players.map(p => this.mapAwardPlayerToPlayer(p))),
         catchError(error => {
           console.error('Get tournament players error:', error);
-          return this.mock.getTournamentPlayersForAwards(tournamentId);
+          return of([]);
         })
       );
   }
@@ -773,7 +770,7 @@ export class TournamentService implements ITournamentService {
         map(body => this.mapAwardResponseToPredictions(this.normalizeAwardPredictionsPayload(body))),
         catchError(error => {
           console.error('Get my award predictions error:', error);
-          return this.mock.getMyAwardPredictions(groupId);
+          return of(this.emptyTournamentAwardPrediction());
         })
       );
   }
@@ -839,7 +836,8 @@ export class TournamentService implements ITournamentService {
       }),
       catchError(error => {
         console.error('Get group award predictions error:', error);
-        return this.mock.getGroupAwardPredictions(groupId);
+        const empty = this.emptyTournamentAwardPrediction();
+        return of({ members: [], awards: { me: empty, others: [] }, standings: null, trueWinners: null });
       })
     );
   }
@@ -857,20 +855,20 @@ export class TournamentService implements ITournamentService {
         map(() => true),
         catchError(error => {
           console.error('Post award predictions error:', error);
-          return this.mock.saveAwardPredictions(groupId, predictions);
+          return of(false);
         })
       );
   }
 
   getDashboardLiveData(): Observable<DashboardLiveData> {
-    return this.mock.getDashboardLiveData();
+    return of({ liveMatches: [], upcomingMatches: [] });
   }
 
   getMemberPredictions(matchId: string, tournamentId?: string): Observable<MatchWithPredictions | null> {
-    return this.mock.getMemberPredictions(matchId, tournamentId);
+    return of(null);
   }
 
   getLiveMatchesForTournament(tournamentId: string): Observable<LiveMatch[]> {
-    return this.mock.getLiveMatchesForTournament(tournamentId);
+    return of([]);
   }
 }

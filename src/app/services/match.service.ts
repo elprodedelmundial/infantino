@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, shareReplay, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import {
@@ -9,7 +9,6 @@ import {
 } from '../models/tournament.model';
 import { IMatchService, TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
-import { MockedMatchService } from './mocks/mocked-match.service';
 
 export const WORLD_CUP_ID = '28652183-a2d6-4f33-a624-0d24645ce3cd';
 
@@ -51,7 +50,6 @@ export class MatchService implements IMatchService {
 
   private baseUrl: string;
   private token: string | null = null;
-  private mock = new MockedMatchService();
 
   private matchesCache$: Observable<TournamentMatchesResponse> | null = null;
 
@@ -169,15 +167,14 @@ export class MatchService implements IMatchService {
     joinedTournaments: { id: string; name: string }[],
     currentUsername: string
   ): Observable<MatchPredictionsByTournament | null> {
-    return this.mock.getMatchPredictionsByTournament(matchId, joinedTournaments, currentUsername);
+    return of(null);
   }
 
   getUserPredictionForMatch(matchId: string, tournamentId: string): Observable<MatchScore | null> {
-    return this.mock.getUserPredictionForMatch(matchId, tournamentId);
+    return of(null);
   }
 
   clearCache(): void {
     this.matchesCache$ = null;
-    this.mock.clearCache();
   }
 }
