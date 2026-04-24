@@ -116,9 +116,6 @@
           <span class="category-count" *ngIf="getSelectionCount(category) > 0">
             {{ getSelectionCount(category) }}/{{ category.maxSelections }}
           </span>
-          <svg class="category-check" *ngIf="getSelectionCount(category) === category.maxSelections" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </button>
       </div>
 

@@ -33,7 +33,7 @@
               <path d="M12 12L15 9L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M7 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            Abandonar Torneo
+            Abandonar Grupo
           </button>
         </div>
       </div>
@@ -90,7 +90,17 @@
       <div class="standings-container">
       <div class="standings-header">
         <span class="header-pos">#</span>
-        <span class="header-player">Jugador</span>
+        <span class="header-player">
+          Jugador
+          <button
+            class="live-toggle-btn"
+            [class.live-toggle-btn--active]="liveMode"
+            [disabled]="isRefreshingLive"
+            (click)="toggleLiveMode()">
+            <span class="live-dot" [class.live-dot--active]="liveMode"></span>
+            EN VIVO
+          </button>
+        </span>
         <span class="header-predictions">Últimas</span>
         <span class="header-points">Pts</span>
       </div>
@@ -285,8 +295,8 @@
                 <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
-            <span class="col-prediction score pending">
-              {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+            <span class="col-prediction score" [class.pending]="pred.hasPrediction">
+              {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
             </span>
             <span class="col-date">{{ formatMatchDate(pred.matchDate) }}</span>
             <div class="col-actions">
@@ -318,7 +328,7 @@
         <circle cx="16" cy="23" r="1.5" fill="currentColor"/>
       </svg>
     </div>
-    <h3>¿Abandonar Torneo?</h3>
+    <h3>¿Abandonar Grupo?</h3>
     <p>Estás a punto de abandonar <strong>{{ standings?.tournament?.name }}</strong>. Perderás tu posición y predicciones. Esta acción no se puede deshacer.</p>
     <div class="modal-actions">
       <button class="modal-btn cancel" (click)="cancelLeave()">Cancelar</button>

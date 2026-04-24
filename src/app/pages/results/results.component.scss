@@ -114,6 +114,7 @@
   white-space: nowrap;
   flex-wrap: nowrap;
   flex-shrink: 0;
+  min-width: max-content;
   background: rgba(255, 107, 107, 0.2);
   color: #ff6b6b;
   align-self: flex-start;
@@ -203,7 +204,7 @@
 // schedule | home | vs/score | away | action
 // Fixed-width action column so 1fr team columns stay identical across all cards (vertical flag alignment).
 .results-match-grid {
-  --results-schedule: 100px;
+  --results-schedule: 120px;
   --results-center: 92px;
   --results-action: 152px;
   --results-action-btn-height: 48px;
@@ -468,6 +469,37 @@
   gap: 12px;
 }
 
+.past-load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.load-more-past-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border: 1px solid rgba(232, 255, 71, 0.45);
+  border-radius: 2px;
+  background: rgba(232, 255, 71, 0.08);
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(232, 255, 71, 0.14);
+    border-color: rgba(232, 255, 71, 0.65);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
 .past-match-card {
   background: rgba(17, 17, 19, 0.4);
   border: 1px solid var(--border);
@@ -632,6 +664,15 @@
   overflow-x: visible;
   animation: modalSlideUp 0.3s ease-out;
   position: relative;
+
+  &.predictions-modal {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
 
 .modal-close {
@@ -1068,7 +1109,7 @@
   }
 
   .results-match-grid {
-    --results-schedule: 74px;
+    --results-schedule: 92px;
     --results-center: 50px;
     --results-action: 118px;
     --results-action-btn-height: 44px;

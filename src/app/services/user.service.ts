@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { UserProfile, UserProfileUpdate, RegisterUserData, RegistrationError } from '../models/user.model';
+import { UserProfile, UserProfileUpdate, RegisterUserData, RegistrationError, UserPermission } from '../models/user.model';
 import { IUserService } from './user-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
 
@@ -11,6 +11,8 @@ interface AuthResponse {
   username: string;
   email: string;
   fullname: string;
+  /** grondona: USER | SUPERUSER */
+  permissions?: string;
 }
 
 interface UserResponse {
@@ -20,6 +22,8 @@ interface UserResponse {
   email: string;
   created_at?: string;
   updated_at?: string;
+  /** grondona: USER | SUPERUSER */
+  permissions?: string;
 }
 
 interface ConflictErrorResponse {
@@ -43,7 +47,8 @@ export class UserService implements IUserService {
     id: '',
     username: '',
     fullName: '',
-    email: ''
+    email: '',
+    permissions: 'USER'
   };
 
   private userSubject = new BehaviorSubject<UserProfile>(this.currentUser);
@@ -70,12 +75,18 @@ export class UserService implements IUserService {
     return headers;
   }
 
+  private mapPermission(value?: string): UserPermission {
+    const v = (value ?? '').toUpperCase();
+    return v === 'SUPERUSER' ? 'SUPERUSER' : 'USER';
+  }
+
   private mapUserResponse(response: UserResponse): UserProfile {
     return {
       id: response.id,
       username: response.username,
       fullName: response.fullname,
-      email: response.email
+      email: response.email,
+      permissions: this.mapPermission(response.permissions)
     };
   }
 
@@ -84,7 +95,8 @@ export class UserService implements IUserService {
       id: response.user_id,
       username: response.username,
       fullName: response.fullname,
-      email: response.email
+      email: response.email,
+      permissions: this.mapPermission(response.permissions)
     };
   }
 
@@ -165,7 +177,8 @@ export class UserService implements IUserService {
     this.currentUser = {
       ...this.currentUser,
       username,
-      fullName: username
+      fullName: username,
+      permissions: this.currentUser.permissions
     };
     this.userSubject.next(this.currentUser);
   }
@@ -252,7 +265,8 @@ export class UserService implements IUserService {
           id: '',
           username: '',
           fullName: '',
-          email: ''
+          email: '',
+          permissions: 'USER'
         };
         this.userSubject.next(this.currentUser);
       }),

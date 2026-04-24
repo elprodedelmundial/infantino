@@ -147,7 +147,7 @@ export class PredictionsEditComponent implements OnInit {
   }
 
   isStageAvailable(stage: TournamentStageInfo): boolean {
-    return stage.hasStarted;
+    return (stage.matchCount ?? 0) > 0;
   }
 
   isMatchLocked(match: MatchPrediction): boolean {

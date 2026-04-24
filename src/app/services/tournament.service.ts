@@ -26,12 +26,14 @@ import {
   MatchWithPredictions,
   DashboardLiveData,
   AllPredictionsData,
-  GroupRole
+  GroupRole,
+  AdminTournamentListItem,
+  AdminTournamentDetail
 } from '../models/tournament.model';
 import { ITournamentService } from './tournament-service.interface';
 import { TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
-import { MockedTournamentService } from './mocks/mocked-tournament.service';
+import { getMatchStageInfo, ALL_STAGE_INFOS } from '../utils/match-stage.utils';
 
 // Prediction API response interfaces
 interface TeamApiResponse {
@@ -114,11 +116,12 @@ interface GroupResponse {
   standings?: GroupStandingResponse[];
 }
 
-/** grondona UserGroupResponse: { group: GroupResponse, tournament_id, tournament_name?, points, rank, role } */
+/** grondona UserGroupResponse: { group: GroupResponse, tournament_id, tournament_name?, member_count, points, rank, role } */
 interface UserGroupResponse {
   group: GroupResponse;
   tournament_id: string;
   tournament_name?: string;
+  member_count?: number;
   points: number;
   rank: number | null;
   role: string;
@@ -188,9 +191,6 @@ export class TournamentService implements ITournamentService {
   private token: string | null = null;
   private joinedGroupIds: string[] = [];
   private currentUsername: string = '';
-
-  // Delegate methods not yet in the grondona API to the mock for realistic data
-  private mock = new MockedTournamentService();
 
   constructor(
     private http: HttpClient,
@@ -262,7 +262,7 @@ export class TournamentService implements ITournamentService {
       tournament: {
         id: ug.group.id,
         name: ug.group.name,
-        participantsCount: ug.group.standings?.length ?? 0,
+        participantsCount: ug.member_count ?? ug.group.standings?.length ?? 0,
         maxParticipants: ug.group.max_members,
         startDate: new Date(),
         isJoined: true,
@@ -278,7 +278,6 @@ export class TournamentService implements ITournamentService {
   setCurrentUser(username: string): void {
     this.token = localStorage.getItem('auth_token');
     this.currentUsername = username;
-    this.mock.setCurrentUser(username);
   }
 
   private mapPredictionToMatchPrediction(p: MatchPredictionApiResponse): MatchPrediction {
@@ -291,6 +290,7 @@ export class TournamentService implements ITournamentService {
       BONUS: 'bonus'
     };
     const status = pred?.status;
+    const stageInfo = getMatchStageInfo(m.code ?? '');
     return {
       id: m.id,
       matchCode: m.code ?? '',
@@ -300,6 +300,7 @@ export class TournamentService implements ITournamentService {
         home: pred?.home_goals ?? 0,
         away: pred?.away_goals ?? 0
       },
+      hasPrediction: pred != null,
       actualScore: (m.home_goals !== undefined && m.away_goals !== undefined)
         ? { home: m.home_goals, away: m.away_goals }
         : undefined,
@@ -307,7 +308,8 @@ export class TournamentService implements ITournamentService {
       matchStatus: m.status,
       matchDate: m.started_at ? new Date(m.started_at) : new Date(0),
       result: status && status !== 'PENDING' ? resultMap[status] : undefined,
-      stage: 'group_stage',
+      stage: stageInfo.stage,
+      group: stageInfo.group,
       odds: (m.home_quota !== undefined)
         ? { home: m.home_quota, draw: m.tie_quota ?? 0, away: m.away_quota ?? 0 }
         : undefined
@@ -432,9 +434,9 @@ export class TournamentService implements ITournamentService {
     return this.joinedGroupIds;
   }
 
-  getTournamentStandings(groupId: string): Observable<TournamentStandings | null> {
+  getTournamentStandings(groupId: string, live: boolean = false): Observable<TournamentStandings | null> {
     this.token = localStorage.getItem('auth_token');
-    const params = new HttpParams().set('standings', 'true');
+    const params = new HttpParams().set('live', String(live));
     return this.http.get<GroupResponse>(
       `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}`,
       { headers: this.getAuthHeaders(), params }
@@ -643,14 +645,27 @@ export class TournamentService implements ITournamentService {
     return this.fetchUserMatchPredictionsMe(groupId).pipe(
       map(response => {
         const matches = response.predictions.map(p => this.mapPredictionToMatchPrediction(p));
-        return {
-          matches,
-          stages: [{ id: 'group_stage' as const, name: 'Fase de Grupos', order: 1, hasStarted: true, matchCount: matches.length }]
-        };
+        // Build stage list from matches present in the response
+        const stageMatchCounts = new Map<string, number>();
+        const stageHasStarted = new Map<string, boolean>();
+        for (const m of matches) {
+          stageMatchCounts.set(m.stage, (stageMatchCounts.get(m.stage) ?? 0) + 1);
+          if (m.isPlayed || m.matchStatus === 'IN_PROGRESS') {
+            stageHasStarted.set(m.stage, true);
+          } else {
+            stageHasStarted.set(m.stage, stageHasStarted.get(m.stage) ?? false);
+          }
+        }
+        const stages = ALL_STAGE_INFOS.map(s => ({
+          ...s,
+          matchCount: stageMatchCounts.get(s.id) ?? 0,
+          hasStarted: stageHasStarted.get(s.id) ?? false
+        }));
+        return { matches, stages };
       }),
       catchError(error => {
         console.error('Get predictions error:', error);
-        return this.mock.getAllPredictions(groupId);
+        return of({ matches: [], stages: [] });
       })
     );
   }
@@ -666,7 +681,7 @@ export class TournamentService implements ITournamentService {
       }),
       catchError(error => {
         console.error('Get user predictions error:', error);
-        return this.mock.getUserPredictions(groupId);
+        return of({ pastPredictions: [], upcomingPredictions: [] });
       })
     );
   }
@@ -743,7 +758,7 @@ export class TournamentService implements ITournamentService {
         map(r => r.teams.map(t => this.mapTeamToCountry(t))),
         catchError(error => {
           console.error('Get tournament teams error:', error);
-          return this.mock.getCountriesForAwards(tournamentId);
+          return of([]);
         })
       );
   }
@@ -757,7 +772,7 @@ export class TournamentService implements ITournamentService {
         map(r => r.players.map(p => this.mapAwardPlayerToPlayer(p))),
         catchError(error => {
           console.error('Get tournament players error:', error);
-          return this.mock.getTournamentPlayersForAwards(tournamentId);
+          return of([]);
         })
       );
   }
@@ -773,7 +788,7 @@ export class TournamentService implements ITournamentService {
         map(body => this.mapAwardResponseToPredictions(this.normalizeAwardPredictionsPayload(body))),
         catchError(error => {
           console.error('Get my award predictions error:', error);
-          return this.mock.getMyAwardPredictions(groupId);
+          return of(this.emptyTournamentAwardPrediction());
         })
       );
   }
@@ -839,7 +854,8 @@ export class TournamentService implements ITournamentService {
       }),
       catchError(error => {
         console.error('Get group award predictions error:', error);
-        return this.mock.getGroupAwardPredictions(groupId);
+        const empty = this.emptyTournamentAwardPrediction();
+        return of({ members: [], awards: { me: empty, others: [] }, standings: null, trueWinners: null });
       })
     );
   }
@@ -857,20 +873,130 @@ export class TournamentService implements ITournamentService {
         map(() => true),
         catchError(error => {
           console.error('Post award predictions error:', error);
-          return this.mock.saveAwardPredictions(groupId, predictions);
+          return of(false);
         })
       );
   }
 
   getDashboardLiveData(): Observable<DashboardLiveData> {
-    return this.mock.getDashboardLiveData();
+    return of({ liveMatches: [], upcomingMatches: [] });
   }
 
   getMemberPredictions(matchId: string, tournamentId?: string): Observable<MatchWithPredictions | null> {
-    return this.mock.getMemberPredictions(matchId, tournamentId);
+    return of(null);
   }
 
   getLiveMatchesForTournament(tournamentId: string): Observable<LiveMatch[]> {
-    return this.mock.getLiveMatchesForTournament(tournamentId);
+    return of([]);
+  }
+
+  /** GET /api/tournaments — superuser; falls back to Mundial if the route is missing. */
+  getAdminTournaments(): Observable<AdminTournamentListItem[]> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http
+      .get<unknown>(`${this.baseUrl}/api/tournaments`, { headers: this.getAuthHeaders() })
+      .pipe(
+        map(body => this.parseAdminTournamentList(body)),
+        catchError(() =>
+          of<AdminTournamentListItem[]>([{ id: WORLD_CUP_ID, name: 'Copa del Mundo 2026' }])
+        )
+      );
+  }
+
+  /** GET /api/tournaments/{id} — name, status, published awards. */
+  getAdminTournamentDetail(tournamentId: string): Observable<AdminTournamentDetail | null> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http
+      .get<unknown>(`${this.baseUrl}/api/tournaments/${tournamentId}`, { headers: this.getAuthHeaders() })
+      .pipe(
+        map(body => this.parseAdminTournamentDetail(body, tournamentId)),
+        catchError(error => {
+          console.error('Get admin tournament detail error:', error);
+          return of(null);
+        })
+      );
+  }
+
+  /**
+   * PATCH /api/tournaments/{id} — grondona updateTournament (name, status, awards as entity ids).
+   */
+  patchAdminTournament(
+    tournamentId: string,
+    payload: { name: string; status: string; winners: TournamentAwardWinners }
+  ): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    const w = payload.winners;
+    const hasAnyAward =
+      Boolean(w.champion?.id) ||
+      Boolean(w.goldenBoot?.id) ||
+      Boolean(w.goldenBall?.id) ||
+      Boolean(w.goldenGlove?.id) ||
+      Boolean(w.bestYoungPlayer?.id);
+
+    const body: Record<string, unknown> = {
+      name: payload.name,
+      status: payload.status,
+      awards: hasAnyAward
+        ? {
+            champion: w.champion?.id ?? null,
+            top_scorer: w.goldenBoot?.id ?? null,
+            best_player: w.goldenBall?.id ?? null,
+            best_goalkeeper: w.goldenGlove?.id ?? null,
+            best_young_player: w.bestYoungPlayer?.id ?? null
+          }
+        : null
+    };
+    return this.http
+      .patch(`${this.baseUrl}/api/tournaments/${tournamentId}`, body, { headers: this.getAuthHeaders() })
+      .pipe(
+        map(() => true),
+        catchError(error => {
+          console.error('Patch admin tournament error:', error);
+          return throwError(
+            () =>
+              new Error(
+                typeof error?.error?.message === 'string'
+                  ? error.error.message
+                  : 'No se pudo actualizar el torneo'
+              )
+          );
+        })
+      );
+  }
+
+  private parseAdminTournamentList(body: unknown): AdminTournamentListItem[] {
+    const raw = Array.isArray(body)
+      ? body
+      : body && typeof body === 'object' && Array.isArray((body as Record<string, unknown>)['tournaments'])
+        ? (body as { tournaments: unknown[] }).tournaments
+        : body && typeof body === 'object' && Array.isArray((body as Record<string, unknown>)['data'])
+          ? (body as { data: unknown[] }).data
+          : null;
+    if (!raw?.length) {
+      return [{ id: WORLD_CUP_ID, name: 'Copa del Mundo 2026' }];
+    }
+    return raw.map((r: unknown) => {
+      const o = r as Record<string, unknown>;
+      return {
+        id: String(o['id'] ?? WORLD_CUP_ID),
+        name: String(o['name'] ?? 'Torneo'),
+        status: o['status'] != null ? String(o['status']) : undefined
+      };
+    });
+  }
+
+  private parseAdminTournamentDetail(body: unknown, fallbackId: string): AdminTournamentDetail | null {
+    if (!body || typeof body !== 'object') return null;
+    const o = body as Record<string, unknown>;
+    const id = String(o['id'] ?? fallbackId);
+    const name = String(o['name'] ?? '');
+    let status = o['status'] != null ? String(o['status']) : '';
+    if (!status && typeof o['has_started'] === 'boolean') {
+      status = o['has_started'] ? 'IN_PROGRESS' : 'NOT_STARTED';
+    }
+    if (!status) status = 'NOT_STARTED';
+    const rawAwards = o['awards'] as AwardsApiResponse | undefined;
+    const awardWinners = rawAwards ? this.mapAwardsApiToWinners(rawAwards) : null;
+    return { id, name, status, awardWinners };
   }
 }

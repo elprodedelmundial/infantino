@@ -46,4 +46,10 @@ export class DashboardComponent implements OnInit {
       state: { username: this.username }
     });
   }
+
+  goToRules(): void {
+    this.router.navigate(['/rules'], {
+      state: { username: this.username }
+    });
+  }
 }

@@ -77,6 +77,7 @@ export interface MatchOdds {
 
 export type TournamentStage = 
   | 'group_stage'
+  | 'round_of_32'
   | 'round_of_16'
   | 'quarter_finals'
   | 'semi_finals'
@@ -99,6 +100,7 @@ export interface MatchPrediction {
   homeTeam: Country;
   awayTeam: Country;
   predictedScore: MatchScore;
+  hasPrediction: boolean;
   actualScore?: MatchScore;
   isPlayed: boolean;
   matchDate: Date;
@@ -164,6 +166,31 @@ export interface TournamentAwardWinners {
   goldenBoot: Player | null;
   goldenGlove: Player | null;
   bestYoungPlayer: Player | null;
+}
+
+export function emptyTournamentAwardWinners(): TournamentAwardWinners {
+  return {
+    champion: null,
+    goldenBall: null,
+    goldenBoot: null,
+    goldenGlove: null,
+    bestYoungPlayer: null
+  };
+}
+
+/** Admin: GET /api/tournaments list item */
+export interface AdminTournamentListItem {
+  id: string;
+  name: string;
+  status?: string;
+}
+
+/** Admin: GET /api/tournaments/{id} normalized for the editor */
+export interface AdminTournamentDetail {
+  id: string;
+  name: string;
+  status: string;
+  awardWinners: TournamentAwardWinners | null;
 }
 
 /** GET .../predictions/awards (group) + standings in one load */

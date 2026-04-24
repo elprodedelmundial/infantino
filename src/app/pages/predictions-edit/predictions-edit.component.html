@@ -114,8 +114,8 @@
           <!-- Score Display/Edit -->
           <div class="score-section">
             <div class="score-display" *ngIf="!match.isEditing">
-              <span class="predicted-score">
-                {{ match.predictedScore.home }} - {{ match.predictedScore.away }}
+              <span class="predicted-score" [class.predicted-score--empty]="!match.hasPrediction">
+                {{ match.hasPrediction ? (match.predictedScore.home + ' - ' + match.predictedScore.away) : '–' }}
               </span>
               <span class="draw-odds" *ngIf="match.odds && !match.isPlayed">Empate +{{ match.odds.draw.toFixed(1) }}</span>
               <span class="actual-score" *ngIf="match.isPlayed && match.actualScore">
