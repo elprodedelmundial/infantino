@@ -7,6 +7,8 @@ export interface IUserService {
   register(data: RegisterUserData): Observable<UserProfile>;
   login(email: string, password: string): Observable<UserProfile>;
   setUsername(username: string): void;
+  /** Last known full name for this login (localStorage); used when GET /me fails. */
+  getCachedFullNameForUsername(username: string): string;
   getUserProfile(): Observable<UserProfile>;
   updateProfile(update: UserProfileUpdate): Observable<UserProfile>;
   changePassword(currentPassword: string, newPassword: string): Observable<boolean>;

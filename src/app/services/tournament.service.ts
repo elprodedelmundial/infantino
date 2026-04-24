@@ -8,6 +8,7 @@ import {
   TournamentStandings,
   TournamentPlayer,
   PredictionResult,
+  LastStandingPrediction,
   UserPredictions,
   MatchScore,
   MatchPrediction,
@@ -50,12 +51,13 @@ interface MatchApiResponse {
   away_team: TeamApiResponse;
   home_quota?: number;
   away_quota?: number;
-  tie_quota?: number;
+  draw_quota?: number;
   status: MatchApiStatus;
   substatus?: string;
   started_at?: string;
   home_goals?: number;
   away_goals?: number;
+  has_multiplier?: boolean;
 }
 
 interface UserApiResponse {
@@ -98,12 +100,23 @@ interface UserResponseApi {
   email?: string;
 }
 
-/** grondona GroupStanding: { user: UserResponse, rank, points, last_predictions } */
+/** grondona GroupStanding: { user, rank, points, last_predictions } */
+type LastPredictionApiEntry =
+  | 'PENDING'
+  | 'CORRECT'
+  | 'PARTIAL'
+  | 'INCORRECT'
+  | 'BONUS'
+  | {
+      status?: 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS';
+      has_multiplier?: boolean;
+    };
+
 interface GroupStandingResponse {
   user: UserResponseApi;
   rank: number;
   points: number;
-  last_predictions: ('PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS')[];
+  last_predictions: LastPredictionApiEntry[];
 }
 
 interface GroupResponse {
@@ -237,9 +250,7 @@ export class TournamentService implements ITournamentService {
         fullName: fullName || undefined,
         position: s.rank,
         points: s.points,
-        lastPredictions: s.last_predictions
-          .filter(p => p !== 'PENDING')
-          .map(p => predResultMap[p] as PredictionResult),
+        lastPredictions: this.mapLastStandingPredictions(s.last_predictions, predResultMap),
         avatarInitials: s.user.username.substring(0, 2).toUpperCase()
       };
     });
@@ -311,9 +322,33 @@ export class TournamentService implements ITournamentService {
       stage: stageInfo.stage,
       group: stageInfo.group,
       odds: (m.home_quota !== undefined)
-        ? { home: m.home_quota, draw: m.tie_quota ?? 0, away: m.away_quota ?? 0 }
-        : undefined
+        ? { home: m.home_quota, draw: m.draw_quota ?? 0, away: m.away_quota ?? 0 }
+        : undefined,
+      hasMultiplier: m.has_multiplier === true
     };
+  }
+
+  private mapLastStandingPredictions(
+    raw: LastPredictionApiEntry[] | undefined,
+    predResultMap: Record<string, PredictionResult>
+  ): LastStandingPrediction[] {
+    if (!raw?.length) return [];
+    const out: LastStandingPrediction[] = [];
+    for (const p of raw) {
+      if (typeof p === 'string') {
+        if (p === 'PENDING') continue;
+        const result = predResultMap[p];
+        if (result) out.push({ result, hasMultiplier: false });
+        continue;
+      }
+      const st = p?.status;
+      if (!st || st === 'PENDING') continue;
+      const result = predResultMap[st];
+      if (result) {
+        out.push({ result, hasMultiplier: p.has_multiplier === true });
+      }
+    }
+    return out;
   }
 
   private mapToPredictionsMember(p: MatchPredictionApiResponse): MemberPrediction {

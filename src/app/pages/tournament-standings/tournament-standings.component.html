@@ -124,9 +124,10 @@
           </div>
           <div class="predictions-dots">
             <div 
-              *ngFor="let pred of player.lastPredictions"
-              [ngClass]="getPredictionClass(pred)"
-              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : pred === 'bonus' ? 'Bonus' : 'Incorrecto'">
+              *ngFor="let dot of player.lastPredictions"
+              [ngClass]="getPredictionClass(dot.result)"
+              [title]="lastPredictionTitle(dot)">
+              <span class="prediction-multiplier-glyph" *ngIf="dot.hasMultiplier">×</span>
             </div>
           </div>
           <div class="points">
@@ -229,9 +230,12 @@
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <span class="vs">vs</span>
-              <div class="team away">
-                <span class="team-name">{{ pred.awayTeam.name }}</span>
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+              <div class="col-match-away-with-badge">
+                <div class="team away">
+                  <span class="team-name">{{ pred.awayTeam.name }}</span>
+                  <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                </div>
+                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">BONUS</span>
               </div>
             </div>
             <!-- Live match: no scores shown -->
@@ -290,9 +294,12 @@
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <span class="vs">vs</span>
-              <div class="team away">
-                <span class="team-name">{{ pred.awayTeam.name }}</span>
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+              <div class="col-match-away-with-badge">
+                <div class="team away">
+                  <span class="team-name">{{ pred.awayTeam.name }}</span>
+                  <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                </div>
+                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">BONUS</span>
               </div>
             </div>
             <span class="col-prediction score" [class.pending]="pred.hasPrediction">

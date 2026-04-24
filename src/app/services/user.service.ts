@@ -40,6 +40,8 @@ interface ConflictErrorResponse {
 // Not using @Injectable since this is created via factory
 export class UserService implements IUserService {
 
+  private static readonly DISPLAY_NAME_CACHE_KEY = 'prode_user_display_name_v1';
+
   private baseUrl: string;
   private token: string | null = null;
 
@@ -100,6 +102,34 @@ export class UserService implements IUserService {
     };
   }
 
+  private persistDisplayNameCache(profile: UserProfile): void {
+    const u = (profile.username ?? '').trim();
+    const f = (profile.fullName ?? '').trim();
+    if (!u || !f || f === u) return;
+    try {
+      localStorage.setItem(
+        UserService.DISPLAY_NAME_CACHE_KEY,
+        JSON.stringify({ username: u, fullName: f })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
+  getCachedFullNameForUsername(username: string): string {
+    const key = (username ?? '').trim();
+    if (!key) return '';
+    try {
+      const raw = localStorage.getItem(UserService.DISPLAY_NAME_CACHE_KEY);
+      if (!raw) return '';
+      const o = JSON.parse(raw) as { username?: string; fullName?: string };
+      if (o.username === key && o.fullName?.trim()) return o.fullName.trim();
+    } catch {
+      /* ignore */
+    }
+    return '';
+  }
+
   register(data: RegisterUserData): Observable<UserProfile> {
     const body = {
       fullname: data.fullName,
@@ -115,6 +145,7 @@ export class UserService implements IUserService {
         this.token = response.token;
         localStorage.setItem('auth_token', response.token);
         this.currentUser = this.mapAuthResponse(response);
+        this.persistDisplayNameCache(this.currentUser);
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapAuthResponse(response)),
@@ -156,6 +187,7 @@ export class UserService implements IUserService {
         this.token = response.token;
         localStorage.setItem('auth_token', response.token);
         this.currentUser = this.mapAuthResponse(response);
+        this.persistDisplayNameCache(this.currentUser);
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapAuthResponse(response)),
@@ -173,11 +205,10 @@ export class UserService implements IUserService {
   }
 
   setUsername(username: string): void {
-    // This is a local-only operation for UI state
+    // Sync route/navigation username only — do not overwrite fullName (that broke the toolbar when /me fails).
     this.currentUser = {
       ...this.currentUser,
       username,
-      fullName: username,
       permissions: this.currentUser.permissions
     };
     this.userSubject.next(this.currentUser);
@@ -189,6 +220,7 @@ export class UserService implements IUserService {
     }).pipe(
       tap(response => {
         this.currentUser = this.mapUserResponse(response);
+        this.persistDisplayNameCache(this.currentUser);
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapUserResponse(response)),
@@ -214,6 +246,7 @@ export class UserService implements IUserService {
     }).pipe(
       tap(response => {
         this.currentUser = this.mapUserResponse(response);
+        this.persistDisplayNameCache(this.currentUser);
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapUserResponse(response)),
@@ -261,6 +294,7 @@ export class UserService implements IUserService {
         // Clear local state
         this.token = null;
         localStorage.removeItem('auth_token');
+        localStorage.removeItem(UserService.DISPLAY_NAME_CACHE_KEY);
         this.currentUser = {
           id: '',
           username: '',

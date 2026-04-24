@@ -28,7 +28,7 @@
   gap: 8px;
   padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   background: transparent;
@@ -50,7 +50,7 @@
   gap: 8px;
   padding: 8px 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   background: transparent;
@@ -78,7 +78,7 @@
   align-items: center;
   gap: 8px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
 
@@ -104,7 +104,7 @@
   gap: 10px;
   padding: 16px 24px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   background: transparent;
@@ -373,6 +373,10 @@
 }
 
 .prediction {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -401,6 +405,15 @@
     background: #60a5fa;
     box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
   }
+}
+
+.prediction-multiplier-glyph {
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
 }
 
 .points {
@@ -464,7 +477,7 @@
   &.upcoming {
     .table-header,
     .table-row {
-      grid-template-columns: 80px 1fr 120px 80px 60px;
+      grid-template-columns: max-content 1fr 120px 80px 60px;
     }
   }
 }
@@ -550,17 +563,19 @@
 
 .predictions-table {
   overflow-x: auto;
+  /* Extra space after código / multiplier, before flags (wide band like reference layout). */
+  --standings-code-to-match-inset: 64px;
 }
 
 .table-header {
   display: grid;
-  grid-template-columns: 80px 1fr 120px 120px 100px;
+  grid-template-columns: max-content 1fr 120px 120px 100px;
   gap: 16px;
   padding: 14px 24px;
   background: rgba(26, 26, 29, 0.5);
   border-bottom: 1px solid var(--border);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -569,7 +584,7 @@
 
 .table-row {
   display: grid;
-  grid-template-columns: 80px 1fr 120px 120px 100px;
+  grid-template-columns: max-content 1fr 120px 120px 100px;
   gap: 16px;
   padding: 16px 24px;
   align-items: center;
@@ -587,9 +602,39 @@
 
 .col-code {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--accent);
+}
+
+.col-match-away-with-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.match-multiplier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fecaca;
+  background: #991b1b;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(127, 29, 29, 0.35);
 }
 
 .col-prediction,
@@ -604,6 +649,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  padding-left: var(--standings-code-to-match-inset);
 }
 
 .team {
@@ -630,7 +676,7 @@
 }
 
 .team-name {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -638,7 +684,7 @@
 
 .vs {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   padding: 0 4px;
 }
@@ -792,9 +838,19 @@
 
 // Responsive
 @media (max-width: 900px) {
+  .predictions-table {
+    --standings-code-to-match-inset: 36px;
+  }
+
   .col-match {
     flex-direction: column;
     gap: 6px;
+    align-items: flex-start;
+  }
+
+  .col-match-away-with-badge {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .team {
@@ -808,14 +864,14 @@
   }
 
   .table-header {
-    grid-template-columns: 60px 1fr 80px 80px 80px;
+    grid-template-columns: max-content 1fr 80px 80px 80px;
     gap: 8px;
     padding: 12px 16px;
-    font-size: 0.55rem;
+    font-size: 0.62rem;
   }
 
   .table-row {
-    grid-template-columns: 60px 1fr 80px 80px 80px;
+    grid-template-columns: max-content 1fr 80px 80px 80px;
     gap: 8px;
     padding: 12px 16px;
   }
@@ -824,12 +880,12 @@
   .predictions-section.upcoming {
     .table-header,
     .table-row {
-      grid-template-columns: 60px 1fr 80px 60px 50px;
+      grid-template-columns: max-content 1fr 80px 60px 50px;
     }
   }
 
   .team-name {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
   }
 
   .flag {
@@ -968,7 +1024,7 @@
 
 .your-prediction {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 
@@ -978,7 +1034,7 @@
   gap: 6px;
   padding: 8px 14px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   background: transparent;
@@ -1035,7 +1091,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.8rem;
+    font-size: 0.88rem;
     font-weight: 600;
     color: var(--text-primary);
 

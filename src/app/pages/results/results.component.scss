@@ -23,7 +23,7 @@
   gap: 8px;
   padding: 8px 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   background: transparent;
@@ -48,7 +48,7 @@
 
 .page-subtitle {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
 }
@@ -63,7 +63,7 @@
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.32rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.02em;
@@ -190,7 +190,7 @@
 .team-name-stack {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   line-height: 1.25;
   max-width: 100%;
   display: -webkit-box;
@@ -296,7 +296,7 @@
 .team-name {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -332,7 +332,7 @@
   gap: 8px;
   padding: 12px 20px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   background: transparent;
@@ -391,23 +391,54 @@
   height: 100%;
 }
 
+.match-multiplier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #141413;
+  background: #ca8a04;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid rgba(253, 224, 71, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(202, 138, 4, 0.22);
+}
+
+.match-schedule--live .match-multiplier-badge {
+  margin-bottom: 0;
+}
+
+.match-score .match-multiplier-badge {
+  margin-bottom: 6px;
+}
+
 .match-date {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .match-time {
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .vs {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   flex-shrink: 0;
 }
@@ -419,7 +450,7 @@
   gap: 6px;
   padding: 6px 12px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   background: rgba(74, 222, 128, 0.1);
   border: 1px solid rgba(74, 222, 128, 0.3);
@@ -443,7 +474,7 @@
   align-items: center;
   gap: 5px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #fb923c;
   background: rgba(251, 146, 60, 0.1);
@@ -519,7 +550,7 @@
 
 .finished-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.05em;
@@ -532,7 +563,7 @@
   gap: 6px;
   padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -727,7 +758,7 @@
       }
 
       .team-name-stack {
-        font-size: 0.72rem;
+        font-size: 0.82rem;
       }
 
       .match-score {
@@ -754,7 +785,7 @@
 
       .match-time-label {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
+        font-size: 0.72rem;
         padding: 4px 8px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
@@ -1154,7 +1185,7 @@
   }
 
   .team-name-stack {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     -webkit-line-clamp: 3;
   }
 

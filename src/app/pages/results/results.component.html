@@ -25,6 +25,7 @@
       <div class="live-matches-list">
         <div class="live-match-card results-match-grid" *ngFor="let match of liveMatches">
           <div class="match-schedule match-schedule--live">
+            <span class="match-multiplier-badge" *ngIf="match.hasMultiplier" title="Partido con multiplicador">×</span>
             <div class="match-time-badge live">
               <span class="live-indicator"></span>
               {{ match.matchTime }}
@@ -73,6 +74,7 @@
       <div class="upcoming-matches-list">
         <div class="upcoming-match-card results-match-grid" *ngFor="let match of upcomingMatches">
           <div class="match-schedule">
+            <span class="match-multiplier-badge" *ngIf="match.hasMultiplier" title="Partido con multiplicador">×</span>
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time">{{ formatMatchTime(match) }}</span>
           </div>
@@ -123,6 +125,7 @@
       <div class="past-matches-list" *ngIf="pastMatches.length > 0">
         <div class="past-match-card results-match-grid" *ngFor="let match of pastMatches">
           <div class="match-schedule">
+            <span class="match-multiplier-badge" *ngIf="match.hasMultiplier" title="Partido con multiplicador">×</span>
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time finished-tag">FT</span>
           </div>
@@ -204,6 +207,7 @@
           <span class="team-name-stack">{{ selectedMatch.homeTeam.name }}</span>
         </div>
         <div class="match-score">
+          <span class="match-multiplier-badge" *ngIf="selectedMatch.hasMultiplier" title="Partido con multiplicador">×</span>
           <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
           <span class="match-time-label live" *ngIf="selectedMatch.status === 'live'">{{ selectedMatch.matchTime }}</span>
           <span class="match-time-label finished" *ngIf="selectedMatch.status === 'finished'">FT</span>

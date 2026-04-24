@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IUserService, USER_SERVICE } from '../../services/user-service.interface';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
-import { UserPermission } from '../../models/user.model';
+import { UserPermission, UserProfile } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-toolbar',
@@ -37,36 +37,49 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['username']) {
       this.usernameState.set(this.username);
+      this.applyFullNameFromProfileOrCache(this.username, null);
     }
   }
 
   ngOnInit(): void {
     this.usernameState.set(this.username);
-    // Subscribe to any cached/future updates first
+    this.applyFullNameFromProfileOrCache(this.username, null);
+
     this.userService.user$.subscribe(profile => {
       this.permissions.set(profile.permissions ?? 'USER');
-      if (profile?.fullName && profile.fullName !== profile.username) {
-        // Only trust fullName when it differs from username (setUsername copies username → fullName)
-        this.userFullName.set(profile.fullName);
+      const un = (profile?.username ?? this.usernameState()).trim();
+      if (un && un !== 'Usuario') {
+        this.usernameState.set(un);
       }
-      if (profile?.username && profile.username !== 'Usuario' && profile.username !== '') {
-        this.usernameState.set(profile.username);
-      }
+      this.applyFullNameFromProfileOrCache(un || this.usernameState(), profile);
     });
 
-    // Always fetch the real profile so fullName is populated even after a page navigation
     this.userService.getUserProfile().subscribe({
       next: profile => {
         this.permissions.set(profile.permissions ?? 'USER');
-        if (profile?.fullName) {
-          this.userFullName.set(profile.fullName);
-        }
         if (profile?.username) {
           this.usernameState.set(profile.username);
         }
+        this.applyFullNameFromProfileOrCache(profile.username || this.usernameState(), profile);
       },
-      error: () => { /* keep whatever username was passed as @Input */ }
+      error: () => {
+        this.applyFullNameFromProfileOrCache(this.usernameState(), null);
+      }
     });
+  }
+
+  /** Prefer API fullName; when missing (e.g. GET /me failed), use last persisted full name for this user. */
+  private applyFullNameFromProfileOrCache(username: string, profile: UserProfile | null): void {
+    const u = (username ?? '').trim();
+    const fromApi = (profile?.fullName ?? '').trim();
+    if (fromApi) {
+      this.userFullName.set(fromApi);
+      return;
+    }
+    const cached = u ? this.userService.getCachedFullNameForUsername(u) : '';
+    if (cached) {
+      this.userFullName.set(cached);
+    }
   }
 
   toggleDropdown(): void {
