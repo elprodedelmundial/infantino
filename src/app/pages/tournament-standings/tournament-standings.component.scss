@@ -635,14 +635,14 @@
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
-  color: #141413;
-  background: var(--accent);
+  color: #f5e8d3;
+  background: #a53d1b;
   border-radius: 4px;
   flex-shrink: 0;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(245, 232, 211, 0.55);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(232, 255, 71, 0.35);
+    0 2px 8px rgba(165, 61, 27, 0.4);
 }
 
 .col-prediction,
