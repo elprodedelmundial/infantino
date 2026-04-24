@@ -7,7 +7,12 @@ import {
   Country,
   MatchScore
 } from '../models/tournament.model';
-import { IMatchService, TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
+import {
+  IMatchService,
+  TournamentMatchListsPayload,
+  TournamentPredictions,
+  MatchPredictionsByTournament
+} from './match-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
 
 export const WORLD_CUP_ID = '28652183-a2d6-4f33-a624-0d24645ce3cd';
@@ -43,6 +48,9 @@ interface TournamentMatchesResponse {
   past_matches: TournamentMatchResponse[];
   live_matches: TournamentMatchResponse[];
   next_matches: TournamentMatchResponse[];
+  total_past_matches: number;
+  total_live_matches: number;
+  total_next_matches: number;
 }
 
 // Not using @Injectable since this is created via factory
@@ -111,10 +119,10 @@ export class MatchService implements IMatchService {
     return result;
   }
 
-  private fetchTournamentMatches(): Observable<TournamentMatchesResponse> {
+  private getInitialTournamentMatches(): Observable<TournamentMatchesResponse> {
     if (!this.matchesCache$) {
       this.token = localStorage.getItem('auth_token');
-      const params = new HttpParams().set('next', '5');
+      const params = new HttpParams().set('next', '5').set('past', '10');
       this.matchesCache$ = this.http.get<TournamentMatchesResponse>(
         `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/matches`,
         { headers: this.getAuthHeaders(), params }
@@ -130,26 +138,52 @@ export class MatchService implements IMatchService {
     return this.matchesCache$;
   }
 
+  private mapResponseToPayload(r: TournamentMatchesResponse): TournamentMatchListsPayload {
+    return {
+      liveMatches: (r.live_matches ?? []).map(m => this.mapMatch(m)),
+      upcomingMatches: (r.next_matches ?? []).map(m => this.mapMatch(m)),
+      pastMatches: (r.past_matches ?? []).map(m => this.mapMatch(m)),
+      totalPastMatches: r.total_past_matches ?? 0,
+      totalLiveMatches: r.total_live_matches ?? 0,
+      totalNextMatches: r.total_next_matches ?? 0
+    };
+  }
+
+  getTournamentMatchLists(): Observable<TournamentMatchListsPayload> {
+    return this.getInitialTournamentMatches().pipe(map(r => this.mapResponseToPayload(r)));
+  }
+
+  loadAllPastTournamentMatchLists(): Observable<TournamentMatchListsPayload> {
+    this.token = localStorage.getItem('auth_token');
+    const params = new HttpParams().set('next', '5');
+    return this.http
+      .get<TournamentMatchesResponse>(`${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/matches`, {
+        headers: this.getAuthHeaders(),
+        params
+      })
+      .pipe(
+        map(r => this.mapResponseToPayload(r)),
+        catchError(error => {
+          console.error('Error fetching all past tournament matches:', error);
+          return throwError(() => new Error('Error al cargar los partidos'));
+        })
+      );
+  }
+
   getLiveMatches(): Observable<LiveMatch[]> {
-    return this.fetchTournamentMatches().pipe(
-      map(response => (response.live_matches ?? []).map(m => this.mapMatch(m)))
-    );
+    return this.getTournamentMatchLists().pipe(map(p => p.liveMatches));
   }
 
   getUpcomingMatches(): Observable<LiveMatch[]> {
-    return this.fetchTournamentMatches().pipe(
-      map(response => (response.next_matches ?? []).map(m => this.mapMatch(m)))
-    );
+    return this.getTournamentMatchLists().pipe(map(p => p.upcomingMatches));
   }
 
   getPastMatches(): Observable<LiveMatch[]> {
-    return this.fetchTournamentMatches().pipe(
-      map(response => (response.past_matches ?? []).map(m => this.mapMatch(m)))
-    );
+    return this.getTournamentMatchLists().pipe(map(p => p.pastMatches));
   }
 
   getMatchById(matchId: string): Observable<LiveMatch | null> {
-    return this.fetchTournamentMatches().pipe(
+    return this.getInitialTournamentMatches().pipe(
       map(response => {
         const all = [
           ...(response.live_matches ?? []),

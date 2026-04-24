@@ -115,12 +115,12 @@
     </div>
 
     <!-- Past Matches Section -->
-    <div class="past-section" *ngIf="!isLoading && pastMatches.length > 0">
+    <div class="past-section" *ngIf="!isLoading && (pastMatches.length > 0 || showLoadMorePastMatches)">
       <div class="section-header">
         <h2 class="section-title past">Partidos Terminados</h2>
       </div>
 
-      <div class="past-matches-list">
+      <div class="past-matches-list" *ngIf="pastMatches.length > 0">
         <div class="past-match-card results-match-grid" *ngFor="let match of pastMatches">
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
@@ -157,6 +157,13 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <div class="past-load-more" *ngIf="showLoadMorePastMatches">
+        <button type="button" class="load-more-past-btn" (click)="loadMorePastMatches()" [disabled]="isLoadingMorePast">
+          <span *ngIf="!isLoadingMorePast">MOSTRAR MÁS PARTIDOS</span>
+          <span *ngIf="isLoadingMorePast">Cargando…</span>
+        </button>
       </div>
     </div>
 

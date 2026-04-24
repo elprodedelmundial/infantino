@@ -12,7 +12,10 @@ import {
   LiveMatch,
   MatchWithPredictions,
   DashboardLiveData,
-  AllPredictionsData
+  AllPredictionsData,
+  AdminTournamentListItem,
+  AdminTournamentDetail,
+  TournamentAwardWinners
 } from '../models/tournament.model';
 import { TournamentPredictions } from './match-service.interface';
 
@@ -42,6 +45,12 @@ export interface ITournamentService {
   getJoinedTournamentIds(): string[];
   updateGroup(groupId: string, update: { name?: string; maxMembers?: number; isPrivate?: boolean }): Observable<boolean>;
   getMatchGroupPredictions(groupId: string, matchId: string): Observable<TournamentPredictions | null>;
+  getAdminTournaments(): Observable<AdminTournamentListItem[]>;
+  getAdminTournamentDetail(tournamentId: string): Observable<AdminTournamentDetail | null>;
+  patchAdminTournament(
+    tournamentId: string,
+    payload: { name: string; status: string; winners: TournamentAwardWinners }
+  ): Observable<boolean>;
 }
 
 export const TOURNAMENT_SERVICE = 'TOURNAMENT_SERVICE';

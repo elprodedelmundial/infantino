@@ -9,6 +9,8 @@ import { PredictionsEditComponent } from './pages/predictions-edit/predictions-e
 import { ProfileEditComponent } from './pages/profile-edit/profile-edit.component';
 import { TournamentAwardsComponent } from './pages/tournament-awards/tournament-awards.component';
 import { RulesComponent } from './pages/rules/rules.component';
+import { AdminTournamentComponent } from './pages/admin-tournament/admin-tournament.component';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -21,5 +23,6 @@ export const routes: Routes = [
   { path: 'tournament/:id/edit', component: PredictionsEditComponent },
   { path: 'tournament/:id/awards', component: TournamentAwardsComponent },
   { path: 'rules', component: RulesComponent },
+  { path: 'admin', component: AdminTournamentComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

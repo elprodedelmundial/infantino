@@ -15,7 +15,21 @@ export interface MatchPredictionsByTournament {
   tournamentPredictions: TournamentPredictions[];
 }
 
+/** From GET /api/tournaments/{id}/matches — includes total_* fields from API. */
+export interface TournamentMatchListsPayload {
+  liveMatches: LiveMatch[];
+  upcomingMatches: LiveMatch[];
+  pastMatches: LiveMatch[];
+  totalPastMatches: number;
+  totalLiveMatches: number;
+  totalNextMatches: number;
+}
+
 export interface IMatchService {
+  /** Default window: next=5, past=10; uses cache until clearCache. */
+  getTournamentMatchLists(): Observable<TournamentMatchListsPayload>;
+  /** Same as initial request but without `past` — returns all finished matches. */
+  loadAllPastTournamentMatchLists(): Observable<TournamentMatchListsPayload>;
   getLiveMatches(): Observable<LiveMatch[]>;
   getUpcomingMatches(): Observable<LiveMatch[]>;
   getPastMatches(): Observable<LiveMatch[]>;

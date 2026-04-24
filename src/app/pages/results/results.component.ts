@@ -4,7 +4,13 @@ import { Router } from '@angular/router';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
-import { IMatchService, MATCH_SERVICE, MatchPredictionsByTournament, TournamentPredictions } from '../../services/match-service.interface';
+import {
+  IMatchService,
+  MATCH_SERVICE,
+  MatchPredictionsByTournament,
+  TournamentMatchListsPayload,
+  TournamentPredictions
+} from '../../services/match-service.interface';
 import { JoinedTournament, LiveMatch } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
@@ -32,6 +38,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
   liveMatches: LiveMatch[] = [];
   upcomingMatches: LiveMatch[] = [];
   pastMatches: LiveMatch[] = [];
+  totalPastMatches = 0;
+  /** True after user chose "mostrar más" — periodic refresh uses full-past request. */
+  private useFullPastFetch = false;
+  isLoadingMorePast = false;
   
   // Modal states
   showPredictionsModal: boolean = false;
@@ -71,33 +81,52 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   loadData(): void {
     this.isLoading = true;
-    
+    this.useFullPastFetch = false;
+
     forkJoin({
       tournaments: this.tournamentService.getJoinedTournaments(),
-      liveMatches: this.matchService.getLiveMatches(),
-      upcomingMatches: this.matchService.getUpcomingMatches(),
-      pastMatches: this.matchService.getPastMatches()
-    }).subscribe(({ tournaments, liveMatches, upcomingMatches, pastMatches }) => {
+      lists: this.matchService.getTournamentMatchLists()
+    }).subscribe(({ tournaments, lists }) => {
       this.joinedTournaments = tournaments;
-      this.liveMatches = liveMatches;
-      this.upcomingMatches = upcomingMatches;
-      this.pastMatches = pastMatches;
+      this.applyMatchListsPayload(lists);
       this.isLoading = false;
     });
   }
 
+  get showLoadMorePastMatches(): boolean {
+    return this.totalPastMatches > 0 && this.pastMatches.length < this.totalPastMatches;
+  }
+
+  loadMorePastMatches(): void {
+    if (!this.showLoadMorePastMatches || this.isLoadingMorePast) return;
+    this.isLoadingMorePast = true;
+    this.matchService.loadAllPastTournamentMatchLists().subscribe({
+      next: lists => {
+        this.useFullPastFetch = true;
+        this.applyMatchListsPayload(lists);
+        this.isLoadingMorePast = false;
+      },
+      error: () => {
+        this.isLoadingMorePast = false;
+      }
+    });
+  }
+
+  private applyMatchListsPayload(lists: TournamentMatchListsPayload): void {
+    this.liveMatches = lists.liveMatches;
+    this.upcomingMatches = lists.upcomingMatches;
+    this.pastMatches = lists.pastMatches;
+    this.totalPastMatches = lists.totalPastMatches;
+  }
+
   /** Clears match cache and refetches live / upcoming / past (one HTTP round-trip). */
   private refreshMatchLists(): void {
+    if (this.useFullPastFetch) {
+      this.matchService.loadAllPastTournamentMatchLists().subscribe(lists => this.applyMatchListsPayload(lists));
+      return;
+    }
     this.matchService.clearCache();
-    forkJoin({
-      liveMatches: this.matchService.getLiveMatches(),
-      upcomingMatches: this.matchService.getUpcomingMatches(),
-      pastMatches: this.matchService.getPastMatches()
-    }).subscribe(({ liveMatches, upcomingMatches, pastMatches }) => {
-      this.liveMatches = liveMatches;
-      this.upcomingMatches = upcomingMatches;
-      this.pastMatches = pastMatches;
-    });
+    this.matchService.getTournamentMatchLists().subscribe(lists => this.applyMatchListsPayload(lists));
   }
 
   isMatchActive(match: LiveMatch): boolean {
