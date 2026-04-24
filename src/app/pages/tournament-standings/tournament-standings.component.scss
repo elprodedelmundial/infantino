@@ -607,34 +607,42 @@
   color: var(--accent);
 }
 
-.col-match-away-with-badge {
-  display: inline-flex;
+/* Same width as former padding-left so team columns stay aligned; + is centered here. */
+.match-code-to-teams-gutter {
+  box-sizing: border-box;
+  flex: 0 0 var(--standings-code-to-match-inset);
+  width: var(--standings-code-to-match-inset);
+  min-width: var(--standings-code-to-match-inset);
+  display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  min-width: 0;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.match-code-to-teams-gutter--header {
+  pointer-events: none;
 }
 
 .match-multiplier-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 900;
   line-height: 1;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #fecaca;
-  background: #991b1b;
-  border-radius: 6px;
+  letter-spacing: 0;
+  color: #141413;
+  background: var(--accent);
+  border-radius: 4px;
   flex-shrink: 0;
-  border: 1px solid rgba(248, 113, 113, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.25);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.35),
-    0 0 12px rgba(127, 29, 29, 0.35);
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(232, 255, 71, 0.35);
 }
 
 .col-prediction,
@@ -649,7 +657,23 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-left: var(--standings-code-to-match-inset);
+  min-width: 0;
+}
+
+.col-match--header {
+  flex-direction: row;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.col-match-heading {
+  flex: 1;
+  min-width: 0;
 }
 
 .team {
@@ -842,15 +866,10 @@
     --standings-code-to-match-inset: 36px;
   }
 
-  .col-match {
+  .col-match:not(.col-match--header) {
     flex-direction: column;
     gap: 6px;
     align-items: flex-start;
-  }
-
-  .col-match-away-with-badge {
-    width: 100%;
-    justify-content: flex-end;
   }
 
   .team {
@@ -882,6 +901,12 @@
     .table-row {
       grid-template-columns: max-content 1fr 80px 60px 50px;
     }
+  }
+
+  .match-multiplier-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
   }
 
   .team-name {
