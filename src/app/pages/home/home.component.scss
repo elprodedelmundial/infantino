@@ -3,8 +3,11 @@
   z-index: 1;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  // `safe center` keeps the hero block vertically centered in the viewport, but falls back
+  // to top-alignment whenever the content is taller than the viewport — this prevents the
+  // top (logo) from being clipped on very short screens (e.g. landscape phones).
+  align-items: safe center;
+  justify-content: safe center;
   padding: 120px 40px 60px;
 }
 
@@ -49,8 +52,21 @@
 }
 
 @media (max-width: 768px) {
+  // On mobile the hero + auth block stays vertically centered within the viewport
+  // (inherits `align-items: safe center; justify-content: safe center;` from the base
+  // rule). We just tighten the padding so centering has enough slack on small phones
+  // without pinning anything to an edge.
   .main {
-    padding: 100px 20px 40px;
+    padding: 20px;
+  }
+
+  .content-wrapper {
+    gap: 28px;
+    width: 100%;
+  }
+
+  .hero-logo {
+    gap: 12px;
   }
 
   .hero-mark {

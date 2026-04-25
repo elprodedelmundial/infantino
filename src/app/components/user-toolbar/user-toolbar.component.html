@@ -13,24 +13,51 @@
   <div class="toolbar-actions">
     <button
       type="button"
-      class="admin-btn"
+      class="admin-btn admin-btn--inline"
       *ngIf="isSuperuser()"
       (click)="goAdmin()">
       ADMINISTRAR
     </button>
 
   <div class="user-menu" (clickOutside)="closeDropdown()">
-    <button class="user-btn" (click)="toggleDropdown()">
+    <button
+      class="user-btn"
+      [class.user-btn--open]="isDropdownOpen"
+      (click)="toggleDropdown()"
+      [attr.aria-label]="isDropdownOpen ? 'Cerrar menú' : 'Abrir menú'"
+      [attr.aria-expanded]="isDropdownOpen">
+      <!-- Desktop: avatar + username + chevron (hidden on mobile via CSS) -->
       <div class="avatar">
         <span class="avatar-initials">{{ initials }}</span>
       </div>
       <span class="username">{{ displayedUsername() }}</span>
-      <svg class="chevron" [class.open]="isDropdownOpen" width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <svg class="chevron" [class.open]="isDropdownOpen" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
         <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <!-- Mobile: hamburger / close icon (hidden on desktop via CSS) -->
+      <svg class="hamburger" [class.open]="isDropdownOpen" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <line class="hamburger-bar hamburger-bar--1" x1="4" y1="7"  x2="18" y2="7"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line class="hamburger-bar hamburger-bar--2" x1="4" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line class="hamburger-bar hamburger-bar--3" x1="4" y1="15" x2="18" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
     </button>
     
     <div class="dropdown" [class.open]="isDropdownOpen">
+      <!--
+        ADMINISTRAR is shown inline in the desktop toolbar, so the dropdown copy is
+        hidden on desktop via CSS and only surfaces inside the mobile side drawer.
+      -->
+      <button class="dropdown-item dropdown-item--admin" *ngIf="isSuperuser()" (click)="goAdmin()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 10.5C9.38071 10.5 10.5 9.38071 10.5 8C10.5 6.61929 9.38071 5.5 8 5.5C6.61929 5.5 5.5 6.61929 5.5 8C5.5 9.38071 6.61929 10.5 8 10.5Z"
+                stroke="currentColor" stroke-width="1.5"/>
+          <path d="M13.3 8C13.3 7.77 13.28 7.55 13.26 7.33L14.63 6.27L13.13 3.73L11.52 4.36C11.16 4.09 10.77 3.86 10.35 3.69L10.1 2H6.9L6.65 3.69C6.23 3.86 5.84 4.09 5.48 4.36L3.87 3.73L2.37 6.27L3.74 7.33C3.72 7.55 3.7 7.77 3.7 8C3.7 8.23 3.72 8.45 3.74 8.67L2.37 9.73L3.87 12.27L5.48 11.64C5.84 11.91 6.23 12.14 6.65 12.31L6.9 14H10.1L10.35 12.31C10.77 12.14 11.16 11.91 11.52 11.64L13.13 12.27L14.63 9.73L13.26 8.67C13.28 8.45 13.3 8.23 13.3 8Z"
+                stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        Administrar
+      </button>
+      <div class="dropdown-divider dropdown-divider--admin" *ngIf="isSuperuser()"></div>
+
       <button class="dropdown-item" (click)="editProfile()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
@@ -84,3 +111,9 @@
   </div>
   </div>
 </nav>
+
+<!--
+  Mobile-only backdrop that dims the page while the side drawer is open. Clicking it closes
+  the drawer. Desktop hides it via CSS, so it never interferes with the popover dropdown.
+-->
+<div class="drawer-backdrop" [class.open]="isDropdownOpen" (click)="closeDropdown()" aria-hidden="true"></div>

@@ -1172,43 +1172,99 @@
     letter-spacing: 0.04em;
   }
 
+  // On mobile the match card pivots from a single-row grid into a 3-row stacked card:
+  //
+  //   ┌─────────────────────────────┐
+  //   │        30 JUN · 14:00       │  header  (.match-schedule / .match-schedule--live)
+  //   ├─────────────────────────────┤
+  //   │   🏳️    vs / score    🏳️   │  body    (home · center · away — each team is
+  //   │  Home                Away   │           flag with name stacked below it)
+  //   ├─────────────────────────────┤
+  //   │   [ PREDECIR / PREDICCIONES ]  footer  (.match-action, full-width button)
+  //   └─────────────────────────────┘
+  //
+  // We use grid-template-areas so the underlying HTML stays identical to the desktop view;
+  // only the grid mapping changes. The bonus ★ chip is repositioned to the top-right corner
+  // because its desktop anchor (the gap between schedule and home columns) no longer exists.
   .results-match-grid {
-    --results-schedule: 92px;
-    --results-center: 50px;
-    --results-action: 104px;
+    --results-center: 68px;
     --results-action-btn-height: 44px;
-    --results-column-gap: 8px;
+    --results-column-gap: 10px;
     --results-card-padding-x: 14px;
-    // Mobile teams already live in a cramped 1fr; keep the reserved strip small so names don't crush.
-    --results-bonus-area: 32px;
+    // Team stacks no longer need reserved outer padding — the bonus badge floats on the
+    // card instead of sitting inline with the home team column.
+    --results-bonus-area: 0px;
 
-    grid-template-columns:
-      var(--results-schedule)
-      minmax(0, 1fr)
-      var(--results-center)
-      minmax(0, 1fr)
-      var(--results-action);
+    grid-template-columns: minmax(0, 1fr) var(--results-center) minmax(0, 1fr);
+    grid-template-areas:
+      "header header header"
+      "home   center away  "
+      "footer footer footer";
     column-gap: var(--results-column-gap);
-    min-height: 104px;
+    row-gap: 12px;
+    min-height: 0;
+    align-items: center;
   }
 
   .upcoming-match-card,
   .past-match-card,
   .live-match-card.results-match-grid {
-    padding: 12px 14px;
+    padding: 14px;
   }
 
-  .match-schedule {
+  // Schedule becomes the top header row. It was flex-column on desktop; on mobile it
+  // flows horizontally (date · time) and is separated from the body by a bottom divider.
+  .results-match-grid > .match-schedule,
+  .results-match-grid > .match-schedule--live {
+    grid-area: header;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 0 10px 0;
     border-right: none;
-    padding-right: 6px;
-    flex-direction: column;
-    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
     min-width: 0;
+  }
+
+  // Override the live schedule's red divider so the border-bottom above is the only
+  // visible separator (otherwise we'd have a stray right-side border with no purpose).
+  .results-match-grid > .match-schedule--live {
+    border-bottom-color: rgba(255, 107, 107, 0.25);
+  }
+
+  .results-match-grid > .team-stack--home { grid-area: home; }
+  .results-match-grid > .match-center-col { grid-area: center; }
+  .results-match-grid > .team-stack--away { grid-area: away; }
+
+  // Action row sits at the bottom as a full-width footer with its own top divider.
+  .results-match-grid > .match-action {
+    grid-area: footer;
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+    justify-content: stretch;
+    align-items: stretch;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .results-match-grid .match-action .view-predictions-btn,
+  .results-match-grid .match-action .predict-btn,
+  .results-match-grid .match-action .locked-badge-small {
+    width: 100%;
     justify-content: center;
   }
 
-  .match-schedule--live {
-    padding-right: 6px;
+  // Reposition the bonus ★ to the top-right corner of the card. The desktop rule anchors
+  // it between the schedule and home columns using calc() and grid variables, none of
+  // which apply once the card is stacked.
+  .results-match-grid > .match-multiplier-badge--schedule-gap {
+    top: 10px;
+    left: auto;
+    right: 10px;
+    transform: none;
   }
 
   .flag-stack {
