@@ -332,6 +332,32 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return member.predictions[cat.id] as (Country | Player)[];
   }
 
+  get activeCategoryIndex(): number {
+    return this.categories.findIndex(c => c.id === this.activeCategory.id);
+  }
+
+  canGoToPreviousCategory(): boolean {
+    return this.activeCategoryIndex > 0;
+  }
+
+  canGoToNextCategory(): boolean {
+    return this.activeCategoryIndex >= 0 && this.activeCategoryIndex < this.categories.length - 1;
+  }
+
+  goToPreviousCategory(): void {
+    const i = this.activeCategoryIndex;
+    if (i > 0) {
+      this.setActiveCategory(this.categories[i - 1]);
+    }
+  }
+
+  goToNextCategory(): void {
+    const i = this.activeCategoryIndex;
+    if (i >= 0 && i < this.categories.length - 1) {
+      this.setActiveCategory(this.categories[i + 1]);
+    }
+  }
+
   setActiveCategory(category: AwardCategory): void {
     this.activeCategory = category;
     this.searchTerm = '';
