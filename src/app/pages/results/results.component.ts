@@ -70,13 +70,24 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
     
     this.loadData();
-    this.matchRefreshSub = interval(ResultsComponent.MATCH_REFRESH_MS).subscribe(() =>
-      this.refreshMatchLists()
-    );
   }
 
   ngOnDestroy(): void {
     this.matchRefreshSub?.unsubscribe();
+  }
+
+  /** 10s polling only while there are live matches; stops when the list is empty. */
+  private syncMatchRefreshSubscription(): void {
+    const hasLive = this.liveMatches.length > 0;
+    if (!hasLive) {
+      this.matchRefreshSub?.unsubscribe();
+      this.matchRefreshSub = undefined;
+      return;
+    }
+    if (this.matchRefreshSub) return;
+    this.matchRefreshSub = interval(ResultsComponent.MATCH_REFRESH_MS).subscribe(() =>
+      this.refreshMatchLists()
+    );
   }
 
   loadData(): void {
@@ -117,6 +128,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.upcomingMatches = lists.upcomingMatches;
     this.pastMatches = lists.pastMatches;
     this.totalPastMatches = lists.totalPastMatches;
+    this.syncMatchRefreshSubscription();
   }
 
   /** Clears match cache and refetches live / upcoming / past (one HTTP round-trip). */

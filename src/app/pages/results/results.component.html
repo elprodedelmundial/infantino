@@ -24,6 +24,7 @@
 
       <div class="live-matches-list">
         <div class="live-match-card results-match-grid" *ngFor="let match of liveMatches">
+          <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule match-schedule--live">
             <div class="match-time-badge live">
               <span class="live-indicator"></span>
@@ -57,7 +58,7 @@
                 <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
-              Ver Predicciones
+              Predicciones
             </button>
           </div>
         </div>
@@ -72,6 +73,7 @@
 
       <div class="upcoming-matches-list">
         <div class="upcoming-match-card results-match-grid" *ngFor="let match of upcomingMatches">
+          <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time">{{ formatMatchTime(match) }}</span>
@@ -122,6 +124,7 @@
 
       <div class="past-matches-list" *ngIf="pastMatches.length > 0">
         <div class="past-match-card results-match-grid" *ngFor="let match of pastMatches">
+          <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time finished-tag">FT</span>
@@ -153,7 +156,7 @@
                 <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
-              Ver Predicciones
+              Predicciones
             </button>
           </div>
         </div>
@@ -204,6 +207,7 @@
           <span class="team-name-stack">{{ selectedMatch.homeTeam.name }}</span>
         </div>
         <div class="match-score">
+          <span class="match-multiplier-badge" *ngIf="selectedMatch.hasMultiplier" title="Partido con multiplicador">★</span>
           <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
           <span class="match-time-label live" *ngIf="selectedMatch.status === 'live'">{{ selectedMatch.matchTime }}</span>
           <span class="match-time-label finished" *ngIf="selectedMatch.status === 'finished'">FT</span>

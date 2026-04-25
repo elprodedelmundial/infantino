@@ -124,9 +124,10 @@
           </div>
           <div class="predictions-dots">
             <div 
-              *ngFor="let pred of player.lastPredictions"
-              [ngClass]="getPredictionClass(pred)"
-              [title]="pred === 'correct' ? 'Correcto' : pred === 'half' ? 'Parcial' : pred === 'bonus' ? 'Bonus' : 'Incorrecto'">
+              *ngFor="let dot of player.lastPredictions"
+              [ngClass]="getPredictionClass(dot.result)"
+              [title]="lastPredictionTitle(dot)">
+              <span class="prediction-multiplier-glyph" *ngIf="dot.hasMultiplier">×</span>
             </div>
           </div>
           <div class="points">
@@ -215,7 +216,10 @@
         <div class="predictions-table" *ngIf="showPastPredictions">
           <div class="table-header">
             <span class="col-code">Código</span>
-            <span class="col-match">Partido</span>
+            <div class="col-match col-match--header">
+              <span class="match-code-to-teams-gutter match-code-to-teams-gutter--header" aria-hidden="true"></span>
+              <span class="col-match-heading">Partido</span>
+            </div>
             <span class="col-prediction">Predicción</span>
             <span class="col-result">Resultado</span>
             <span class="col-status">Estado</span>
@@ -224,6 +228,9 @@
           <div class="table-row" *ngFor="let pred of predictions.pastPredictions">
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
+              <div class="match-code-to-teams-gutter">
+                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">★</span>
+              </div>
               <div class="team home">
                 <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
@@ -276,7 +283,10 @@
         <div class="predictions-table upcoming-table">
           <div class="table-header">
             <span class="col-code">Código</span>
-            <span class="col-match">Partido</span>
+            <div class="col-match col-match--header">
+              <span class="match-code-to-teams-gutter match-code-to-teams-gutter--header" aria-hidden="true"></span>
+              <span class="col-match-heading">Partido</span>
+            </div>
             <span class="col-prediction">Tu Predicción</span>
             <span class="col-date">Fecha</span>
             <span class="col-actions">Acción</span>
@@ -285,6 +295,9 @@
           <div class="table-row" *ngFor="let pred of predictions.upcomingPredictions">
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
+              <div class="match-code-to-teams-gutter">
+                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">★</span>
+              </div>
               <div class="team home">
                 <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="team-name">{{ pred.homeTeam.name }}</span>

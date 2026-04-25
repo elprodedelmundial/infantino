@@ -23,7 +23,7 @@
   gap: 8px;
   padding: 8px 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   background: transparent;
@@ -48,7 +48,7 @@
 
 .page-subtitle {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
 }
@@ -63,7 +63,7 @@
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.32rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.02em;
@@ -187,10 +187,24 @@
   justify-self: stretch;
 }
 
+/*
+ * Reserve space on the outer edge of each team column so the flag + name sit a touch closer to
+ * the center score. Home uses the reserved space on its LEFT (where the bonus ★ chip floats);
+ * away mirrors it on its RIGHT for symmetrical balance and to keep both teams equidistant from
+ * the center. box-sizing: border-box is global, so this shrinks content without breaking the grid.
+ */
+.results-match-grid > .team-stack--home {
+  padding-left: var(--results-bonus-area);
+}
+
+.results-match-grid > .team-stack--away {
+  padding-right: var(--results-bonus-area);
+}
+
 .team-name-stack {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   line-height: 1.25;
   max-width: 100%;
   display: -webkit-box;
@@ -206,9 +220,14 @@
 .results-match-grid {
   --results-schedule: 120px;
   --results-center: 92px;
-  --results-action: 152px;
+  --results-action: 132px;
   --results-action-btn-height: 48px;
+  --results-column-gap: 14px;
+  --results-card-padding-x: 22px;
+  // Reserved strip on the outer edge of each team column; bonus ★ centers in the home side.
+  --results-bonus-area: 72px;
 
+  position: relative;
   display: grid;
   grid-template-columns:
     var(--results-schedule)
@@ -217,7 +236,7 @@
     minmax(0, 1fr)
     var(--results-action);
   align-items: center;
-  column-gap: 14px;
+  column-gap: var(--results-column-gap);
   min-height: 112px;
   box-sizing: border-box;
 }
@@ -296,7 +315,7 @@
 .team-name {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -332,7 +351,7 @@
   gap: 8px;
   padding: 12px 20px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   background: transparent;
@@ -391,23 +410,68 @@
   height: 100%;
 }
 
+// Rust/cream ★ chip, matching the tournament-standings badge style.
+.match-multiplier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  /* Syne renders the ★ glyph with balanced metrics; mono fonts push it off-center. */
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #f5e8d3;
+  background: #a53d1b;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid rgba(245, 232, 211, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(165, 61, 27, 0.4);
+}
+
+// Bonus ★ floats inside the reserved strip on the left of the home team column,
+// vertically centered on the whole card so it never nudges other content. Works for every
+// row (live/upcoming/past) because the grid shape is identical across sections.
+.results-match-grid > .match-multiplier-badge--schedule-gap {
+  position: absolute;
+  top: 50%;
+  left: calc(
+    var(--results-card-padding-x)
+    + var(--results-schedule)
+    + var(--results-column-gap)
+    + var(--results-bonus-area) / 2
+  );
+  transform: translate(-50%, -50%);
+  margin: 0;
+  z-index: 1;
+}
+
+.match-score .match-multiplier-badge {
+  margin-bottom: 6px;
+}
+
 .match-date {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .match-time {
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .vs {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   flex-shrink: 0;
 }
@@ -419,7 +483,7 @@
   gap: 6px;
   padding: 6px 12px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   background: rgba(74, 222, 128, 0.1);
   border: 1px solid rgba(74, 222, 128, 0.3);
@@ -443,7 +507,7 @@
   align-items: center;
   gap: 5px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #fb923c;
   background: rgba(251, 146, 60, 0.1);
@@ -519,7 +583,7 @@
 
 .finished-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.05em;
@@ -532,7 +596,7 @@
   gap: 6px;
   padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -727,7 +791,7 @@
       }
 
       .team-name-stack {
-        font-size: 0.72rem;
+        font-size: 0.82rem;
       }
 
       .match-score {
@@ -754,7 +818,7 @@
 
       .match-time-label {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
+        font-size: 0.72rem;
         padding: 4px 8px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
@@ -1111,8 +1175,12 @@
   .results-match-grid {
     --results-schedule: 92px;
     --results-center: 50px;
-    --results-action: 118px;
+    --results-action: 104px;
     --results-action-btn-height: 44px;
+    --results-column-gap: 8px;
+    --results-card-padding-x: 14px;
+    // Mobile teams already live in a cramped 1fr; keep the reserved strip small so names don't crush.
+    --results-bonus-area: 32px;
 
     grid-template-columns:
       var(--results-schedule)
@@ -1120,7 +1188,7 @@
       var(--results-center)
       minmax(0, 1fr)
       var(--results-action);
-    column-gap: 8px;
+    column-gap: var(--results-column-gap);
     min-height: 104px;
   }
 
@@ -1154,7 +1222,7 @@
   }
 
   .team-name-stack {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     -webkit-line-clamp: 3;
   }
 

@@ -10,7 +10,8 @@ import {
   PredictionResult,
   UserPredictions,
   MatchPrediction,
-  GroupRole
+  GroupRole,
+  LastStandingPrediction
 } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
@@ -232,6 +233,18 @@ export class TournamentStandingsComponent implements OnInit {
       case 'bonus': return 'prediction bonus';
       default: return 'prediction';
     }
+  }
+
+  lastPredictionTitle(dot: LastStandingPrediction): string {
+    const base =
+      dot.result === 'correct'
+        ? 'Correcto'
+        : dot.result === 'half'
+          ? 'Parcial'
+          : dot.result === 'bonus'
+            ? 'Bonus'
+            : 'Incorrecto';
+    return dot.hasMultiplier ? `${base} · Multiplicador` : base;
   }
 
   getPositionClass(position: number): string {

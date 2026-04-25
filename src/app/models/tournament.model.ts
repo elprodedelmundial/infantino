@@ -21,6 +21,13 @@ export interface JoinedTournament {
 
 export type PredictionResult = 'correct' | 'incorrect' | 'half' | 'bonus';
 
+/** One dot in standings "Últimas" — from group standings `last_predictions` entries */
+export interface LastStandingPrediction {
+  result: PredictionResult;
+  /** Bonus multiplier applied to this prediction (API `has_multiplier`) */
+  hasMultiplier: boolean;
+}
+
 export interface TournamentPlayer {
   id: string;
   username: string;
@@ -28,7 +35,7 @@ export interface TournamentPlayer {
   fullName?: string;
   position: number;
   points: number;
-  lastPredictions: PredictionResult[];
+  lastPredictions: LastStandingPrediction[];
   avatarInitials: string;
 }
 
@@ -109,6 +116,8 @@ export interface MatchPrediction {
   group?: string;
   odds?: MatchOdds;
   matchStatus?: MatchApiStatus;
+  /** From match payload `has_multiplier` */
+  hasMultiplier?: boolean;
 }
 
 export interface UserPredictions {
@@ -229,6 +238,8 @@ export interface LiveMatch {
   odds?: MatchOdds;
   userPrediction?: MatchScore;
   tournamentIds: string[]; // Which tournaments this match is relevant to
+  /** From match payload `has_multiplier` */
+  hasMultiplier?: boolean;
 }
 
 // Member Predictions

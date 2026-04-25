@@ -158,45 +158,53 @@
         </div>
 
         <div class="match-footer">
-          <!-- Result badge for played matches -->
-          <span [ngClass]="getResultBadgeClass(match)" *ngIf="match.isPlayed && match.result">
-            {{ match.result === 'correct' ? 'Correcto' : match.result === 'half' ? 'Parcial' : 'Incorrecto' }}
-          </span>
+          <div class="match-footer-leading">
+            <span class="match-multiplier-badge match-multiplier-badge--star" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
 
-          <!-- Locked badge for active matches (started or < 15 min) -->
-          <div class="locked-badge" *ngIf="isMatchLocked(match) && !match.isPlayed">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M4.5 6V4C4.5 2.619 5.619 1.5 7 1.5C8.381 1.5 9.5 2.619 9.5 4V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            Bloqueado — partido activo
+            <!-- Result badge for played matches -->
+            <span [ngClass]="getResultBadgeClass(match)" *ngIf="match.isPlayed && match.result">
+              {{ match.result === 'correct' ? 'Correcto' : match.result === 'half' ? 'Parcial' : match.result === 'bonus' ? 'Bonus' : 'Incorrecto' }}
+            </span>
           </div>
 
-          <!-- Edit controls for non-locked future matches -->
-          <div class="edit-controls" *ngIf="!isMatchLocked(match)">
-            <button 
-              class="edit-btn" 
-              *ngIf="!match.isEditing"
-              (click)="startEditing(match)">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <div class="match-footer-center">
+            <!-- Locked badge for active matches (started or < 15 min) -->
+            <div class="locked-badge" *ngIf="isMatchLocked(match) && !match.isPlayed">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M4.5 6V4C4.5 2.619 5.619 1.5 7 1.5C8.381 1.5 9.5 2.619 9.5 4V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
-              Editar
-            </button>
-            
-            <div class="edit-actions" *ngIf="match.isEditing">
-              <button class="cancel-btn" (click)="cancelEditing(match)">
-                Cancelar
-              </button>
+              Bloqueado — partido activo
+            </div>
+          </div>
+
+          <div class="match-footer-trailing">
+            <!-- Edit controls for non-locked future matches -->
+            <div class="edit-controls" *ngIf="!isMatchLocked(match)">
               <button 
-                class="save-btn" 
-                [disabled]="!match.hasChanges"
-                (click)="saveMatch(match)">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                class="edit-btn" 
+                *ngIf="!match.isEditing"
+                (click)="startEditing(match)">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
                 </svg>
-                Guardar
+                Editar
               </button>
+              
+              <div class="edit-actions" *ngIf="match.isEditing">
+                <button class="cancel-btn" (click)="cancelEditing(match)">
+                  Cancelar
+                </button>
+                <button 
+                  class="save-btn" 
+                  [disabled]="!match.hasChanges"
+                  (click)="saveMatch(match)">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Guardar
+                </button>
+              </div>
             </div>
           </div>
         </div>

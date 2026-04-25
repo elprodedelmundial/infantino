@@ -31,7 +31,7 @@ interface TournamentMatchResponse {
   away_team: TeamResponse;
   home_quota: number;
   away_quota: number;
-  tie_quota: number;
+  draw_quota: number;
   status: 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED';
   substatus?: string;
   started_at?: string;
@@ -40,6 +40,7 @@ interface TournamentMatchResponse {
   away_goals?: number;
   home_penalties?: number;
   away_penalties?: number;
+  has_multiplier?: boolean;
 }
 
 interface TournamentMatchesResponse {
@@ -106,10 +107,11 @@ export class MatchService implements IMatchService {
       stage: 'group_stage',
       odds: {
         home: match.home_quota,
-        draw: match.tie_quota,
+        draw: match.draw_quota,
         away: match.away_quota
       },
-      tournamentIds: [WORLD_CUP_ID]
+      tournamentIds: [WORLD_CUP_ID],
+      hasMultiplier: match.has_multiplier === true
     };
 
     if (match.home_goals !== undefined && match.away_goals !== undefined) {
