@@ -127,13 +127,33 @@ export class TournamentStandingsComponent implements OnInit {
     });
   }
 
+  /**
+   * So browser Back from Editar Predicciones returns to this URL with
+   * history.state (Mis Predicciones / predictions tab) restored.
+   */
+  private setHistoryStateForReturnFromEdit(): void {
+    const s: { username: string; role?: GroupRole; activeTab: 'standings' | 'predictions' } = {
+      ...(typeof history !== 'undefined' && history.state && typeof history.state === 'object'
+        ? (history.state as object)
+        : {}),
+      username: this.username,
+      activeTab: 'predictions'
+    };
+    if (this.userRole) {
+      s.role = this.userRole;
+    }
+    history.replaceState(s, '', this.router.url);
+  }
+
   editAllPredictions(): void {
+    this.setHistoryStateForReturnFromEdit();
     this.router.navigate(['/tournament', this.tournamentId, 'edit'], {
       state: { username: this.username }
     });
   }
 
   editPrediction(prediction: MatchPrediction): void {
+    this.setHistoryStateForReturnFromEdit();
     this.router.navigate(['/tournament', this.tournamentId, 'edit'], {
       state: { 
         username: this.username,
@@ -266,5 +286,20 @@ export class TournamentStandingsComponent implements OnInit {
       day: 'numeric',
       month: 'short'
     });
+  }
+
+  /**
+   * Color for predicted score in mobile past-match cards (status badge removed;
+   * correct=green, half=orange, incorrect=red, bonus=blue, live=muted).
+   */
+  getPredictionLineToneClass(pred: MatchPrediction): string {
+    if (pred.matchStatus === 'IN_PROGRESS') return 'pred-line-tone--live';
+    switch (pred.result) {
+      case 'correct': return 'pred-line-tone--correct';
+      case 'half': return 'pred-line-tone--half';
+      case 'bonus': return 'pred-line-tone--bonus';
+      case 'incorrect': return 'pred-line-tone--incorrect';
+      default: return 'pred-line-tone--muted';
+    }
   }
 }

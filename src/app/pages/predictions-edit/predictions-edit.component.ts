@@ -15,10 +15,14 @@ import {
 import { isSwitzerland } from '../../utils/flag.utils';
 
 interface EditablePrediction extends MatchPrediction {
-  editedHomeScore: number;
-  editedAwayScore: number;
+  /** `null` = empty in mobile boxed inputs (user cleared to type a new value) */
+  editedHomeScore: number | null;
+  editedAwayScore: number | null;
   isEditing: boolean;
   hasChanges: boolean;
+  /** Value before mobile focus; restored on blur if the field is left empty */
+  mobileHomeBackup?: number;
+  mobileAwayBackup?: number;
 }
 
 @Component({
@@ -165,47 +169,156 @@ export class PredictionsEditComponent implements OnInit {
   cancelEditing(match: EditablePrediction): void {
     match.editedHomeScore = match.predictedScore.home;
     match.editedAwayScore = match.predictedScore.away;
+    match.mobileHomeBackup = undefined;
+    match.mobileAwayBackup = undefined;
     match.isEditing = false;
     match.hasChanges = false;
   }
 
   saveMatch(match: EditablePrediction): void {
     if (this.isMatchLocked(match)) return;
-    
+
     const newScore: MatchScore = {
-      home: match.editedHomeScore,
-      away: match.editedAwayScore
+      home: this.effectiveHome(match),
+      away: this.effectiveAway(match)
     };
     
     this.tournamentService.updatePrediction(this.tournamentId, match.id, newScore).subscribe(success => {
       if (success) {
         match.predictedScore = { ...newScore };
+        match.editedHomeScore = newScore.home;
+        match.editedAwayScore = newScore.away;
+        match.mobileHomeBackup = undefined;
+        match.mobileAwayBackup = undefined;
         match.isEditing = false;
         match.hasChanges = false;
       }
     });
   }
 
+  private scoreNum(v: number | null | undefined): number {
+    return v === null || v === undefined ? 0 : v;
+  }
+
+  /** Effective value while editing (uses backup if the box is still empty) */
+  private effectiveHome(m: EditablePrediction): number {
+    if (m.editedHomeScore !== null) {
+      return m.editedHomeScore;
+    }
+    if (m.mobileHomeBackup !== undefined) {
+      return m.mobileHomeBackup;
+    }
+    return 0;
+  }
+
+  private effectiveAway(m: EditablePrediction): number {
+    if (m.editedAwayScore !== null) {
+      return m.editedAwayScore;
+    }
+    if (m.mobileAwayBackup !== undefined) {
+      return m.mobileAwayBackup;
+    }
+    return 0;
+  }
+
   onScoreChange(match: EditablePrediction): void {
-    match.hasChanges = 
-      match.editedHomeScore !== match.predictedScore.home ||
-      match.editedAwayScore !== match.predictedScore.away;
+    match.hasChanges =
+      this.effectiveHome(match) !== match.predictedScore.home ||
+      this.effectiveAway(match) !== match.predictedScore.away;
+  }
+
+  onMobileBoxScoreChange(
+    match: EditablePrediction,
+    which: 'home' | 'away',
+    raw: string | number | null | undefined
+  ): void {
+    if (this.isMatchLocked(match) || match.isPlayed) {
+      return;
+    }
+    if (raw === null || raw === undefined || raw === '') {
+      if (which === 'home') {
+        match.editedHomeScore = null;
+      } else {
+        match.editedAwayScore = null;
+      }
+      this.onScoreChange(match);
+      return;
+    }
+    const n = this.clampScoreInput(raw);
+    if (which === 'home') {
+      match.editedHomeScore = n;
+      match.mobileHomeBackup = undefined;
+    } else {
+      match.editedAwayScore = n;
+      match.mobileAwayBackup = undefined;
+    }
+    this.onScoreChange(match);
+  }
+
+  onMobileScoreBoxFocus(match: EditablePrediction, which: 'home' | 'away'): void {
+    if (this.isMatchLocked(match) || match.isPlayed) {
+      return;
+    }
+    if (which === 'home') {
+      match.mobileHomeBackup = this.scoreNum(match.editedHomeScore);
+      match.editedHomeScore = null;
+    } else {
+      match.mobileAwayBackup = this.scoreNum(match.editedAwayScore);
+      match.editedAwayScore = null;
+    }
+    this.onScoreChange(match);
+  }
+
+  onMobileBoxBlur(match: EditablePrediction, which: 'home' | 'away'): void {
+    if (this.isMatchLocked(match) || match.isPlayed) {
+      return;
+    }
+    if (which === 'home') {
+      if (match.editedHomeScore === null && match.mobileHomeBackup !== undefined) {
+        match.editedHomeScore = match.mobileHomeBackup;
+      }
+      match.mobileHomeBackup = undefined;
+    } else {
+      if (match.editedAwayScore === null && match.mobileAwayBackup !== undefined) {
+        match.editedAwayScore = match.mobileAwayBackup;
+      }
+      match.mobileAwayBackup = undefined;
+    }
+    this.onScoreChange(match);
+  }
+
+  private clampScoreInput(raw: string | number | null | undefined): number {
+    if (raw === null || raw === undefined) {
+      return 0;
+    }
+    if (raw === '') {
+      return 0;
+    }
+    const n =
+      typeof raw === 'string' ? parseInt(raw, 10) : Math.floor(Number(raw));
+    if (Number.isNaN(n) || n < 0) {
+      return 0;
+    }
+    if (n > 9) {
+      return 9;
+    }
+    return n;
   }
 
   incrementScore(match: EditablePrediction, team: 'home' | 'away'): void {
-    if (team === 'home' && match.editedHomeScore < 9) {
-      match.editedHomeScore++;
-    } else if (team === 'away' && match.editedAwayScore < 9) {
-      match.editedAwayScore++;
+    if (team === 'home' && this.scoreNum(match.editedHomeScore) < 9) {
+      match.editedHomeScore = this.scoreNum(match.editedHomeScore) + 1;
+    } else if (team === 'away' && this.scoreNum(match.editedAwayScore) < 9) {
+      match.editedAwayScore = this.scoreNum(match.editedAwayScore) + 1;
     }
     this.onScoreChange(match);
   }
 
   decrementScore(match: EditablePrediction, team: 'home' | 'away'): void {
-    if (team === 'home' && match.editedHomeScore > 0) {
-      match.editedHomeScore--;
-    } else if (team === 'away' && match.editedAwayScore > 0) {
-      match.editedAwayScore--;
+    if (team === 'home' && this.scoreNum(match.editedHomeScore) > 0) {
+      match.editedHomeScore = this.scoreNum(match.editedHomeScore) - 1;
+    } else if (team === 'away' && this.scoreNum(match.editedAwayScore) > 0) {
+      match.editedAwayScore = this.scoreNum(match.editedAwayScore) - 1;
     }
     this.onScoreChange(match);
   }
@@ -217,12 +330,21 @@ export class PredictionsEditComponent implements OnInit {
     this.isSaving = true;
     const updates = changedMatches.map(m => ({
       matchId: m.id,
-      score: { home: m.editedHomeScore, away: m.editedAwayScore }
+      score: {
+        home: this.effectiveHome(m),
+        away: this.effectiveAway(m)
+      }
     }));
     
     this.tournamentService.updateMultiplePredictions(this.tournamentId, updates).subscribe(() => {
       changedMatches.forEach(m => {
-        m.predictedScore = { home: m.editedHomeScore, away: m.editedAwayScore };
+        const h = this.effectiveHome(m);
+        const a = this.effectiveAway(m);
+        m.predictedScore = { home: h, away: a };
+        m.editedHomeScore = h;
+        m.editedAwayScore = a;
+        m.mobileHomeBackup = undefined;
+        m.mobileAwayBackup = undefined;
         m.hasChanges = false;
         m.isEditing = false;
       });
@@ -270,5 +392,16 @@ export class PredictionsEditComponent implements OnInit {
   getStageName(stageId: TournamentStage): string {
     const stage = this.stages.find(s => s.id === stageId);
     return stage?.name || stageId;
+  }
+
+  /** Suffix after match code in mobile header (e.g. " · Grupo K") — code is styled separately */
+  getMatchHeaderRoundSuffix(match: MatchPrediction): string {
+    if (match.group) {
+      return ` · Grupo ${match.group}`;
+    }
+    if (match.stage) {
+      return ` · ${this.getStageName(match.stage)}`;
+    }
+    return '';
   }
 }

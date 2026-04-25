@@ -230,6 +230,12 @@ export interface LiveMatch {
   homeTeam: Country;
   awayTeam: Country;
   currentScore?: MatchScore;
+  /**
+   * Penalty shoot-out score. Only set when the match was decided by penalties
+   * (i.e. both `home_penalties` and `away_penalties` are present on the API
+   * payload). Rendered underneath the full-time score, e.g. `0 - 0 (5 - 5)`.
+   */
+  penaltyScore?: MatchScore;
   matchTime?: string; // e.g., "45'+2" or "HT" or "78'"
   matchDate: Date;
   status: MatchStatus;
@@ -252,6 +258,13 @@ export interface MemberPrediction {
   /** From match predictions API user payload when present */
   fullName?: string;
   predictedScore: MatchScore;
+  /**
+   * Whether this user actually submitted a prediction for the match. When
+   * `false`, `predictedScore` is a placeholder (both goals = 0) and the UI
+   * should render a blank/"–" value instead of `0 - 0`, so a missing
+   * prediction isn't confused with a real 0-0 pick.
+   */
+  hasPrediction: boolean;
   isCurrentUser: boolean;
   predictionStatus?: PredictionStatus;
 }

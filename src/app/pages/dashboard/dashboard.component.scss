@@ -4,8 +4,11 @@
   min-height: 100vh;
   padding: 100px 40px 60px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  // `safe center` keeps the nav cards vertically centered within the viewport, but falls
+  // back to top-alignment when the content is taller than the viewport — so the first
+  // card never gets clipped underneath the fixed top toolbar on short screens.
+  align-items: safe center;
+  justify-content: safe center;
 }
 
 .content-wrapper {
@@ -99,7 +102,7 @@
 .btn-title {
   display: block;
   font-family: 'Syne', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
   letter-spacing: 0.15em;
   color: var(--text-primary);
@@ -109,9 +112,10 @@
 .btn-description {
   display: block;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
+  line-height: 1.45;
 }
 
 .btn-arrow {
@@ -134,31 +138,57 @@
 // Responsive
 @media (max-width: 768px) {
   .main {
-    padding: 80px 20px 40px;
-    align-items: flex-start;
-    padding-top: 120px;
+    // Tighter left/right padding keeps the tap targets close to the screen edges
+    // while still leaving a small margin so the boxes don't touch the viewport edge.
+    // We keep the base rule's `align-items: safe center` / `justify-content: safe center`
+    // so the three nav cards are vertically centered in the available viewport. The
+    // top padding still reserves space for the fixed 60px toolbar plus breathing room.
+    padding: 80px 14px 40px;
   }
 
+  // On mobile each card becomes a tall "tile": the icon sits above the text, everything is
+  // horizontally centered, and the cards are roomy enough to be easy thumb targets.
   .main-btn {
-    padding: 24px 20px;
-    gap: 16px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 18px;
+    padding: 32px 20px;
   }
 
   .btn-icon {
-    width: 60px;
-    height: 60px;
+    width: 72px;
+    height: 72px;
 
     svg {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
     }
   }
 
+  .btn-content {
+    text-align: center;
+  }
+
   .btn-title {
-    font-size: 1.15rem;
+    font-size: 1.55rem;
+    letter-spacing: 0.14em;
+    margin-bottom: 6px;
   }
 
   .btn-description {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  // On mobile the chevron adds no value (the whole card is already tappable)
+  // and just steals horizontal space from the title/description.
+  .btn-arrow {
+    display: none;
+  }
+
+  // Disable the horizontal-shift hover (there is no hover on touch) so the card
+  // never clips against its container when the user drags/taps.
+  .main-btn:hover {
+    transform: none;
   }
 }

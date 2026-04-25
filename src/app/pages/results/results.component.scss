@@ -310,6 +310,12 @@
 .score-display.score-display--inline {
   flex-direction: row;
   justify-content: center;
+  // Allow the penalty-shoot-out line ("(5 - 5)") to wrap onto its own row
+  // underneath the full-time score instead of squeezing into the same line.
+  // `.penalty-score` has `flex: 0 0 100%` below, so wrapping only kicks in
+  // when the penalty span is actually rendered.
+  flex-wrap: wrap;
+  row-gap: 2px;
 }
 
 .team-name {
@@ -342,6 +348,35 @@
 .results-match-grid .match-center-col .current-score {
   font-size: var(--score-size-row);
   letter-spacing: 0.05em;
+}
+
+// Penalty shoot-out score rendered under the full-time score, e.g. `0 - 0`
+// on one line and `(5 - 5)` on the next. Appears in two flex containers:
+//   1. `.score-display.score-display--inline` — row-oriented, needs
+//      `flex-basis: 100%` + `flex-wrap: wrap` (set on the parent above) to
+//      force the span onto its own row below the main score.
+//   2. `.modal-header .match-score` — column-oriented, already stacks
+//      children naturally, so no flex-basis override is needed there.
+// We share the typography between both contexts.
+.penalty-score {
+  text-align: center;
+  font-family: var(--score-font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.score-display.score-display--inline .penalty-score {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+.results-match-grid .match-center-col .penalty-score {
+  font-size: 0.82rem;
 }
 
 .view-predictions-btn {
@@ -761,78 +796,137 @@
   }
 }
 
+// Compact close control — used for both "Predicciones" and "Selecciona el Grupo"
+// (PREDICCIONES / PREDECIR) so the X is the same tap target and visual weight.
+.predictions-modal .modal-close,
+.selector-modal .modal-close {
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 // Predictions Modal
 .predictions-modal {
   .modal-header {
-    padding: 24px 60px 20px 24px;
+    // Symmetric left/right so the match block (home / score / away) is not
+    // optically pulled left; the old 60px right vs 24px left threw off balance.
+    padding: 20px 36px 16px 36px;
     border-bottom: 1px solid var(--border);
   }
 
   .match-info-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    gap: 10px;
+  }
+
+  // Live minute / FT sits above the main row so it never competes for space
+  // beside the score (and stays visually "at the top" of the header block).
+  .modal-header-substatus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    width: 100%;
+  }
+
+  // Single row: [ home | score | away ] grouped toward the visual center
+  // (extra space on the left/right of the trio instead of edge-stretching).
+  .modal-header-teamsrow {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
 
-    &.match-info-header--stacked {
-      .team-stack {
-        flex: 1;
-        min-width: 0;
-      }
+  .modal-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 32%;
+    max-width: 34%;
+    min-width: 0;
+    gap: 8px;
+    text-align: center;
+  }
 
-      .modal-team-flag {
-        width: 40px;
-        height: 28px;
-      }
+  .modal-team-flag {
+    width: 44px;
+    height: 30px;
+    flex-shrink: 0;
+  }
 
-      .modal-team-flag.flag--ch {
-        width: 28px;
-        height: 28px;
-      }
+  .modal-team-flag.flag--ch {
+    width: 30px;
+    height: 30px;
+  }
 
-      .team-name-stack {
-        font-size: 0.82rem;
-      }
+  .modal-team-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
+  }
 
-      .match-score {
-        flex-shrink: 0;
-        width: 88px;
-      }
+  .modal-header-substatus .match-time-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+
+    &.finished {
+      background: rgba(90, 90, 94, 0.2);
+      color: var(--text-muted);
     }
 
-    .match-score {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+    &.live {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+    }
+  }
 
-      .score {
-        font-family: var(--score-font-numeric);
-        font-size: var(--score-size-modal);
-        font-weight: 800;
-        line-height: var(--score-line-height);
-        font-variant-numeric: tabular-nums;
-        color: var(--text-primary);
-        text-align: center;
-      }
+  .match-score {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+    flex: 0 0 auto;
+    gap: 4px;
+    min-width: 96px;
+    max-width: 120px;
 
-      .match-time-label {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        padding: 4px 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-
-        &.finished {
-          background: rgba(90, 90, 94, 0.2);
-          color: var(--text-muted);
-        }
-
-        &.live {
-          background: rgba(255, 107, 107, 0.2);
-          color: #ff6b6b;
-        }
-      }
+    .score {
+      font-family: var(--score-font-numeric);
+      font-size: var(--score-size-modal);
+      font-weight: 800;
+      line-height: var(--score-line-height);
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      text-align: center;
     }
   }
 
@@ -953,39 +1047,35 @@
     min-width: 0;
   }
 
-  .member-avatar {
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.55rem;
-    font-weight: 700;
-    color: var(--bg-primary);
-  }
-
+  // Full member name — on desktop we allow wrapping so long names stay fully
+  // readable. On viewports ≤768px the predictions modal overrides this to a
+  // single line with a smaller size and ellipsis (see the mobile block).
   .member-name {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.3;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
+  }
 
-    .you-tag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.55rem;
-      padding: 2px 5px;
-      margin-left: 6px;
-      background: var(--accent);
-      color: var(--bg-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+  // Rendered to the right of the name as a sibling flex item inside
+  // `.member-info` (NOT nested inside `.member-name`). Keeping it outside the
+  // name span guarantees the tag never wraps underneath the name text: as the
+  // name cell shrinks/wraps, the tag stays on the same flex row, pinned to
+  // the end of the name column.
+  .you-tag {
+    flex-shrink: 0;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    padding: 2px 5px;
+    background: var(--accent);
+    color: var(--bg-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .member-right {
@@ -1006,6 +1096,16 @@
     color: var(--accent);
     width: 64px;
     text-align: center;
+
+    // Rendered when the user never submitted a prediction for this match —
+    // we show a muted em-dash ("–") instead of a literal `0 - 0`, which would
+    // otherwise be indistinguishable from someone who actually predicted a
+    // goalless draw.
+    &--empty {
+      color: var(--text-muted);
+      font-weight: 500;
+      opacity: 0.7;
+    }
   }
 
   .pred-status-badge {
@@ -1134,8 +1234,87 @@
     padding: 80px 20px 40px;
   }
 
+  // Center the page heading and its subtitle on mobile. We target these directly
+  // instead of centering the whole `.page-header`, because the back button lives in
+  // the same header and must remain left-anchored.
   .page-title {
     font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .page-subtitle {
+    text-align: center;
+  }
+
+  // Ver Predicciones modal — mobile: hide the Tú chip, hide the CORRECTO/PARCIAL/
+  // BONUS/INCORRECT badge (color is on the score instead), free space for the
+  // full display name, and color the score by resolved status.
+  .predictions-modal {
+    .you-tag {
+      display: none;
+    }
+
+    .pred-status-badge {
+      display: none;
+    }
+
+    // Only the score column on the right — badge is gone, so the name can use
+    // the freed horizontal space.
+    .member-right {
+      width: auto;
+      min-width: 0;
+      flex: 0 0 auto;
+      gap: 0;
+    }
+
+    .member-prediction {
+      width: auto;
+      min-width: 56px;
+      padding-left: 4px;
+    }
+
+    // Status colors (mirrors the old badge palette) — desktop keeps lime score +
+    // badge; mobile uses these instead of the label.
+    .member-prediction--status-correct {
+      color: var(--success);
+    }
+
+    .member-prediction--status-partial {
+      color: #fbbf24;
+    }
+
+    .member-prediction--status-incorrect {
+      color: var(--error);
+    }
+
+    .member-prediction--status-bonus {
+      color: #60a5fa;
+    }
+
+    .member-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: break-word;
+      word-break: normal;
+      hyphens: auto;
+    }
+  }
+
+  // Center the section titles ("En Vivo", "Próximos Partidos", "Partidos Terminados")
+  // so they act as chapter headers on mobile. The `.live` variant uses flex, so we
+  // swap in `justify-content: center` to keep the red dot next to the text centered
+  // as a unit; plain titles just get `text-align: center`.
+  .section-header {
+    text-align: center;
+  }
+
+  .section-title.live {
+    justify-content: center;
   }
 
   .match-teams {
@@ -1163,6 +1342,15 @@
 
   .results-match-grid .match-center-col .current-score {
     font-size: 1.22rem;
+    white-space: nowrap;
+  }
+
+  // Penalty row under the full-time score on mobile. Slightly smaller than the
+  // main score so it reads as a secondary annotation (e.g. `(5 - 5)`) without
+  // fighting the score for attention. `nowrap` keeps it on one line.
+  .results-match-grid .match-center-col .penalty-score {
+    font-size: 0.82rem;
+    margin-top: 2px;
   }
 
   .match-time-badge {
@@ -1172,58 +1360,112 @@
     letter-spacing: 0.04em;
   }
 
+  // On mobile the match card is a 2-row stacked card (no footer row — actions are
+  // tap-on-card). Layout:
+  //
+  //   ┌─────────────────────────────┐
+  //   │        30 JUN · 14:00       │  header  (.match-schedule / .match-schedule--live)
+  //   ├─────────────────────────────┤
+  //   │   🏳️    vs / score    🏳️   │  body    (home · center · away)
+  //   └─────────────────────────────┘
+  //
+  // Desktop keeps a third row for `.match-action` when the user is in a group; the
+  // bonus ★ chip is repositioned to the top-right on small viewports.
   .results-match-grid {
-    --results-schedule: 92px;
-    --results-center: 50px;
-    --results-action: 104px;
-    --results-action-btn-height: 44px;
-    --results-column-gap: 8px;
+    // Center column widened so "XX - XX" scores fit on a single line.
+    --results-center: 84px;
+    --results-action-btn-height: 42px;
+    --results-column-gap: 10px;
     --results-card-padding-x: 14px;
-    // Mobile teams already live in a cramped 1fr; keep the reserved strip small so names don't crush.
-    --results-bonus-area: 32px;
+    // Team stacks no longer need reserved outer padding — the bonus badge floats on the
+    // card instead of sitting inline with the home team column.
+    --results-bonus-area: 0px;
 
-    grid-template-columns:
-      var(--results-schedule)
-      minmax(0, 1fr)
-      var(--results-center)
-      minmax(0, 1fr)
-      var(--results-action);
+    grid-template-columns: minmax(0, 1fr) var(--results-center) minmax(0, 1fr);
+    // Two rows only: on phone `.match-action` is not in the DOM (tap the card
+    // instead of Predicciones / Predecir / Bloqueado).
+    grid-template-areas:
+      "header header header"
+      "home   center away  ";
     column-gap: var(--results-column-gap);
-    min-height: 104px;
+    row-gap: 14px;
+    min-height: 0;
+    align-items: center;
   }
 
   .upcoming-match-card,
   .past-match-card,
   .live-match-card.results-match-grid {
-    padding: 12px 14px;
+    padding: 14px;
   }
 
-  .match-schedule {
-    border-right: none;
-    padding-right: 6px;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
+  // Schedule becomes the top header row. It was flex-column on desktop; on mobile it
+  // flows horizontally (date · time) and is separated from the body by a bottom divider.
+  .results-match-grid > .match-schedule,
+  .results-match-grid > .match-schedule--live {
+    grid-area: header;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
+    gap: 10px;
+    padding: 0 0 10px 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    min-width: 0;
   }
 
-  .match-schedule--live {
-    padding-right: 6px;
+  // Override the live schedule's red divider so the border-bottom above is the only
+  // visible separator (otherwise we'd have a stray right-side border with no purpose).
+  .results-match-grid > .match-schedule--live {
+    border-bottom-color: rgba(255, 107, 107, 0.25);
   }
 
+  .results-match-grid > .team-stack--home { grid-area: home; }
+  .results-match-grid > .match-center-col { grid-area: center; }
+  .results-match-grid > .team-stack--away { grid-area: away; }
+
+  // Give the body a bit of vertical room — the flag+name stacks look cramped without
+  // some breathing space. The grid's row-gap already separates body from header/footer,
+  // but a touch of padding inside each team-stack makes the body feel taller.
+  .results-match-grid > .team-stack,
+  .results-match-grid > .match-center-col {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  // The bonus ★ sits at the far right of the header, vertically centered against the
+  // schedule text (not the padded header box). With card padding-top = 14px and a
+  // ~22px schedule content row, the content midpoint is ~y=25px — a 26px-tall badge
+  // with `top: 12px` places its center at y=25, comfortably clear of the header's
+  // border-bottom divider which sits at y≈44px.
+  .results-match-grid > .match-multiplier-badge--schedule-gap {
+    top: 12px;
+    left: auto;
+    right: 12px;
+    transform: none;
+  }
+
+  // Bigger flags so the body reads as the hero of the card.
   .flag-stack {
-    width: 38px;
-    height: 26px;
+    width: 52px;
+    height: 36px;
   }
 
   .flag.flag-stack.flag--ch {
-    width: 26px;
-    height: 26px;
+    width: 36px;
+    height: 36px;
   }
 
+  // Bigger country names, and prefer wrapping at natural break points (the hyphen in
+  // "Bosnia-Herzegovina" is a soft break opportunity, so `overflow-wrap: break-word`
+  // with `word-break: normal` lets the browser split after it instead of mid-word).
   .team-name-stack {
-    font-size: 0.8rem;
+    font-size: 0.95rem;
+    line-height: 1.3;
     -webkit-line-clamp: 3;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 
   .prediction-status {
@@ -1234,20 +1476,25 @@
     display: none;
   }
 
+  // Card tap: see `onResultsMatchCardClick` and `*ngIf` on `.match-action`.
+  .content-wrapper .results-match-grid {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.06);
+    transition: background 0.15s ease, transform 0.1s ease;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
   .predict-btn {
     width: 100%;
     justify-content: center;
   }
 
-  .predictions-modal .match-info-header {
-    flex-direction: column;
-    gap: 12px;
-
-    .team {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+  // Predictions modal header uses the same [ home | score | away ] row on
+  // every breakpoint — see `.modal-header-teamsrow` above. No additional
+  // mobile overrides are needed here.
 
   .selector-modal {
     padding: 24px 20px;

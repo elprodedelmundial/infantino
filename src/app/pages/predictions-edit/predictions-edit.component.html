@@ -9,7 +9,10 @@
         </svg>
         Volver
       </button>
-      <h1 class="page-title">Editar Predicciones</h1>
+      <h1 class="page-title">
+        <span class="page-title__desktop">Editar Predicciones</span>
+        <span class="page-title__mobile">Predicciones</span>
+      </h1>
       <p class="page-subtitle">{{ tournament.name }}</p>
     </div>
 
@@ -99,61 +102,144 @@
         [class.has-changes]="match.hasChanges">
         
         <div class="match-header">
-          <span class="match-code">{{ match.matchCode }}</span>
-          <span class="match-group" *ngIf="match.group">Grupo {{ match.group }}</span>
-          <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
+          <div class="match-header__desktop">
+            <span class="match-code">{{ match.matchCode }}</span>
+            <span class="match-group" *ngIf="match.group">Grupo {{ match.group }}</span>
+            <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
+          </div>
+          <div class="match-header__mobile">
+            <span class="match-header__compact-left">
+              <span class="match-header__code">{{ match.matchCode }}</span>
+              <ng-container *ngIf="getMatchHeaderRoundSuffix(match) as roundSuffix">
+                <span class="match-header__round-suffix">{{ roundSuffix }}</span>
+              </ng-container>
+            </span>
+            <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
+          </div>
         </div>
 
         <div class="match-content">
-          <div class="team home">
-            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(match.homeTeam)">
-            <span class="team-name">{{ match.homeTeam.name }}</span>
-            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">+{{ match.odds.home.toFixed(1) }}</span>
-          </div>
-
-          <!-- Score Display/Edit -->
-          <div class="score-section">
-            <div class="score-display" *ngIf="!match.isEditing">
-              <span class="predicted-score" [class.predicted-score--empty]="!match.hasPrediction">
-                {{ match.hasPrediction ? (match.predictedScore.home + ' - ' + match.predictedScore.away) : '–' }}
-              </span>
-              <span class="draw-odds" *ngIf="match.odds && !match.isPlayed">Empate +{{ match.odds.draw.toFixed(1) }}</span>
-              <span class="actual-score" *ngIf="match.isPlayed && match.actualScore">
-                Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
-              </span>
-            </div>
-
-            <div class="score-edit" *ngIf="match.isEditing">
-              <div class="score-input-group">
-                <button class="score-btn" (click)="decrementScore(match, 'home')">−</button>
-                <input 
-                  type="number" 
-                  class="score-input"
-                  [(ngModel)]="match.editedHomeScore"
-                  (ngModelChange)="onScoreChange(match)"
-                  min="0" 
-                  max="9">
-                <button class="score-btn" (click)="incrementScore(match, 'home')">+</button>
-              </div>
-              <span class="score-separator">-</span>
-              <div class="score-input-group">
-                <button class="score-btn" (click)="decrementScore(match, 'away')">−</button>
-                <input 
-                  type="number" 
-                  class="score-input"
-                  [(ngModel)]="match.editedAwayScore"
-                  (ngModelChange)="onScoreChange(match)"
-                  min="0" 
-                  max="9">
-                <button class="score-btn" (click)="incrementScore(match, 'away')">+</button>
-              </div>
+          <div class="match-col match-col--home">
+            <span
+              class="team-odds"
+              *ngIf="match.odds && !match.isPlayed">
+              +{{ match.odds.home.toFixed(1) }}
+            </span>
+            <div class="team home">
+              <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(match.homeTeam)">
+              <span class="team-name">{{ match.homeTeam.name }}</span>
             </div>
           </div>
 
-          <div class="team away">
-            <span class="team-odds" *ngIf="match.odds && !match.isPlayed">+{{ match.odds.away.toFixed(1) }}</span>
-            <span class="team-name">{{ match.awayTeam.name }}</span>
-            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(match.awayTeam)">
+          <div class="match-col match-col--center">
+            <span
+              class="draw-odds"
+              *ngIf="match.odds && !match.isPlayed"
+              >
+              <span class="draw-odds__mobile">+{{ match.odds.draw.toFixed(1) }}</span>
+              <span class="draw-odds__desktop">Empate +{{ match.odds.draw.toFixed(1) }}</span>
+            </span>
+            <div class="score-section">
+              <!-- Desktop: read mode + +/- steppers when editing -->
+              <div class="score-section__desktop">
+                <div class="score-display" *ngIf="!match.isEditing">
+                  <span class="predicted-score" [class.predicted-score--empty]="!match.hasPrediction">
+                    {{ match.hasPrediction ? (match.predictedScore.home + ' - ' + match.predictedScore.away) : '–' }}
+                  </span>
+                  <span class="actual-score" *ngIf="match.isPlayed && match.actualScore">
+                    Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
+                  </span>
+                </div>
+
+                <div class="score-edit" *ngIf="match.isEditing">
+                  <div class="score-input-group">
+                    <button type="button" class="score-btn" (click)="decrementScore(match, 'home')">−</button>
+                    <input
+                      type="number"
+                      class="score-input"
+                      [(ngModel)]="match.editedHomeScore"
+                      (ngModelChange)="onScoreChange(match)"
+                      min="0"
+                      max="9">
+                    <button type="button" class="score-btn" (click)="incrementScore(match, 'home')">+</button>
+                  </div>
+                  <span class="score-separator">-</span>
+                  <div class="score-input-group">
+                    <button type="button" class="score-btn" (click)="decrementScore(match, 'away')">−</button>
+                    <input
+                      type="number"
+                      class="score-input"
+                      [(ngModel)]="match.editedAwayScore"
+                      (ngModelChange)="onScoreChange(match)"
+                      min="0"
+                      max="9">
+                    <button type="button" class="score-btn" (click)="incrementScore(match, 'away')">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile: boxed goals; tap to type (no per-match Editar) -->
+              <div class="score-section__mobile" *ngIf="match.isPlayed">
+                <div class="score-boxes">
+                  <span class="score-box score-box--static">{{ match.predictedScore.home }}</span>
+                  <span class="score-boxes__sep" aria-hidden="true">-</span>
+                  <span class="score-box score-box--static">{{ match.predictedScore.away }}</span>
+                </div>
+                <span class="actual-score" *ngIf="match.actualScore">
+                  Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
+                </span>
+              </div>
+              <div class="score-section__mobile" *ngIf="!match.isPlayed && isMatchLocked(match)">
+                <div class="score-boxes">
+                  <span class="score-box score-box--static" [class.score-box--empty]="!match.hasPrediction">
+                    {{ match.hasPrediction ? match.predictedScore.home : '–' }}
+                  </span>
+                  <span class="score-boxes__sep" aria-hidden="true">-</span>
+                  <span class="score-box score-box--static" [class.score-box--empty]="!match.hasPrediction">
+                    {{ match.hasPrediction ? match.predictedScore.away : '–' }}
+                  </span>
+                </div>
+              </div>
+              <div class="score-section__mobile" *ngIf="!match.isPlayed && !isMatchLocked(match)">
+                <div class="score-boxes score-boxes--edit">
+                  <input
+                    type="number"
+                    class="score-box-input"
+                    [ngModel]="match.editedHomeScore"
+                    (ngModelChange)="onMobileBoxScoreChange(match, 'home', $event)"
+                    (focus)="onMobileScoreBoxFocus(match, 'home')"
+                    (blur)="onMobileBoxBlur(match, 'home')"
+                    min="0"
+                    max="9"
+                    inputmode="numeric"
+                    [attr.aria-label]="'Goles ' + match.homeTeam.name">
+                  <span class="score-boxes__sep" aria-hidden="true">-</span>
+                  <input
+                    type="number"
+                    class="score-box-input"
+                    [ngModel]="match.editedAwayScore"
+                    (ngModelChange)="onMobileBoxScoreChange(match, 'away', $event)"
+                    (focus)="onMobileScoreBoxFocus(match, 'away')"
+                    (blur)="onMobileBoxBlur(match, 'away')"
+                    min="0"
+                    max="9"
+                    inputmode="numeric"
+                    [attr.aria-label]="'Goles ' + match.awayTeam.name">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="match-col match-col--away">
+            <span
+              class="team-odds"
+              *ngIf="match.odds && !match.isPlayed">
+              +{{ match.odds.away.toFixed(1) }}
+            </span>
+            <div class="team away">
+              <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(match.awayTeam)">
+              <span class="team-name">{{ match.awayTeam.name }}</span>
+            </div>
           </div>
         </div>
 

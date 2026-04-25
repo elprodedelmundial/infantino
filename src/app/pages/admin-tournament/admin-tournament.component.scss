@@ -546,11 +546,61 @@ select.form-control {
 }
 
 @media (max-width: 768px) {
+  .page-subtitle {
+    display: none;
+  }
+
+  .save-bar-inline {
+    justify-content: center;
+  }
+
+  .save-bar-inline .hint {
+    display: none;
+  }
+
   .awards-layout {
     grid-template-columns: 1fr;
   }
 
   .categories-sidebar {
     position: static;
+  }
+
+  .awards-main .category-header {
+    text-align: center;
+  }
+
+  .awards-main .category-title,
+  .awards-main .category-description {
+    text-align: center;
+  }
+
+  .awards-main .selections-container .selections-title {
+    display: none;
+  }
+
+  .awards-main .selections-container .selections-list {
+    justify-content: center;
+  }
+
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .country-filter {
+    width: 100%;
+    align-items: center;
+  }
+
+  .country-filter-label {
+    display: none;
+  }
+
+  .country-select {
+    max-width: 22rem;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 }

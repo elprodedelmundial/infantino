@@ -53,11 +53,15 @@
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: var(--text-primary);
   margin-bottom: 4px;
+}
+
+.page-title__mobile {
+  display: none;
 }
 
 .page-subtitle {
@@ -72,6 +76,12 @@
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 32px;
+}
+
+/* Grupo — Por miembro: sin barra de premios, contenido a ancho completo */
+.awards-layout--all-by-member {
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
 
 // Sidebar
@@ -176,17 +186,65 @@
   gap: 4px;
 }
 
-.category-heading-text .category-title {
+.category-title-nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.category-title-nav__center {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+  gap: 4px;
+}
+
+.category-title-nav__btn {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(17, 17, 19, 0.6);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(232, 255, 71, 0.35);
+    color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.28;
+    cursor: default;
+  }
+}
+
+.category-heading-text .category-title-nav__center .category-title {
   margin-bottom: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  min-width: 0;
   line-height: 1.25;
   padding-bottom: 0.06em;
 }
 
-.category-heading-text .category-description {
+.category-title-nav__center .category-description {
   margin: 0;
   line-height: 1.35;
 }
@@ -196,11 +254,15 @@
 }
 
 .category-title {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1.25;
   color: var(--text-primary);
   margin-bottom: 8px;
+}
+
+.category-title-nav__center .category-title {
+  margin-bottom: 0;
 }
 
 .category-description {
@@ -262,6 +324,11 @@
   gap: 12px;
 }
 
+/* Player awards: one chosen candidate per full-width row (like option cards) */
+.selections-list--player-awards {
+  grid-template-columns: 1fr;
+}
+
 .selection-item {
   display: flex;
   align-items: center;
@@ -271,6 +338,22 @@
   box-sizing: border-box;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
+}
+
+.selection-item--removable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(248, 113, 113, 0.45);
+    background: rgba(248, 113, 113, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
 
 .selection-flag {
@@ -298,24 +381,6 @@
   font-size: 0.65rem;
   line-height: 1.45;
   color: var(--text-muted);
-}
-
-.remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.2s ease;
-  margin-left: 4px;
-
-  &:hover {
-    color: var(--error);
-  }
 }
 
 // Search
@@ -445,24 +510,42 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
+  color: inherit;
+  /* Avoid native focus ring clashing with selected state */
+  &:focus {
+    outline: none;
+  }
 
-  &:hover:not(.disabled) {
+  /* Do not restyle border on hover when already selected — a higher-specificity
+     :hover was overriding the accent border, so some picks looked "grey outlined". */
+  &:hover:not(.disabled):not(.selected) {
     border-color: var(--text-muted);
     background: rgba(255, 255, 255, 0.02);
   }
 
   &.selected {
-    border-color: var(--accent);
-    background: rgba(232, 255, 71, 0.05);
+    border: 2px solid var(--accent);
+    padding: 17px 17px;
+    background: rgba(232, 255, 71, 0.06);
 
     .option-name {
       color: var(--accent);
+    }
+
+    &:hover:not(.disabled) {
+      border-color: var(--accent);
+      background: rgba(232, 255, 71, 0.09);
     }
   }
 
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 
@@ -496,18 +579,6 @@
   line-height: 1.45;
   color: var(--text-muted);
   margin-top: 4px;
-}
-
-.option-check {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: var(--accent);
-  color: var(--bg-primary);
-  flex-shrink: 0;
-  margin-left: auto;
 }
 
 // Empty State
@@ -868,6 +939,82 @@
   min-height: 200px;
 }
 
+/* Grupo — Por miembro: un bloque debajo de otro (scroll en la página) */
+.awards-main--all-by-member {
+  min-width: 0;
+}
+
+.member-all-awards__section {
+  margin-bottom: 2.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.member-all-awards__title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+  text-align: left;
+}
+
+/* Desktop: fila de miembros centrada; premios de jugador en 3 columnas (misma anchura) */
+@media (min-width: 769px) {
+  .member-chips-carousel .member-chips-scroll {
+    text-align: center;
+  }
+
+  .member-chips-carousel .member-chips {
+    display: inline-flex;
+  }
+
+  .awards-main--all-by-member .selections-list--player-awards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .awards-main--all-by-member .selections-list--player-awards .selection-item {
+    min-width: 0;
+  }
+}
+
+.per-award-main .category-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  width: 100%;
+}
+
+/* Por premio (desktop): título y descripción alineados a la izquierda */
+.per-award-main .category-title-nav {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.per-award-main .category-title-nav__center {
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Grupo — Por miembro (desktop): mismo criterio que Por premio */
+.main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav__center {
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  max-width: 100%;
+}
+
 .members-loading {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
@@ -994,6 +1141,9 @@
   box-sizing: border-box;
   color: var(--text-muted);
   font-size: 0.85rem;
+  line-height: 1.4;
+  width: 100%;
+  text-align: left;
 }
 
 @media (max-width: 768px) {
@@ -1007,25 +1157,11 @@
   }
 
   .categories-sidebar {
-    position: static;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 16px;
+    display: none;
   }
 
-  .sidebar-title {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  .category-btn {
-    flex: 0 0 auto;
-    width: auto;
-    padding: 12px 16px;
-    min-height: 56px;
-    height: 56px;
-    margin-bottom: 0;
+  .category-title-nav__btn {
+    display: inline-flex;
   }
 
   .options-grid {
@@ -1036,18 +1172,80 @@
     }
   }
 
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    /* Match space below country filter (row margin-bottom) so search↔country = country↔options */
+    gap: 16px;
+  }
+
+  .filters-row .search-container {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .country-filter {
+    position: relative;
+    flex: 1 1 auto;
+    align-self: center;
+    width: 100%;
+    max-width: 22rem;
+    align-items: center;
+  }
+
+  .country-filter-label {
+    /* Remove visible title; keep in DOM for label[for] + screen readers */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .back-btn {
+    align-self: flex-start;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .header-content > div:last-child {
+    width: 100%;
+  }
+
   .page-title {
-    font-size: 1.5rem;
+    font-size: 1.9rem;
+  }
+
+  .page-title__desktop {
+    display: none;
+  }
+
+  .page-title__mobile {
+    display: block;
+  }
+
+  .page-subtitle,
+  .page-hint {
+    text-align: center;
   }
 
   .header-icon {
-    width: 44px;
-    height: 44px;
-
-    svg {
-      width: 22px;
-      height: 22px;
-    }
+    display: none;
   }
 
   .category-header-row {
@@ -1056,30 +1254,157 @@
     gap: 12px;
   }
 
-  .category-heading-text .category-title {
+  .category-header {
+    text-align: center;
+  }
+
+  .category-heading-text {
+    align-items: center;
+    text-align: center;
+  }
+
+  .category-title {
+    text-align: center;
+    font-size: 1.1rem;
+  }
+
+  .category-description {
+    text-align: center;
+  }
+
+  .category-heading-text .category-title-nav__center .category-title {
     min-width: 0;
     white-space: normal;
     overflow: visible;
     text-overflow: unset;
-    width: auto;
+    width: 100%;
     padding-bottom: 0;
   }
 
+  .per-award-main .category-title {
+    min-width: 0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .save-info {
+    display: none;
+  }
+
   .save-bar {
-    display: flex;
-    width: 100%;
+    display: block;
+    /* 5px margin on all sides; width offset so the row does not overflow */
+    width: calc(100% - 10px);
     max-width: none;
-    align-self: stretch;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 16px;
-    justify-content: flex-start;
+    align-self: center;
+    padding: 0;
+    margin: 5px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    flex-direction: unset;
+    gap: 0;
+    animation: none;
+    box-sizing: border-box;
   }
 
   .save-btn {
     width: 100%;
     min-width: 0;
     justify-content: center;
+  }
+
+  /* Ver predicciones de otros: sin Volver en toolbar, sin hint, sin iniciales en chips */
+  .main.others-awards-browse {
+    .browse-back {
+      display: none;
+    }
+
+    .page-hint {
+      display: none;
+    }
+
+    .chip-avatar {
+      display: none;
+    }
+
+    .member-chip {
+      gap: 0;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    .per-award-avatar {
+      display: none;
+    }
+
+    .per-award-user {
+      gap: 0;
+    }
+
+    .per-award-name--winner {
+      padding-left: 0;
+    }
+  }
+
+  .main.others-awards-browse .browse-toolbar {
+    justify-content: center;
+  }
+
+  /* Grupo — Por miembro (móvil): cabecera de premio centrada */
+  .main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav {
+    justify-content: center;
+  }
+
+  .main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav__center {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Por premio (móvil): cabecera de premio centrada */
+  .per-award-main .category-header {
+    align-items: center;
+    text-align: center;
+  }
+
+  .per-award-main .category-title-nav {
+    justify-content: center;
+  }
+
+  .per-award-main .category-title-nav__center {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Por premio: sin subtítulo bajo el título de premio; filas = nombre (memberLabel) y picks debajo */
+  .per-award-main .category-title-nav__center .category-description {
+    display: none;
+  }
+
+  .per-award-main .per-award-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 10px 0;
+    min-height: 0;
+  }
+
+  .per-award-main .per-award-user {
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .per-award-main .per-award-picks {
+    width: 100%;
+  }
+
+  .per-award-main .per-award-picks--player {
+    grid-template-columns: 1fr;
+  }
+
+  .per-award-main .per-award-name--winner {
+    padding-left: 0;
   }
 }

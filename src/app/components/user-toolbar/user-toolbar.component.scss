@@ -60,6 +60,8 @@
   gap: 16px;
 }
 
+// Inline desktop toolbar admin button. On mobile the ADMINISTRAR action is surfaced inside
+// the side drawer instead (see .dropdown-item--admin), so this inline button is hidden.
 .admin-btn {
   flex-shrink: 0;
   padding: 10px 18px;
@@ -139,6 +141,30 @@
   &.open {
     transform: rotate(180deg);
   }
+}
+
+// Hamburger icon lives inside .user-btn but is hidden on desktop. On mobile it becomes the
+// only visible glyph and morphs to an "X" when the side drawer is open.
+.hamburger {
+  display: none;
+  color: var(--text-primary);
+
+  .hamburger-bar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    transform-origin: center;
+  }
+
+  &.open {
+    .hamburger-bar--1 { transform: translateY(4px) rotate(45deg); }
+    .hamburger-bar--2 { opacity: 0; }
+    .hamburger-bar--3 { transform: translateY(-4px) rotate(-45deg); }
+  }
+}
+
+// Backdrop for the slide-in drawer. Only rendered visually on mobile (see @media below);
+// on desktop we hide it entirely so the popover dropdown keeps its original behavior.
+.drawer-backdrop {
+  display: none;
 }
 
 .dropdown {
@@ -222,6 +248,13 @@
   }
 }
 
+// ADMINISTRAR is mobile-drawer-only. On desktop the inline toolbar button handles it, so we
+// hide both the dropdown item and its following divider to avoid a duplicate entry.
+.dropdown-item--admin,
+.dropdown-divider--admin {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .toolbar {
     padding: 0 20px;
@@ -232,11 +265,119 @@
     font-size: 1.2rem;
   }
 
+  // On mobile the trigger is a compact hamburger icon button — the avatar, username,
+  // and chevron are hidden so the toolbar stays uncluttered.
+  // Explicit square dimensions (40x40) keep the X from being stretched by the parent's
+  // flex layout and guarantee a comfortable tap target.
   .user-btn {
-    padding: 6px 12px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    max-width: none;
+    gap: 0;
+    justify-content: center;
+    border-color: transparent;
+    background: transparent;
+
+    &:hover {
+      border-color: transparent;
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: none;
+    }
+
+    &.user-btn--open {
+      color: var(--accent);
+    }
+
+    .avatar,
+    .username,
+    .chevron {
+      display: none;
+    }
+
+    .hamburger {
+      display: block;
+    }
   }
 
-  .username {
+  // The popover dropdown transforms into a right-anchored side drawer that slides in.
+  // IMPORTANT: `.toolbar` uses `backdrop-filter: blur(...)`, which makes it the containing
+  // block for ALL fixed-positioned descendants. The dropdown lives inside the toolbar in the
+  // DOM, so we can't rely on `bottom: 0` (it resolves against the 60px-tall toolbar, giving a
+  // height of 0). We instead use `height: calc(100vh - 60px)` — viewport units sidestep the
+  // containing-block height constraint and let the drawer overflow the toolbar visually.
+  .dropdown {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    bottom: auto;
+    left: auto;
+    width: min(320px, 85vw);
+    min-width: 0;
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+    padding-top: 8px;
+    padding-bottom: 12px;
+    border: none;
+    border-left: 1px solid var(--border);
+    background: var(--bg-secondary);
+    transform: translateX(100%);
+    opacity: 1;
+    visibility: visible;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 99; // sits below the toolbar (z-index 100)
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+
+  // Backdrop lives outside the toolbar in the DOM, so it uses the viewport as its
+  // containing block naturally — `bottom: 0` is fine here.
+  .drawer-backdrop {
+    display: block;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 98;
+
+    &.open {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  // On mobile the header ADMINISTRAR button is replaced by the in-drawer menu entry below,
+  // freeing horizontal room in the toolbar for the hamburger.
+  .admin-btn--inline {
     display: none;
+  }
+
+  // Surface ADMINISTRAR inside the side drawer on mobile. Accent-tinted so it reads as a
+  // distinct, prominent action (matches the desktop inline button's accent treatment).
+  .dropdown-item--admin {
+    display: flex;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    &:hover {
+      background: rgba(232, 255, 71, 0.08);
+      color: var(--accent);
+    }
+  }
+
+  .dropdown-divider--admin {
+    display: block;
   }
 }

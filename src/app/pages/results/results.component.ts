@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin, interval, Subscription } from 'rxjs';
@@ -42,7 +42,18 @@ export class ResultsComponent implements OnInit, OnDestroy {
   /** True after user chose "mostrar más" — periodic refresh uses full-past request. */
   private useFullPastFetch = false;
   isLoadingMorePast = false;
-  
+
+  private resultsLayoutMql: MediaQueryList | null = null;
+  private resultsLayoutMqlListener: (() => void) | null = null;
+
+  /**
+   * True when the results match cards use tap-on-row instead of footer buttons
+   * (viewports ≤768px). Drives *ngIf on `.match-action` so Predicciones/Predecir
+   * are not in the DOM on phone layouts.
+   */
+  resultsLayoutIsMobile =
+    typeof matchMedia !== 'undefined' && matchMedia('(max-width: 768px)').matches;
+
   // Modal states
   showPredictionsModal: boolean = false;
   showTournamentSelector: boolean = false;
@@ -53,6 +64,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private ngZone: NgZone,
     @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
     @Inject(MATCH_SERVICE) private matchService: IMatchService,
     readonly memberDisplay: MemberDisplayPreferenceService
@@ -60,6 +72,23 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   predictionLabel(pred: MemberPrediction): string {
     return this.memberDisplay.displayName(pred.username, pred.fullName);
+  }
+
+  /**
+   * Maps `predictionStatus` to modifier classes on `.member-prediction` (used on
+   * mobile to color the score; badges stay on desktop).
+   */
+  memberPredictionStatusClasses(pred: MemberPrediction): { [key: string]: boolean } {
+    if (!pred.hasPrediction) {
+      return {};
+    }
+    const s = pred.predictionStatus;
+    return {
+      'member-prediction--status-correct': s === 'CORRECT',
+      'member-prediction--status-partial': s === 'PARTIAL',
+      'member-prediction--status-incorrect': s === 'INCORRECT',
+      'member-prediction--status-bonus': s === 'BONUS'
+    };
   }
 
   ngOnInit(): void {
@@ -70,10 +99,31 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
     
     this.loadData();
+    this.initResultsLayoutMediaQuery();
   }
 
   ngOnDestroy(): void {
     this.matchRefreshSub?.unsubscribe();
+    this.resultsLayoutMqlListener?.();
+    this.resultsLayoutMqlListener = null;
+    this.resultsLayoutMql = null;
+  }
+
+  private initResultsLayoutMediaQuery(): void {
+    if (typeof matchMedia === 'undefined') {
+      return;
+    }
+    this.resultsLayoutMql = matchMedia('(max-width: 768px)');
+    this.resultsLayoutIsMobile = this.resultsLayoutMql.matches;
+    const handler = (): void => {
+      this.ngZone.run(() => {
+        this.resultsLayoutIsMobile = this.resultsLayoutMql!.matches;
+      });
+    };
+    this.resultsLayoutMql.addEventListener('change', handler);
+    this.resultsLayoutMqlListener = () => {
+      this.resultsLayoutMql?.removeEventListener('change', handler);
+    };
   }
 
   /** 10s polling only while there are live matches; stops when the list is empty. */
@@ -145,6 +195,37 @@ export class ResultsComponent implements OnInit, OnDestroy {
     if (match.status === 'live' || match.status === 'finished') return true;
     const fifteenMin = 15 * 60 * 1000;
     return new Date(match.matchDate).getTime() - Date.now() <= fifteenMin;
+  }
+
+  /**
+   * True when the viewport matches the same breakpoint as mobile CSS (≤768px).
+   * Used to route taps on the whole match card while desktop keeps the footer buttons.
+   */
+  isResultsMobileLayout(): boolean {
+    return this.resultsLayoutIsMobile;
+  }
+
+  /**
+   * On mobile, footer buttons are hidden; tapping the card opens the same flow
+   * as the old buttons: live/past → predicciones modal; upcoming → edit (group
+   * picker or direct navigation if only one group).
+   */
+  onResultsMatchCardClick(
+    _event: Event,
+    match: LiveMatch,
+    section: 'live' | 'upcoming' | 'past'
+  ): void {
+    if (!this.isResultsMobileLayout()) {
+      return;
+    }
+    if (!this.hasJoinedTournaments()) {
+      return;
+    }
+    if (section === 'upcoming') {
+      this.predictMatch(match);
+    } else {
+      this.viewPredictions(match);
+    }
   }
 
   goBack(): void {

@@ -1,6 +1,8 @@
 <app-user-toolbar [username]="username"></app-user-toolbar>
 
-<main class="main">
+<main
+  class="main"
+  [class.others-awards-browse]="awardsLocked && browseGroupOpen">
   <div class="content-wrapper">
     <div class="page-header" *ngIf="tournament">
       <button class="back-btn" (click)="goBack()">
@@ -16,11 +18,11 @@
           </svg>
         </div>
         <div>
-          <h1 class="page-title">Premios del Torneo</h1>
+          <h1 class="page-title">
+            <span class="page-title__desktop">Premios del Torneo</span>
+            <span class="page-title__mobile">Premios</span>
+          </h1>
           <p class="page-subtitle">{{ tournament.name }}</p>
-          <p class="page-hint" *ngIf="awardsLocked">
-            Las predicciones de premios están cerradas (el torneo ya comenzó).
-          </p>
         </div>
       </div>
     </div>
@@ -101,9 +103,12 @@
       </button>
     </div>
 
-    <div class="awards-layout" *ngIf="!isLoading && (!awardsLocked || browseGroupOpen)">
-      <!-- Categories Sidebar -->
-      <div class="categories-sidebar">
+    <div
+      class="awards-layout"
+      [class.awards-layout--all-by-member]="showAllAwardsForSelectedMember"
+      *ngIf="!isLoading && (!awardsLocked || browseGroupOpen)">
+      <!-- Categories Sidebar (oculto: grupo — Por miembro, lista completa en una columna) -->
+      <div class="categories-sidebar" *ngIf="!showAllAwardsForSelectedMember">
         <h3 class="sidebar-title">Premios</h3>
         <button 
           *ngFor="let category of categories"
@@ -119,13 +124,49 @@
         </button>
       </div>
 
-      <!-- Main: per-member / edit (same grid) OR per-award table -->
-      <div class="awards-main" *ngIf="browseLayout === 'per-member' || !awardsLocked">
+      <!-- Main: per-member (un premio) / edición; no mostrar con lista completa por miembro -->
+      <div
+        class="awards-main"
+        *ngIf="(browseLayout === 'per-member' || !awardsLocked) && !showAllAwardsForSelectedMember">
         <div class="category-header">
           <div class="category-header-row">
             <div class="category-heading-text">
-              <h2 class="category-title">{{ activeCategory.title }}</h2>
-              <p class="category-description" *ngIf="canEdit">{{ activeCategory.description }}</p>
+              <div class="category-title-nav">
+                <button
+                  type="button"
+                  class="category-title-nav__btn"
+                  (click)="goToPreviousCategory()"
+                  [disabled]="!canGoToPreviousCategory()"
+                  aria-label="Premio anterior">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path
+                      d="M12.5 15L7.5 10L12.5 5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <div class="category-title-nav__center">
+                  <h2 class="category-title">{{ activeCategory.title }}</h2>
+                  <p class="category-description" *ngIf="canEdit">{{ activeCategory.description }}</p>
+                </div>
+                <button
+                  type="button"
+                  class="category-title-nav__btn"
+                  (click)="goToNextCategory()"
+                  [disabled]="!canGoToNextCategory()"
+                  aria-label="Premio siguiente">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path
+                      d="M7.5 5L12.5 10L7.5 15"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="save-bar" *ngIf="canEdit && hasChanges && !isLoading">
               <span class="save-info">Tienes cambios sin guardar</span>
@@ -162,11 +203,25 @@
         <!-- Current Selections -->
         <div class="selections-container" *ngIf="getCurrentSelections().length > 0" [style.--max-picks]="activeCategory.maxSelections">
           <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
-          <div class="selections-list">
-            <div 
+          <div
+            class="selections-list"
+            [class.selections-list--player-awards]="activeCategory.type === 'player'">
+            <div
               class="selection-item"
               [class.selection-item--is-winner]="isWinnerItem(item)"
-              *ngFor="let item of getCurrentSelections()">
+              [class.selection-item--removable]="canEdit"
+              *ngFor="let item of getCurrentSelections()"
+              [attr.role]="canEdit ? 'button' : null"
+              [attr.tabindex]="canEdit ? 0 : null"
+              [attr.aria-label]="
+                canEdit
+                  ? (activeCategory.type === 'country'
+                    ? 'Quitar: ' + asCountry(item).name
+                    : 'Quitar: ' + asPlayer(item).name)
+                  : null
+              "
+              (click)="canEdit && removeSelection(item)"
+              (keydown)="onSelectionItemKeydown($event, item)">
               <ng-container *ngIf="activeCategory.type === 'country'">
                 <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
                 <span class="selection-name">{{ asCountry(item).name }}</span>
@@ -178,11 +233,6 @@
                   <span class="selection-country">{{ asPlayer(item).country.name }}</span>
                 </div>
               </ng-container>
-              <button class="remove-btn" *ngIf="canEdit" (click)="removeSelection(item)">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </button>
             </div>
           </div>
         </div>
@@ -224,6 +274,7 @@
             class="option-card"
             [class.selected]="isSelected(option)"
             [class.disabled]="canEdit && !isSelected(option) && !canSelect()"
+            [attr.aria-pressed]="isSelected(option)"
             [attr.aria-disabled]="!canEdit"
             (click)="toggleSelection(option)">
             
@@ -239,12 +290,6 @@
                 <span class="option-detail">{{ asPlayer(option).country.name }} · {{ asPlayer(option).position }}</span>
               </div>
             </ng-container>
-
-            <div class="option-check" *ngIf="isSelected(option)">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
           </button>
         </div>
 
@@ -253,11 +298,101 @@
         </div>
       </div>
 
+      <!-- Grupo — Por miembro: todos los premios y candidatos del miembro, una columna con scroll -->
+      <div class="awards-main awards-main--all-by-member" *ngIf="showAllAwardsForSelectedMember">
+        <div *ngFor="let cat of categories" class="member-all-awards__section">
+          <h2 class="member-all-awards__title">{{ cat.title }}</h2>
+          <ng-container *ngIf="getWinnerForCategoryId(cat) as winner">
+            <div class="winner-container" [style.--max-picks]="cat.maxSelections">
+              <h4 class="winner-title">Ganador</h4>
+              <div class="selections-list">
+                <div class="selection-item selection-item--winner">
+                  <ng-container *ngIf="cat.type === 'country'">
+                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag">
+                    <span class="selection-name">{{ asCountry(winner).name }}</span>
+                  </ng-container>
+                  <ng-container *ngIf="cat.type === 'player'">
+                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag">
+                    <div class="selection-info">
+                      <span class="selection-name">{{ asPlayer(winner).name }}</span>
+                      <span class="selection-country">{{ asPlayer(winner).country.name }}</span>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          <div
+            class="selections-container"
+            *ngIf="getSelectionsForCategory(cat).length > 0"
+            [style.--max-picks]="cat.maxSelections">
+            <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
+            <div
+              class="selections-list"
+              [class.selections-list--player-awards]="cat.type === 'player'">
+              <div
+                class="selection-item"
+                [class.selection-item--is-winner]="isWinnerItemInCategory(item, cat)"
+                *ngFor="let item of getSelectionsForCategory(cat)">
+                <ng-container *ngIf="cat.type === 'country'">
+                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
+                  <span class="selection-name">{{ asCountry(item).name }}</span>
+                </ng-container>
+                <ng-container *ngIf="cat.type === 'player'">
+                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
+                  <div class="selection-info">
+                    <span class="selection-name">{{ asPlayer(item).name }}</span>
+                    <span class="selection-country">{{ asPlayer(item).country.name }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state empty-state--browse" *ngIf="getSelectionsForCategory(cat).length === 0">
+            <p>No hay predicciones para este premio</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Per-award: list members and their picks for active category -->
       <div class="awards-main per-award-main" *ngIf="awardsLocked && browseGroupOpen && browseLayout === 'per-award'">
         <div class="category-header">
-          <h2 class="category-title">{{ activeCategory.title }}</h2>
-          <p class="category-description">Predicciones de todos los miembros en esta categoría</p>
+          <div class="category-title-nav">
+            <button
+              type="button"
+              class="category-title-nav__btn"
+              (click)="goToPreviousCategory()"
+              [disabled]="!canGoToPreviousCategory()"
+              aria-label="Premio anterior">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path
+                  d="M12.5 15L7.5 10L12.5 5"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+            <div class="category-title-nav__center">
+              <h2 class="category-title">{{ activeCategory.title }}</h2>
+              <p class="category-description">Predicciones de todos los miembros en esta categoría</p>
+            </div>
+            <button
+              type="button"
+              class="category-title-nav__btn"
+              (click)="goToNextCategory()"
+              [disabled]="!canGoToNextCategory()"
+              aria-label="Premio siguiente">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path
+                  d="M7.5 5L12.5 10L7.5 15"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div class="empty-state" *ngIf="membersAwardPredictions.length === 0">
@@ -272,7 +407,9 @@
               <div class="per-award-user">
                 <span class="per-award-name per-award-name--winner">Ganador</span>
               </div>
-              <div class="per-award-picks">
+              <div
+                class="per-award-picks"
+                [class.per-award-picks--player]="activeCategory.type === 'player'">
                 <ng-container *ngIf="activeCategory.type === 'country'">
                   <span class="pick-chip pick-chip--winner-item">
                     <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="pick-flag">
@@ -295,7 +432,9 @@
               <span class="per-award-avatar">{{ member.avatarInitials }}</span>
               <span class="per-award-name">{{ memberLabel(member) }}</span>
             </div>
-            <div class="per-award-picks">
+            <div
+              class="per-award-picks"
+              [class.per-award-picks--player]="activeCategory.type === 'player'">
               <ng-container *ngIf="activeCategory.type === 'country'">
                 <span class="pick-chip" [class.pick-chip--is-winner]="isWinnerItem(c)" *ngFor="let c of getMemberCategorySelections(member, activeCategory)">
                   <img [src]="asCountry(c).flagUrl" [alt]="asCountry(c).name" class="pick-flag">
@@ -308,7 +447,9 @@
                   <span class="pick-chip-text">{{ asPlayer(pl).name }}</span>
                 </span>
               </ng-container>
-              <span class="pick-empty" *ngIf="getMemberCategorySelections(member, activeCategory).length === 0">—</span>
+              <span class="pick-empty" *ngIf="getMemberCategorySelections(member, activeCategory).length === 0">
+                Ningún candidato fue elegido para este premio
+              </span>
             </div>
           </div>
         </div>

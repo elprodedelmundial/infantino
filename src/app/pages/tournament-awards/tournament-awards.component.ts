@@ -79,7 +79,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     { id: 'goldenBall', title: 'Balón de Oro', description: 'Mejor jugador del torneo (hasta 3)', maxSelections: 3, type: 'player' },
     { id: 'goldenBoot', title: 'Bota de Oro', description: 'Máximo goleador del torneo (hasta 3)', maxSelections: 3, type: 'player' },
     { id: 'goldenGlove', title: 'Guante de Oro', description: 'Mejor portero del torneo (hasta 3)', maxSelections: 3, type: 'player' },
-    { id: 'bestYoungPlayer', title: 'Mejor Juvenil', description: 'Mejor jugador sub-23 (hasta 3)', maxSelections: 3, type: 'player' }
+    { id: 'bestYoungPlayer', title: 'Mejor Juvenil', description: 'Mejor jugador sub-21 (hasta 3)', maxSelections: 3, type: 'player' }
   ];
 
   activeCategory: AwardCategory = this.categories[0];
@@ -141,6 +141,16 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       if (m) return m.predictions;
     }
     return this.predictions;
+  }
+
+  /** Ver predicciones del grupo: una sola columna, todos los premios del miembro (sin menú lateral) */
+  get showAllAwardsForSelectedMember(): boolean {
+    return (
+      this.awardsLocked &&
+      this.browseGroupOpen &&
+      this.browseLayout === 'per-member' &&
+      this.selectedMemberId != null
+    );
   }
 
   private cloneAwardPredictions(src: TournamentAwardPrediction): TournamentAwardPrediction {
@@ -285,13 +295,25 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return 'Candidatos';
   }
 
-  getWinnerForCategory(): Country | Player | null {
+  getWinnerForCategoryId(category: AwardCategory): Country | Player | null {
     if (!this.trueWinners) return null;
-    return this.trueWinners[this.activeCategory.id] ?? null;
+    return this.trueWinners[category.id] ?? null;
+  }
+
+  getWinnerForCategory(): Country | Player | null {
+    return this.getWinnerForCategoryId(this.activeCategory);
+  }
+
+  getSelectionsForCategory(category: AwardCategory): (Country | Player)[] {
+    return this.viewPredictions[category.id] as (Country | Player)[];
   }
 
   isWinnerItem(item: Country | Player): boolean {
-    const winner = this.getWinnerForCategory();
+    return this.isWinnerItemInCategory(item, this.activeCategory);
+  }
+
+  isWinnerItemInCategory(item: Country | Player, category: AwardCategory): boolean {
+    const winner = this.getWinnerForCategoryId(category);
     if (!winner) return false;
     return (winner as Country | Player).id === item.id;
   }
@@ -330,6 +352,44 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
 
   getMemberCategorySelections(member: MemberAwardPrediction, cat: AwardCategory): (Country | Player)[] {
     return member.predictions[cat.id] as (Country | Player)[];
+  }
+
+  get activeCategoryIndex(): number {
+    return this.categories.findIndex(c => c.id === this.activeCategory.id);
+  }
+
+  canGoToPreviousCategory(): boolean {
+    return this.categories.length > 1;
+  }
+
+  canGoToNextCategory(): boolean {
+    return this.categories.length > 1;
+  }
+
+  goToPreviousCategory(): void {
+    if (this.categories.length < 2) return;
+    const i = this.activeCategoryIndex;
+    const n = this.categories.length;
+    if (i <= 0) {
+      this.setActiveCategory(this.categories[n - 1]);
+    } else {
+      this.setActiveCategory(this.categories[i - 1]);
+    }
+  }
+
+  goToNextCategory(): void {
+    if (this.categories.length < 2) return;
+    const i = this.activeCategoryIndex;
+    const n = this.categories.length;
+    if (i < 0) {
+      this.setActiveCategory(this.categories[0]);
+      return;
+    }
+    if (i >= n - 1) {
+      this.setActiveCategory(this.categories[0]);
+    } else {
+      this.setActiveCategory(this.categories[i + 1]);
+    }
   }
 
   setActiveCategory(category: AwardCategory): void {
@@ -446,6 +506,14 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     }
 
     this.hasChanges = true;
+  }
+
+  onSelectionItemKeydown(event: KeyboardEvent, item: Country | Player): void {
+    if (!this.canEdit) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.removeSelection(item);
+    }
   }
 
   removeSelection(item: Country | Player): void {
