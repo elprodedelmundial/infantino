@@ -229,7 +229,7 @@
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="match-code-to-teams-gutter">
-                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">+</span>
+                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">★</span>
               </div>
               <div class="team home">
                 <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
@@ -296,7 +296,7 @@
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="match-code-to-teams-gutter">
-                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">+</span>
+                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">★</span>
               </div>
               <div class="team home">
                 <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">

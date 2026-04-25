@@ -607,7 +607,7 @@
   color: var(--accent);
 }
 
-/* Same width as former padding-left so team columns stay aligned; + is centered here. */
+/* Same width as former padding-left so team columns stay aligned; ★ is centered here. */
 .match-code-to-teams-gutter {
   box-sizing: border-box;
   flex: 0 0 var(--standings-code-to-match-inset);
@@ -630,8 +630,9 @@
   width: 26px;
   height: 26px;
   padding: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1rem;
+  /* Syne renders the ★ glyph with balanced metrics; JetBrains Mono pushed it off-center. */
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;

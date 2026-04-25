@@ -159,13 +159,15 @@
 
         <div class="match-footer">
           <div class="match-footer-leading">
-            <span class="match-multiplier-badge" *ngIf="match.hasMultiplier" title="Partido con multiplicador">BONUS</span>
+            <span class="match-multiplier-badge match-multiplier-badge--star" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
 
             <!-- Result badge for played matches -->
             <span [ngClass]="getResultBadgeClass(match)" *ngIf="match.isPlayed && match.result">
               {{ match.result === 'correct' ? 'Correcto' : match.result === 'half' ? 'Parcial' : match.result === 'bonus' ? 'Bonus' : 'Incorrecto' }}
             </span>
+          </div>
 
+          <div class="match-footer-center">
             <!-- Locked badge for active matches (started or < 15 min) -->
             <div class="locked-badge" *ngIf="isMatchLocked(match) && !match.isPlayed">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
