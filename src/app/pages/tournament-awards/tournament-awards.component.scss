@@ -1049,6 +1049,39 @@
     }
   }
 
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filters-row .search-container {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .country-filter {
+    position: relative;
+    flex: 1 1 auto;
+    align-self: center;
+    width: 100%;
+    max-width: 22rem;
+    align-items: center;
+  }
+
+  .country-filter-label {
+    /* Remove visible title; keep in DOM for label[for] + screen readers */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .page-header {
     display: flex;
     flex-direction: column;
