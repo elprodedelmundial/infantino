@@ -296,6 +296,9 @@
               </div>
               <div class="past-match-card__center">
                 <ng-container *ngIf="pred.matchStatus === 'IN_PROGRESS'; else pastDoneScores">
+                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row" title="Partido con multiplicador">
+                    <span class="match-multiplier-badge" aria-hidden="true">★</span>
+                  </div>
                   <span class="past-match-card__field-label">Resultado</span>
                   <span class="past-match-card__score past-match-card__score--resultado">–</span>
                   <span class="past-match-card__field-label">Predicción</span>
@@ -306,6 +309,9 @@
                   </span>
                 </ng-container>
                 <ng-template #pastDoneScores>
+                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row" title="Partido con multiplicador">
+                    <span class="match-multiplier-badge" aria-hidden="true">★</span>
+                  </div>
                   <span class="past-match-card__field-label">Resultado</span>
                   <span class="past-match-card__score past-match-card__score--resultado">
                     {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
@@ -398,12 +404,10 @@
                 <span class="past-match-card__team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <div class="past-match-card__center past-match-card__center--upcoming">
-                <div class="upcoming-matches-mobile__pred-block">
-                  <div *ngIf="pred.hasMultiplier" class="upcoming-matches-mobile__star-row" title="Partido con multiplicador">
-                    <span class="match-multiplier-badge" aria-hidden="true">★</span>
-                  </div>
-                  <span class="past-match-card__field-label">Predicción</span>
+                <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row" title="Partido con multiplicador">
+                  <span class="match-multiplier-badge" aria-hidden="true">★</span>
                 </div>
+                <span class="past-match-card__field-label">Predicción</span>
                 <span
                   class="past-match-card__score past-match-card__score--prediccion past-match-card__score--upcoming"
                   [class.past-match-card__score--upcoming-pending]="!pred.hasPrediction">

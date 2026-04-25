@@ -609,20 +609,25 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(120px, 1.1fr) minmax(0, 1fr);
   gap: 10px 8px;
-  padding: 14px 10px 16px;
-  /* Vertically center home/away blocks with the taller center column */
+  padding: 20px 12px 22px;
+  /* Content-sized row; each column block centers vertically against siblings (no phantom ★/2nd-line height) */
   align-items: center;
+  align-content: center;
 }
 
 .past-match-card__team {
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Content-sized column; .past-match-card__body align-items: center centers the whole team block in the row */
   justify-content: center;
   text-align: center;
   gap: 10px;
   min-width: 0;
+  min-height: 0;
   align-self: center;
+  width: 100%;
+  max-width: 100%;
 
   .flag {
     width: 40px;
@@ -635,6 +640,7 @@
   }
 }
 
+// Natural height: 1 line when short, up to 2 when wrapped — no empty reserved second line
 .past-match-card__team-name {
   font-size: 0.95rem;
   font-weight: 600;
@@ -643,9 +649,18 @@
   word-break: break-word;
   hyphens: auto;
   max-width: 100%;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .past-match-card__center {
+  /* 4px on .past-match-card__star-row + 4px column gap = 8px to first label when ★ is present */
+  --past-center-star-pad: 4px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -653,7 +668,11 @@
   text-align: center;
   gap: 4px;
   min-width: 0;
+  min-height: 0;
   padding: 0 2px;
+  align-self: center;
+  width: 100%;
+  max-width: 100%;
 
   /* Match default 4px label↔score rhythm (same as Últimos Partidos center column) */
   &--upcoming {
@@ -743,20 +762,15 @@
   }
 }
 
-// Star (bonus / multiplicador) stacked above the PREDICCIÓN label (extra space star↔label)
-.upcoming-matches-mobile__pred-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.upcoming-matches-mobile__star-row {
+// Star (multiplicador) at top of center column — before RESULTADO (past) or PREDICCIÓN (upcoming)
+.past-match-card__star-row {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
   min-height: 0;
+  /* 4px here + 4px column gap on .past-match-card__center = 8px to first label */
+  padding-bottom: var(--past-center-star-pad, 4px);
 }
 
 .table-header {
