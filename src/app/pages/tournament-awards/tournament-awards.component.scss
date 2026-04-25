@@ -266,6 +266,11 @@
   gap: 12px;
 }
 
+/* Player awards: one chosen candidate per full-width row (like option cards) */
+.selections-list--player-awards {
+  grid-template-columns: 1fr;
+}
+
 .selection-item {
   display: flex;
   align-items: center;
@@ -1083,13 +1088,7 @@
   }
 
   .header-icon {
-    width: 44px;
-    height: 44px;
-
-    svg {
-      width: 22px;
-      height: 22px;
-    }
+    display: none;
   }
 
   .category-header-row {
@@ -1098,25 +1097,46 @@
     gap: 12px;
   }
 
+  .category-header {
+    text-align: center;
+  }
+
+  .category-heading-text {
+    align-items: center;
+    text-align: center;
+  }
+
+  .category-title,
+  .category-description {
+    text-align: center;
+  }
+
   .category-heading-text .category-title {
     min-width: 0;
     white-space: normal;
     overflow: visible;
     text-overflow: unset;
-    width: auto;
+    width: 100%;
     padding-bottom: 0;
   }
 
+  .save-info {
+    display: none;
+  }
+
   .save-bar {
-    display: flex;
+    display: block;
     width: 100%;
     max-width: none;
     align-self: stretch;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 16px;
-    justify-content: flex-start;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    flex-direction: unset;
+    gap: 0;
+    animation: none;
   }
 
   .save-btn {

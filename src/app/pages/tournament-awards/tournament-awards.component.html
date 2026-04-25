@@ -165,7 +165,9 @@
         <!-- Current Selections -->
         <div class="selections-container" *ngIf="getCurrentSelections().length > 0" [style.--max-picks]="activeCategory.maxSelections">
           <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
-          <div class="selections-list">
+          <div
+            class="selections-list"
+            [class.selections-list--player-awards]="activeCategory.type === 'player'">
             <div
               class="selection-item"
               [class.selection-item--is-winner]="isWinnerItem(item)"
