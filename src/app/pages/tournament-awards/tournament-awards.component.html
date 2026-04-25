@@ -16,7 +16,10 @@
           </svg>
         </div>
         <div>
-          <h1 class="page-title">Premios del Torneo</h1>
+          <h1 class="page-title">
+            <span class="page-title__desktop">Premios del Torneo</span>
+            <span class="page-title__mobile">Premios</span>
+          </h1>
           <p class="page-subtitle">{{ tournament.name }}</p>
           <p class="page-hint" *ngIf="awardsLocked">
             Las predicciones de premios están cerradas (el torneo ya comenzó).
@@ -163,10 +166,22 @@
         <div class="selections-container" *ngIf="getCurrentSelections().length > 0" [style.--max-picks]="activeCategory.maxSelections">
           <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
           <div class="selections-list">
-            <div 
+            <div
               class="selection-item"
               [class.selection-item--is-winner]="isWinnerItem(item)"
-              *ngFor="let item of getCurrentSelections()">
+              [class.selection-item--removable]="canEdit"
+              *ngFor="let item of getCurrentSelections()"
+              [attr.role]="canEdit ? 'button' : null"
+              [attr.tabindex]="canEdit ? 0 : null"
+              [attr.aria-label]="
+                canEdit
+                  ? (activeCategory.type === 'country'
+                    ? 'Quitar: ' + asCountry(item).name
+                    : 'Quitar: ' + asPlayer(item).name)
+                  : null
+              "
+              (click)="canEdit && removeSelection(item)"
+              (keydown)="onSelectionItemKeydown($event, item)">
               <ng-container *ngIf="activeCategory.type === 'country'">
                 <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
                 <span class="selection-name">{{ asCountry(item).name }}</span>
@@ -178,11 +193,6 @@
                   <span class="selection-country">{{ asPlayer(item).country.name }}</span>
                 </div>
               </ng-container>
-              <button class="remove-btn" *ngIf="canEdit" (click)="removeSelection(item)">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </button>
             </div>
           </div>
         </div>
@@ -224,6 +234,7 @@
             class="option-card"
             [class.selected]="isSelected(option)"
             [class.disabled]="canEdit && !isSelected(option) && !canSelect()"
+            [attr.aria-pressed]="isSelected(option)"
             [attr.aria-disabled]="!canEdit"
             (click)="toggleSelection(option)">
             
@@ -239,12 +250,6 @@
                 <span class="option-detail">{{ asPlayer(option).country.name }} · {{ asPlayer(option).position }}</span>
               </div>
             </ng-container>
-
-            <div class="option-check" *ngIf="isSelected(option)">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
           </button>
         </div>
 

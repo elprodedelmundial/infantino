@@ -60,6 +60,10 @@
   margin-bottom: 4px;
 }
 
+.page-title__mobile {
+  display: none;
+}
+
 .page-subtitle {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
@@ -273,6 +277,22 @@
   border: 1px solid var(--border);
 }
 
+.selection-item--removable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(248, 113, 113, 0.45);
+    background: rgba(248, 113, 113, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
 .selection-flag {
   width: 24px;
   height: 16px;
@@ -298,24 +318,6 @@
   font-size: 0.65rem;
   line-height: 1.45;
   color: var(--text-muted);
-}
-
-.remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.2s ease;
-  margin-left: 4px;
-
-  &:hover {
-    color: var(--error);
-  }
 }
 
 // Search
@@ -445,24 +447,42 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
+  color: inherit;
+  /* Avoid native focus ring clashing with selected state */
+  &:focus {
+    outline: none;
+  }
 
-  &:hover:not(.disabled) {
+  /* Do not restyle border on hover when already selected — a higher-specificity
+     :hover was overriding the accent border, so some picks looked "grey outlined". */
+  &:hover:not(.disabled):not(.selected) {
     border-color: var(--text-muted);
     background: rgba(255, 255, 255, 0.02);
   }
 
   &.selected {
-    border-color: var(--accent);
-    background: rgba(232, 255, 71, 0.05);
+    border: 2px solid var(--accent);
+    padding: 17px 17px;
+    background: rgba(232, 255, 71, 0.06);
 
     .option-name {
       color: var(--accent);
+    }
+
+    &:hover:not(.disabled) {
+      border-color: var(--accent);
+      background: rgba(232, 255, 71, 0.09);
     }
   }
 
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 
@@ -496,18 +516,6 @@
   line-height: 1.45;
   color: var(--text-muted);
   margin-top: 4px;
-}
-
-.option-check {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: var(--accent);
-  color: var(--bg-primary);
-  flex-shrink: 0;
-  margin-left: auto;
 }
 
 // Empty State
@@ -1036,8 +1044,42 @@
     }
   }
 
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .back-btn {
+    align-self: flex-start;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .header-content > div:last-child {
+    width: 100%;
+  }
+
   .page-title {
     font-size: 1.5rem;
+  }
+
+  .page-title__desktop {
+    display: none;
+  }
+
+  .page-title__mobile {
+    display: block;
+  }
+
+  .page-subtitle,
+  .page-hint {
+    text-align: center;
   }
 
   .header-icon {

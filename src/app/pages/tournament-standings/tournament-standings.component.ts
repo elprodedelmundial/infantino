@@ -127,13 +127,33 @@ export class TournamentStandingsComponent implements OnInit {
     });
   }
 
+  /**
+   * So browser Back from Editar Predicciones returns to this URL with
+   * history.state (Mis Predicciones / predictions tab) restored.
+   */
+  private setHistoryStateForReturnFromEdit(): void {
+    const s: { username: string; role?: GroupRole; activeTab: 'standings' | 'predictions' } = {
+      ...(typeof history !== 'undefined' && history.state && typeof history.state === 'object'
+        ? (history.state as object)
+        : {}),
+      username: this.username,
+      activeTab: 'predictions'
+    };
+    if (this.userRole) {
+      s.role = this.userRole;
+    }
+    history.replaceState(s, '', this.router.url);
+  }
+
   editAllPredictions(): void {
+    this.setHistoryStateForReturnFromEdit();
     this.router.navigate(['/tournament', this.tournamentId, 'edit'], {
       state: { username: this.username }
     });
   }
 
   editPrediction(prediction: MatchPrediction): void {
+    this.setHistoryStateForReturnFromEdit();
     this.router.navigate(['/tournament', this.tournamentId, 'edit'], {
       state: { 
         username: this.username,

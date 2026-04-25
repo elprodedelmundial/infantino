@@ -448,6 +448,14 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     this.hasChanges = true;
   }
 
+  onSelectionItemKeydown(event: KeyboardEvent, item: Country | Player): void {
+    if (!this.canEdit) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.removeSelection(item);
+    }
+  }
+
   removeSelection(item: Country | Player): void {
     if (!this.canEdit) return;
     const categoryId = this.activeCategory.id;
