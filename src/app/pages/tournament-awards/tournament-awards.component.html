@@ -1,6 +1,8 @@
 <app-user-toolbar [username]="username"></app-user-toolbar>
 
-<main class="main">
+<main
+  class="main"
+  [class.others-awards-browse]="awardsLocked && browseGroupOpen">
   <div class="content-wrapper">
     <div class="page-header" *ngIf="tournament">
       <button class="back-btn" (click)="goBack()">
@@ -347,7 +349,9 @@
               <div class="per-award-user">
                 <span class="per-award-name per-award-name--winner">Ganador</span>
               </div>
-              <div class="per-award-picks">
+              <div
+                class="per-award-picks"
+                [class.per-award-picks--player]="activeCategory.type === 'player'">
                 <ng-container *ngIf="activeCategory.type === 'country'">
                   <span class="pick-chip pick-chip--winner-item">
                     <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="pick-flag">
@@ -370,7 +374,9 @@
               <span class="per-award-avatar">{{ member.avatarInitials }}</span>
               <span class="per-award-name">{{ memberLabel(member) }}</span>
             </div>
-            <div class="per-award-picks">
+            <div
+              class="per-award-picks"
+              [class.per-award-picks--player]="activeCategory.type === 'player'">
               <ng-container *ngIf="activeCategory.type === 'country'">
                 <span class="pick-chip" [class.pick-chip--is-winner]="isWinnerItem(c)" *ngFor="let c of getMemberCategorySelections(member, activeCategory)">
                   <img [src]="asCountry(c).flagUrl" [alt]="asCountry(c).name" class="pick-flag">
@@ -383,7 +389,9 @@
                   <span class="pick-chip-text">{{ asPlayer(pl).name }}</span>
                 </span>
               </ng-container>
-              <span class="pick-empty" *ngIf="getMemberCategorySelections(member, activeCategory).length === 0">—</span>
+              <span class="pick-empty" *ngIf="getMemberCategorySelections(member, activeCategory).length === 0">
+                Ningún candidato fue elegido para este premio
+              </span>
             </div>
           </div>
         </div>

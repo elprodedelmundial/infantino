@@ -337,23 +337,35 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   }
 
   canGoToPreviousCategory(): boolean {
-    return this.activeCategoryIndex > 0;
+    return this.categories.length > 1;
   }
 
   canGoToNextCategory(): boolean {
-    return this.activeCategoryIndex >= 0 && this.activeCategoryIndex < this.categories.length - 1;
+    return this.categories.length > 1;
   }
 
   goToPreviousCategory(): void {
+    if (this.categories.length < 2) return;
     const i = this.activeCategoryIndex;
-    if (i > 0) {
+    const n = this.categories.length;
+    if (i <= 0) {
+      this.setActiveCategory(this.categories[n - 1]);
+    } else {
       this.setActiveCategory(this.categories[i - 1]);
     }
   }
 
   goToNextCategory(): void {
+    if (this.categories.length < 2) return;
     const i = this.activeCategoryIndex;
-    if (i >= 0 && i < this.categories.length - 1) {
+    const n = this.categories.length;
+    if (i < 0) {
+      this.setActiveCategory(this.categories[0]);
+      return;
+    }
+    if (i >= n - 1) {
+      this.setActiveCategory(this.categories[0]);
+    } else {
       this.setActiveCategory(this.categories[i + 1]);
     }
   }

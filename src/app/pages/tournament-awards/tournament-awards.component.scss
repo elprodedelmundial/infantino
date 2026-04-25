@@ -1067,6 +1067,9 @@
   box-sizing: border-box;
   color: var(--text-muted);
   font-size: 0.85rem;
+  line-height: 1.4;
+  width: 100%;
+  text-align: left;
 }
 
 @media (max-width: 768px) {
@@ -1236,5 +1239,73 @@
     width: 100%;
     min-width: 0;
     justify-content: center;
+  }
+
+  /* Ver predicciones de otros: sin Volver en toolbar, sin hint, sin iniciales en chips */
+  .main.others-awards-browse {
+    .browse-back {
+      display: none;
+    }
+
+    .page-hint {
+      display: none;
+    }
+
+    .chip-avatar {
+      display: none;
+    }
+
+    .member-chip {
+      gap: 0;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    .per-award-avatar {
+      display: none;
+    }
+
+    .per-award-user {
+      gap: 0;
+    }
+
+    .per-award-name--winner {
+      padding-left: 0;
+    }
+  }
+
+  .main.others-awards-browse .browse-toolbar {
+    justify-content: center;
+  }
+
+  /* Por premio: sin subtítulo bajo el título de premio; filas = nombre (memberLabel) y picks debajo */
+  .per-award-main .category-title-nav__center .category-description {
+    display: none;
+  }
+
+  .per-award-main .per-award-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 10px 0;
+    min-height: 0;
+  }
+
+  .per-award-main .per-award-user {
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .per-award-main .per-award-picks {
+    width: 100%;
+  }
+
+  .per-award-main .per-award-picks--player {
+    grid-template-columns: 1fr;
+  }
+
+  .per-award-main .per-award-name--winner {
+    padding-left: 0;
   }
 }
