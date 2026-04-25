@@ -267,4 +267,19 @@ export class TournamentStandingsComponent implements OnInit {
       month: 'short'
     });
   }
+
+  /**
+   * Color for predicted score in mobile past-match cards (status badge removed;
+   * correct=green, half=orange, incorrect=red, bonus=blue, live=muted).
+   */
+  getPredictionLineToneClass(pred: MatchPrediction): string {
+    if (pred.matchStatus === 'IN_PROGRESS') return 'pred-line-tone--live';
+    switch (pred.result) {
+      case 'correct': return 'pred-line-tone--correct';
+      case 'half': return 'pred-line-tone--half';
+      case 'bonus': return 'pred-line-tone--bonus';
+      case 'incorrect': return 'pred-line-tone--incorrect';
+      default: return 'pred-line-tone--muted';
+    }
+  }
 }
