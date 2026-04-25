@@ -107,3 +107,11 @@ body {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(232, 255, 71, 0.3)); }
   50% { transform: scale(1.02); filter: drop-shadow(0 0 40px rgba(232, 255, 71, 0.5)); }
 }
+
+// Match the app’s main mobile breakpoint (see feature pages’ @media (max-width: 768px)).
+// Header "Volver" is hidden on phones so layout matches the compact shell + OS back gesture.
+@media (max-width: 768px) {
+  button.back-btn {
+    display: none !important;
+  }
+}

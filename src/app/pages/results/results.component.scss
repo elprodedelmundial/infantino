@@ -408,12 +408,6 @@
   margin-bottom: 32px;
 }
 
-// Filled in on viewports ≤768px: one "Predecir" for the next open match; hidden on
-// desktop (per-card button stays in each row).
-.upcoming-section__mobile-cta {
-  display: none;
-}
-
 .upcoming-matches-list {
   display: flex;
   flex-direction: column;
@@ -1366,20 +1360,17 @@
     letter-spacing: 0.04em;
   }
 
-  // On mobile the match card pivots from a single-row grid into a 3-row stacked card:
+  // On mobile the match card is a 2-row stacked card (no footer row — actions are
+  // tap-on-card). Layout:
   //
   //   ┌─────────────────────────────┐
   //   │        30 JUN · 14:00       │  header  (.match-schedule / .match-schedule--live)
   //   ├─────────────────────────────┤
-  //   │   🏳️    vs / score    🏳️   │  body    (home · center · away — each team is
-  //   │  Home                Away   │           flag with name stacked below it)
-  //   ├─────────────────────────────┤
-  //   │   [ PREDECIR / PREDICCIONES ]  footer  (.match-action, full-width button)
+  //   │   🏳️    vs / score    🏳️   │  body    (home · center · away)
   //   └─────────────────────────────┘
   //
-  // We use grid-template-areas so the underlying HTML stays identical to the desktop view;
-  // only the grid mapping changes. The bonus ★ chip is repositioned to the top-right corner
-  // because its desktop anchor (the gap between schedule and home columns) no longer exists.
+  // Desktop keeps a third row for `.match-action` when the user is in a group; the
+  // bonus ★ chip is repositioned to the top-right on small viewports.
   .results-match-grid {
     // Center column widened so "XX - XX" scores fit on a single line.
     --results-center: 84px;
@@ -1391,10 +1382,11 @@
     --results-bonus-area: 0px;
 
     grid-template-columns: minmax(0, 1fr) var(--results-center) minmax(0, 1fr);
+    // Two rows only: on phone `.match-action` is not in the DOM (tap the card
+    // instead of Predicciones / Predecir / Bloqueado).
     grid-template-areas:
       "header header header"
-      "home   center away  "
-      "footer footer footer";
+      "home   center away  ";
     column-gap: var(--results-column-gap);
     row-gap: 14px;
     min-height: 0;
@@ -1442,31 +1434,6 @@
     padding-bottom: 4px;
   }
 
-  // Action row sits at the bottom as a full-width footer with its own top divider.
-  // The button itself is narrower than the row so it reads as a "call to action" rather
-  // than a chunky block — we keep the divider full-width by applying it to the wrapper.
-  .results-match-grid > .match-action {
-    grid-area: footer;
-    width: 100%;
-    max-width: none;
-    justify-self: stretch;
-    justify-content: center;
-    align-items: center;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  .results-match-grid .match-action .view-predictions-btn,
-  .results-match-grid .match-action .predict-btn,
-  .results-match-grid .match-action .locked-badge-small {
-    width: auto;
-    max-width: 220px;
-    min-height: var(--results-action-btn-height);
-    padding: 10px 20px;
-    font-size: 0.72rem;
-    justify-content: center;
-  }
-
   // The bonus ★ sits at the far right of the header, vertically centered against the
   // schedule text (not the padded header box). With card padding-top = 14px and a
   // ~22px schedule content row, the content midpoint is ~y=25px — a 26px-tall badge
@@ -1509,25 +1476,15 @@
     display: none;
   }
 
-  // "Próximos Partidos": one section-level Predecir under the title; no per-row
-  // button (locked rows still show the Bloqueado chip in the card footer).
-  .upcoming-section__mobile-cta {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: 2px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-  }
+  // Card tap: see `onResultsMatchCardClick` and `*ngIf` on `.match-action`.
+  .content-wrapper .results-match-grid {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.06);
+    transition: background 0.15s ease, transform 0.1s ease;
 
-  .upcoming-section__mobile-cta .predict-btn {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .upcoming-matches-list .upcoming-match-card
-    .match-action:not(:has(.locked-badge-small)) {
-    display: none;
+    &:active {
+      background: rgba(255, 255, 255, 0.04);
+    }
   }
 
   .predict-btn {

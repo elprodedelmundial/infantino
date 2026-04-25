@@ -23,7 +23,10 @@
       </div>
 
       <div class="live-matches-list">
-        <div class="live-match-card results-match-grid" *ngFor="let match of liveMatches">
+        <div
+          class="live-match-card results-match-grid"
+          *ngFor="let match of liveMatches"
+          (click)="onResultsMatchCardClick($event, match, 'live')">
           <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule match-schedule--live">
             <div class="match-time-badge live">
@@ -53,7 +56,7 @@
             <span class="team-name-stack">{{ match.awayTeam.name }}</span>
           </div>
 
-          <div class="match-action" *ngIf="hasJoinedTournaments()">
+          <div class="match-action" *ngIf="hasJoinedTournaments() && !resultsLayoutIsMobile">
             <button
               class="view-predictions-btn"
               (click)="viewPredictions(match)">
@@ -74,22 +77,11 @@
         <h2 class="section-title">Próximos Partidos</h2>
       </div>
 
-      <div
-        class="upcoming-section__mobile-cta"
-        *ngIf="hasJoinedTournaments() && firstPredictableUpcomingMatch">
-        <button
-          type="button"
-          class="predict-btn"
-          (click)="predictMatch(firstPredictableUpcomingMatch!)">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>
-          Predecir
-        </button>
-      </div>
-
       <div class="upcoming-matches-list">
-        <div class="upcoming-match-card results-match-grid" *ngFor="let match of upcomingMatches">
+        <div
+          class="upcoming-match-card results-match-grid"
+          *ngFor="let match of upcomingMatches"
+          (click)="onResultsMatchCardClick($event, match, 'upcoming')">
           <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
@@ -112,7 +104,7 @@
             <span class="team-name-stack">{{ match.awayTeam.name }}</span>
           </div>
 
-          <div class="match-action" *ngIf="hasJoinedTournaments()">
+          <div class="match-action" *ngIf="hasJoinedTournaments() && !resultsLayoutIsMobile">
             <!-- Match locked (< 15 min or started) -->
             <div class="locked-badge-small" *ngIf="isMatchActive(match)">
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
@@ -140,7 +132,10 @@
       </div>
 
       <div class="past-matches-list" *ngIf="pastMatches.length > 0">
-        <div class="past-match-card results-match-grid" *ngFor="let match of pastMatches">
+        <div
+          class="past-match-card results-match-grid"
+          *ngFor="let match of pastMatches"
+          (click)="onResultsMatchCardClick($event, match, 'past')">
           <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule">
             <span class="match-date">{{ formatMatchDate(match) }}</span>
@@ -168,7 +163,7 @@
             <span class="team-name-stack">{{ match.awayTeam.name }}</span>
           </div>
 
-          <div class="match-action" *ngIf="hasJoinedTournaments()">
+          <div class="match-action" *ngIf="hasJoinedTournaments() && !resultsLayoutIsMobile">
             <button
               class="view-predictions-btn"
               (click)="viewPredictions(match)">

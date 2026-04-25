@@ -202,6 +202,11 @@
   overflow: hidden;
 }
 
+// Mobile-only duplicate control; .standings-live-bar is shown in @media (max-width: 768px)
+.standings-live-bar {
+  display: none;
+}
+
 .standings-header {
   display: grid;
   grid-template-columns: 60px 1fr 140px 100px;
@@ -1510,10 +1515,44 @@
 
   .header-top {
     flex-direction: column;
+    align-items: center;
     gap: 16px;
   }
 
-  .leave-btn {
+  .header-top > div:first-of-type {
+    width: 100%;
+    text-align: center;
+  }
+
+  .page-title,
+  .page-subtitle {
+    text-align: center;
+  }
+
+  .page-subtitle {
+    justify-content: center;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  // Leave moved to .leave-bar-mobile; keep Editar in header
+  .header-actions .leave-btn {
+    display: none;
+  }
+
+  // End of page, scrolls with content (not viewport-fixed)
+  .leave-bar-mobile {
+    display: block;
+    margin-top: 28px;
+    padding: 20px 0 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .leave-bar-mobile .leave-btn {
     width: 100%;
     justify-content: center;
   }
@@ -1521,6 +1560,11 @@
   .predictions-banner,
   .awards-banner {
     padding: 16px;
+  }
+
+  // Premios del Torneo: no chevron on small screens
+  .awards-banner .banner-arrow {
+    display: none;
   }
 
   .banner-icon {
@@ -1553,36 +1597,103 @@
     }
   }
 
+  // EN VIVO: above the standings card (sibling, not inside .standings-container); header toggle on desktop only
+  .standings-live-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  .header-player .live-toggle--header-only {
+    display: none;
+  }
+
+  // No "Últimas" — three columns: rank | jugador | pts (left / left / right + padding)
   .standings-header {
-    grid-template-columns: 40px 1fr 100px 80px;
+    grid-template-columns: 40px 1fr minmax(72px, 1fr);
     gap: 8px;
-    padding: 12px 16px;
+    padding: 12px 12px 12px 16px;
     font-size: 0.6rem;
+    align-items: center;
+  }
+
+  .header-pos {
+    justify-self: center;
+    text-align: center;
+  }
+
+  .header-predictions {
+    display: none;
+  }
+
+  .header-player {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    text-align: left;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .header-points {
+    text-align: right;
+    width: 100%;
+    padding-right: 12px;
+    justify-self: end;
   }
 
   .player-row {
-    grid-template-columns: 40px 1fr 100px 80px;
+    grid-template-columns: 40px 1fr minmax(72px, 1fr);
     gap: 8px;
-    padding: 12px 16px;
+    padding: 12px 12px 12px 16px;
+    align-items: center;
 
     &.current-user {
       padding-left: 13px;
     }
   }
 
+  .predictions-dots {
+    display: none;
+  }
+
+  .player-info {
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .points {
+    text-align: right;
+    width: 100%;
+    max-width: 100%;
+    padding-right: 12px;
+    font-size: 1.12rem;
+    box-sizing: border-box;
+    justify-self: end;
+  }
+
+  // Legend referred to the dots column; hide when "Últimas" is off
+  .standings-container .legend {
+    display: none;
+  }
+
   .position {
     width: 30px;
     height: 30px;
     font-size: 0.95rem;
+    justify-self: center;
   }
 
   .player-avatar {
-    width: 28px;
-    height: 28px;
-
-    span {
-      font-size: 0.55rem;
-    }
+    display: none;
   }
 
   .player-name {
@@ -1590,31 +1701,12 @@
   }
 
   .you-badge {
-    font-size: 0.5rem;
-    padding: 2px 5px;
+    display: none;
   }
 
   .prediction {
     width: 12px;
     height: 12px;
-  }
-
-  .predictions-dots {
-    gap: 4px;
-  }
-
-  .points {
-    font-size: 1.12rem;
-  }
-
-  .legend {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px 16px;
-  }
-
-  .legend-item {
-    font-size: 0.65rem;
   }
 
   .section-header-row {
@@ -1644,6 +1736,13 @@
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+// Second leave button: only visible in mobile layout (see @media (max-width: 768px))
+@media (min-width: 769px) {
+  .leave-bar-mobile {
+    display: none;
+  }
 }
 
 .edit-group-btn {
@@ -1751,6 +1850,8 @@
 .form-group-check {
   flex-direction: row;
   align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .form-label-check {

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin, interval, Subscription } from 'rxjs';
@@ -42,7 +42,18 @@ export class ResultsComponent implements OnInit, OnDestroy {
   /** True after user chose "mostrar más" — periodic refresh uses full-past request. */
   private useFullPastFetch = false;
   isLoadingMorePast = false;
-  
+
+  private resultsLayoutMql: MediaQueryList | null = null;
+  private resultsLayoutMqlListener: (() => void) | null = null;
+
+  /**
+   * True when the results match cards use tap-on-row instead of footer buttons
+   * (viewports ≤768px). Drives *ngIf on `.match-action` so Predicciones/Predecir
+   * are not in the DOM on phone layouts.
+   */
+  resultsLayoutIsMobile =
+    typeof matchMedia !== 'undefined' && matchMedia('(max-width: 768px)').matches;
+
   // Modal states
   showPredictionsModal: boolean = false;
   showTournamentSelector: boolean = false;
@@ -53,6 +64,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private ngZone: NgZone,
     @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
     @Inject(MATCH_SERVICE) private matchService: IMatchService,
     readonly memberDisplay: MemberDisplayPreferenceService
@@ -87,10 +99,31 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
     
     this.loadData();
+    this.initResultsLayoutMediaQuery();
   }
 
   ngOnDestroy(): void {
     this.matchRefreshSub?.unsubscribe();
+    this.resultsLayoutMqlListener?.();
+    this.resultsLayoutMqlListener = null;
+    this.resultsLayoutMql = null;
+  }
+
+  private initResultsLayoutMediaQuery(): void {
+    if (typeof matchMedia === 'undefined') {
+      return;
+    }
+    this.resultsLayoutMql = matchMedia('(max-width: 768px)');
+    this.resultsLayoutIsMobile = this.resultsLayoutMql.matches;
+    const handler = (): void => {
+      this.ngZone.run(() => {
+        this.resultsLayoutIsMobile = this.resultsLayoutMql!.matches;
+      });
+    };
+    this.resultsLayoutMql.addEventListener('change', handler);
+    this.resultsLayoutMqlListener = () => {
+      this.resultsLayoutMql?.removeEventListener('change', handler);
+    };
   }
 
   /** 10s polling only while there are live matches; stops when the list is empty. */
@@ -165,16 +198,34 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * First upcoming match that still allows opening the editor (not locked as "active").
-   * Used for the single mobile "Predecir" CTA under the section title.
+   * True when the viewport matches the same breakpoint as mobile CSS (≤768px).
+   * Used to route taps on the whole match card while desktop keeps the footer buttons.
    */
-  get firstPredictableUpcomingMatch(): LiveMatch | null {
-    for (const m of this.upcomingMatches) {
-      if (!this.isMatchActive(m)) {
-        return m;
-      }
+  isResultsMobileLayout(): boolean {
+    return this.resultsLayoutIsMobile;
+  }
+
+  /**
+   * On mobile, footer buttons are hidden; tapping the card opens the same flow
+   * as the old buttons: live/past → predicciones modal; upcoming → edit (group
+   * picker or direct navigation if only one group).
+   */
+  onResultsMatchCardClick(
+    _event: Event,
+    match: LiveMatch,
+    section: 'live' | 'upcoming' | 'past'
+  ): void {
+    if (!this.isResultsMobileLayout()) {
+      return;
     }
-    return null;
+    if (!this.hasJoinedTournaments()) {
+      return;
+    }
+    if (section === 'upcoming') {
+      this.predictMatch(match);
+    } else {
+      this.viewPredictions(match);
+    }
   }
 
   goBack(): void {
