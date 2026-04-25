@@ -936,9 +936,36 @@
 .per-award-main .category-header {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  text-align: center;
+  text-align: left;
+  width: 100%;
+}
+
+/* Por premio (desktop): título y descripción alineados a la izquierda */
+.per-award-main .category-title-nav {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.per-award-main .category-title-nav__center {
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Grupo — Por miembro (desktop): mismo criterio que Por premio */
+.main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav__center {
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  max-width: 100%;
 }
 
 .members-loading {
@@ -1276,6 +1303,31 @@
 
   .main.others-awards-browse .browse-toolbar {
     justify-content: center;
+  }
+
+  /* Grupo — Por miembro (móvil): cabecera de premio centrada */
+  .main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav {
+    justify-content: center;
+  }
+
+  .main.others-awards-browse .awards-main:not(.per-award-main) .category-title-nav__center {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Por premio (móvil): cabecera de premio centrada */
+  .per-award-main .category-header {
+    align-items: center;
+    text-align: center;
+  }
+
+  .per-award-main .category-title-nav {
+    justify-content: center;
+  }
+
+  .per-award-main .category-title-nav__center {
+    align-items: center;
+    text-align: center;
   }
 
   /* Por premio: sin subtítulo bajo el título de premio; filas = nombre (memberLabel) y picks debajo */
