@@ -607,12 +607,17 @@
 
 .past-match-card__body {
   display: grid;
+  /* One row: fills min-height so short rows match ★ + 2-line + RESULTADO/PREDICCIÓN height */
   grid-template-columns: minmax(0, 1fr) minmax(120px, 1.1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 10px 8px;
   padding: 20px 12px 22px;
-  /* Content-sized row; each column block centers vertically against siblings (no phantom ★/2nd-line height) */
+  box-sizing: border-box;
+  /* Tall reference: multiplicador + RESULTADO/PREDICCIÓN + 2-line team name (e.g. Estados Unidos) */
+  min-height: 10rem;
+  /* Center each column’s block in the full row; grows with content past min-height */
   align-items: center;
-  align-content: center;
+  align-content: stretch;
 }
 
 .past-match-card__team {
