@@ -78,6 +78,12 @@
   gap: 32px;
 }
 
+/* Grupo — Por miembro: sin barra de premios, contenido a ancho completo */
+.awards-layout--all-by-member {
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
 // Sidebar
 .categories-sidebar {
   background: rgba(17, 17, 19, 0.6);
@@ -931,6 +937,47 @@
 
 .per-award-main {
   min-height: 200px;
+}
+
+/* Grupo — Por miembro: un bloque debajo de otro (scroll en la página) */
+.awards-main--all-by-member {
+  min-width: 0;
+}
+
+.member-all-awards__section {
+  margin-bottom: 2.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.member-all-awards__title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+  text-align: left;
+}
+
+/* Desktop: fila de miembros centrada; premios de jugador en 3 columnas (misma anchura) */
+@media (min-width: 769px) {
+  .member-chips-carousel .member-chips-scroll {
+    text-align: center;
+  }
+
+  .member-chips-carousel .member-chips {
+    display: inline-flex;
+  }
+
+  .awards-main--all-by-member .selections-list--player-awards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .awards-main--all-by-member .selections-list--player-awards .selection-item {
+    min-width: 0;
+  }
 }
 
 .per-award-main .category-header {

@@ -103,9 +103,12 @@
       </button>
     </div>
 
-    <div class="awards-layout" *ngIf="!isLoading && (!awardsLocked || browseGroupOpen)">
-      <!-- Categories Sidebar -->
-      <div class="categories-sidebar">
+    <div
+      class="awards-layout"
+      [class.awards-layout--all-by-member]="showAllAwardsForSelectedMember"
+      *ngIf="!isLoading && (!awardsLocked || browseGroupOpen)">
+      <!-- Categories Sidebar (oculto: grupo — Por miembro, lista completa en una columna) -->
+      <div class="categories-sidebar" *ngIf="!showAllAwardsForSelectedMember">
         <h3 class="sidebar-title">Premios</h3>
         <button 
           *ngFor="let category of categories"
@@ -121,8 +124,10 @@
         </button>
       </div>
 
-      <!-- Main: per-member / edit (same grid) OR per-award table -->
-      <div class="awards-main" *ngIf="browseLayout === 'per-member' || !awardsLocked">
+      <!-- Main: per-member (un premio) / edición; no mostrar con lista completa por miembro -->
+      <div
+        class="awards-main"
+        *ngIf="(browseLayout === 'per-member' || !awardsLocked) && !showAllAwardsForSelectedMember">
         <div class="category-header">
           <div class="category-header-row">
             <div class="category-heading-text">
@@ -290,6 +295,62 @@
 
         <div class="empty-state" *ngIf="canEdit && getFilteredOptions().length === 0">
           <p>{{ getNoResultsMessage() }}</p>
+        </div>
+      </div>
+
+      <!-- Grupo — Por miembro: todos los premios y candidatos del miembro, una columna con scroll -->
+      <div class="awards-main awards-main--all-by-member" *ngIf="showAllAwardsForSelectedMember">
+        <div *ngFor="let cat of categories" class="member-all-awards__section">
+          <h2 class="member-all-awards__title">{{ cat.title }}</h2>
+          <ng-container *ngIf="getWinnerForCategoryId(cat) as winner">
+            <div class="winner-container" [style.--max-picks]="cat.maxSelections">
+              <h4 class="winner-title">Ganador</h4>
+              <div class="selections-list">
+                <div class="selection-item selection-item--winner">
+                  <ng-container *ngIf="cat.type === 'country'">
+                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag">
+                    <span class="selection-name">{{ asCountry(winner).name }}</span>
+                  </ng-container>
+                  <ng-container *ngIf="cat.type === 'player'">
+                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag">
+                    <div class="selection-info">
+                      <span class="selection-name">{{ asPlayer(winner).name }}</span>
+                      <span class="selection-country">{{ asPlayer(winner).country.name }}</span>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          <div
+            class="selections-container"
+            *ngIf="getSelectionsForCategory(cat).length > 0"
+            [style.--max-picks]="cat.maxSelections">
+            <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
+            <div
+              class="selections-list"
+              [class.selections-list--player-awards]="cat.type === 'player'">
+              <div
+                class="selection-item"
+                [class.selection-item--is-winner]="isWinnerItemInCategory(item, cat)"
+                *ngFor="let item of getSelectionsForCategory(cat)">
+                <ng-container *ngIf="cat.type === 'country'">
+                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
+                  <span class="selection-name">{{ asCountry(item).name }}</span>
+                </ng-container>
+                <ng-container *ngIf="cat.type === 'player'">
+                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
+                  <div class="selection-info">
+                    <span class="selection-name">{{ asPlayer(item).name }}</span>
+                    <span class="selection-country">{{ asPlayer(item).country.name }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state empty-state--browse" *ngIf="getSelectionsForCategory(cat).length === 0">
+            <p>No hay predicciones para este premio</p>
+          </div>
         </div>
       </div>
 

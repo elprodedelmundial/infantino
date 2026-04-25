@@ -143,6 +143,16 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return this.predictions;
   }
 
+  /** Ver predicciones del grupo: una sola columna, todos los premios del miembro (sin menú lateral) */
+  get showAllAwardsForSelectedMember(): boolean {
+    return (
+      this.awardsLocked &&
+      this.browseGroupOpen &&
+      this.browseLayout === 'per-member' &&
+      this.selectedMemberId != null
+    );
+  }
+
   private cloneAwardPredictions(src: TournamentAwardPrediction): TournamentAwardPrediction {
     return {
       champion: [...src.champion],
@@ -285,13 +295,25 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return 'Candidatos';
   }
 
-  getWinnerForCategory(): Country | Player | null {
+  getWinnerForCategoryId(category: AwardCategory): Country | Player | null {
     if (!this.trueWinners) return null;
-    return this.trueWinners[this.activeCategory.id] ?? null;
+    return this.trueWinners[category.id] ?? null;
+  }
+
+  getWinnerForCategory(): Country | Player | null {
+    return this.getWinnerForCategoryId(this.activeCategory);
+  }
+
+  getSelectionsForCategory(category: AwardCategory): (Country | Player)[] {
+    return this.viewPredictions[category.id] as (Country | Player)[];
   }
 
   isWinnerItem(item: Country | Player): boolean {
-    const winner = this.getWinnerForCategory();
+    return this.isWinnerItemInCategory(item, this.activeCategory);
+  }
+
+  isWinnerItemInCategory(item: Country | Player, category: AwardCategory): boolean {
+    const winner = this.getWinnerForCategoryId(category);
     if (!winner) return false;
     return (winner as Country | Player).id === item.id;
   }
