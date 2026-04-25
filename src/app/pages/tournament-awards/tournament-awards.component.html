@@ -127,7 +127,7 @@
         <div class="category-header">
           <div class="category-header-row">
             <div class="category-heading-text">
-              <div class="category-title-row">
+              <div class="category-title-nav">
                 <button
                   type="button"
                   class="category-title-nav__btn"
@@ -143,7 +143,10 @@
                       stroke-linejoin="round" />
                   </svg>
                 </button>
-                <h2 class="category-title">{{ activeCategory.title }}</h2>
+                <div class="category-title-nav__center">
+                  <h2 class="category-title">{{ activeCategory.title }}</h2>
+                  <p class="category-description" *ngIf="canEdit">{{ activeCategory.description }}</p>
+                </div>
                 <button
                   type="button"
                   class="category-title-nav__btn"
@@ -160,7 +163,6 @@
                   </svg>
                 </button>
               </div>
-              <p class="category-description" *ngIf="canEdit">{{ activeCategory.description }}</p>
             </div>
             <div class="save-bar" *ngIf="canEdit && hasChanges && !isLoading">
               <span class="save-info">Tienes cambios sin guardar</span>
@@ -295,7 +297,7 @@
       <!-- Per-award: list members and their picks for active category -->
       <div class="awards-main per-award-main" *ngIf="awardsLocked && browseGroupOpen && browseLayout === 'per-award'">
         <div class="category-header">
-          <div class="category-title-row">
+          <div class="category-title-nav">
             <button
               type="button"
               class="category-title-nav__btn"
@@ -311,7 +313,10 @@
                   stroke-linejoin="round" />
               </svg>
             </button>
-            <h2 class="category-title">{{ activeCategory.title }}</h2>
+            <div class="category-title-nav__center">
+              <h2 class="category-title">{{ activeCategory.title }}</h2>
+              <p class="category-description">Predicciones de todos los miembros en esta categoría</p>
+            </div>
             <button
               type="button"
               class="category-title-nav__btn"
@@ -328,7 +333,6 @@
               </svg>
             </button>
           </div>
-          <p class="category-description">Predicciones de todos los miembros en esta categoría</p>
         </div>
 
         <div class="empty-state" *ngIf="membersAwardPredictions.length === 0">

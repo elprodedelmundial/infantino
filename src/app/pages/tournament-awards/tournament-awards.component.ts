@@ -79,7 +79,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     { id: 'goldenBall', title: 'Balón de Oro', description: 'Mejor jugador del torneo (hasta 3)', maxSelections: 3, type: 'player' },
     { id: 'goldenBoot', title: 'Bota de Oro', description: 'Máximo goleador del torneo (hasta 3)', maxSelections: 3, type: 'player' },
     { id: 'goldenGlove', title: 'Guante de Oro', description: 'Mejor portero del torneo (hasta 3)', maxSelections: 3, type: 'player' },
-    { id: 'bestYoungPlayer', title: 'Mejor Juvenil', description: 'Mejor jugador sub-23 (hasta 3)', maxSelections: 3, type: 'player' }
+    { id: 'bestYoungPlayer', title: 'Mejor Juvenil', description: 'Mejor jugador sub-21 (hasta 3)', maxSelections: 3, type: 'player' }
   ];
 
   activeCategory: AwardCategory = this.categories[0];
