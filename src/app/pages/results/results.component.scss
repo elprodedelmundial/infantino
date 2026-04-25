@@ -187,6 +187,20 @@
   justify-self: stretch;
 }
 
+/*
+ * Reserve space on the outer edge of each team column so the flag + name sit a touch closer to
+ * the center score. Home uses the reserved space on its LEFT (where the bonus ★ chip floats);
+ * away mirrors it on its RIGHT for symmetrical balance and to keep both teams equidistant from
+ * the center. box-sizing: border-box is global, so this shrinks content without breaking the grid.
+ */
+.results-match-grid > .team-stack--home {
+  padding-left: var(--results-bonus-area);
+}
+
+.results-match-grid > .team-stack--away {
+  padding-right: var(--results-bonus-area);
+}
+
 .team-name-stack {
   font-weight: 600;
   color: var(--text-primary);
@@ -206,10 +220,12 @@
 .results-match-grid {
   --results-schedule: 120px;
   --results-center: 92px;
-  --results-action: 152px;
+  --results-action: 132px;
   --results-action-btn-height: 48px;
   --results-column-gap: 14px;
   --results-card-padding-x: 22px;
+  // Reserved strip on the outer edge of each team column; bonus ★ centers in the home side.
+  --results-bonus-area: 72px;
 
   position: relative;
   display: grid;
@@ -418,12 +434,18 @@
     0 2px 8px rgba(165, 61, 27, 0.4);
 }
 
-// Bonus ★ floats over the column gap between schedule and home columns,
-// vertically centered on the whole card so it never nudges other content.
+// Bonus ★ floats inside the reserved strip on the left of the home team column,
+// vertically centered on the whole card so it never nudges other content. Works for every
+// row (live/upcoming/past) because the grid shape is identical across sections.
 .results-match-grid > .match-multiplier-badge--schedule-gap {
   position: absolute;
   top: 50%;
-  left: calc(35px + var(--results-card-padding-x) + var(--results-schedule) + var(--results-column-gap) / 2);
+  left: calc(
+    var(--results-card-padding-x)
+    + var(--results-schedule)
+    + var(--results-column-gap)
+    + var(--results-bonus-area) / 2
+  );
   transform: translate(-50%, -50%);
   margin: 0;
   z-index: 1;
@@ -1153,10 +1175,12 @@
   .results-match-grid {
     --results-schedule: 92px;
     --results-center: 50px;
-    --results-action: 118px;
+    --results-action: 104px;
     --results-action-btn-height: 44px;
     --results-column-gap: 8px;
     --results-card-padding-x: 14px;
+    // Mobile teams already live in a cramped 1fr; keep the reserved strip small so names don't crush.
+    --results-bonus-area: 32px;
 
     grid-template-columns:
       var(--results-schedule)
