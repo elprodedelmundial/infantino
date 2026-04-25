@@ -133,7 +133,11 @@
           </div>
           <div class="country-filter" *ngIf="activeCategory.type === 'player'">
             <label class="country-filter-label" for="admin-country-filter">País</label>
-            <select id="admin-country-filter" class="country-select" [(ngModel)]="countryFilterCode">
+            <select
+              id="admin-country-filter"
+              class="country-select"
+              [(ngModel)]="countryFilterCode"
+              aria-label="Filtrar por país">
               <option value="">Todos los países</option>
               <option *ngFor="let c of countryFilterOptions" [value]="c.code">{{ c.name }}</option>
             </select>
