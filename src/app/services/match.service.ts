@@ -118,6 +118,15 @@ export class MatchService implements IMatchService {
       result.currentScore = { home: match.home_goals, away: match.away_goals };
     }
 
+    // Penalty shoot-out: surfaced only when the backend reports both sides. We
+    // use `!= null` so both `undefined` and `null` are treated as "no data".
+    if (match.home_penalties != null && match.away_penalties != null) {
+      result.penaltyScore = {
+        home: match.home_penalties,
+        away: match.away_penalties
+      };
+    }
+
     return result;
   }
 

@@ -62,6 +62,23 @@ export class ResultsComponent implements OnInit, OnDestroy {
     return this.memberDisplay.displayName(pred.username, pred.fullName);
   }
 
+  /**
+   * Maps `predictionStatus` to modifier classes on `.member-prediction` (used on
+   * mobile to color the score; badges stay on desktop).
+   */
+  memberPredictionStatusClasses(pred: MemberPrediction): { [key: string]: boolean } {
+    if (!pred.hasPrediction) {
+      return {};
+    }
+    const s = pred.predictionStatus;
+    return {
+      'member-prediction--status-correct': s === 'CORRECT',
+      'member-prediction--status-partial': s === 'PARTIAL',
+      'member-prediction--status-incorrect': s === 'INCORRECT',
+      'member-prediction--status-bonus': s === 'BONUS'
+    };
+  }
+
   ngOnInit(): void {
     const historyState = history.state as { username: string } | undefined;
     if (historyState?.username) {
@@ -145,6 +162,19 @@ export class ResultsComponent implements OnInit, OnDestroy {
     if (match.status === 'live' || match.status === 'finished') return true;
     const fifteenMin = 15 * 60 * 1000;
     return new Date(match.matchDate).getTime() - Date.now() <= fifteenMin;
+  }
+
+  /**
+   * First upcoming match that still allows opening the editor (not locked as "active").
+   * Used for the single mobile "Predecir" CTA under the section title.
+   */
+  get firstPredictableUpcomingMatch(): LiveMatch | null {
+    for (const m of this.upcomingMatches) {
+      if (!this.isMatchActive(m)) {
+        return m;
+      }
+    }
+    return null;
   }
 
   goBack(): void {

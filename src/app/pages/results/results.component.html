@@ -41,6 +41,9 @@
           <div class="match-center-col">
             <div class="score-display score-display--inline">
               <span class="current-score">{{ match.currentScore?.home }} - {{ match.currentScore?.away }}</span>
+              <span class="penalty-score" *ngIf="match.penaltyScore">
+                ({{ match.penaltyScore.home }} - {{ match.penaltyScore.away }})
+              </span>
             </div>
           </div>
 
@@ -69,6 +72,20 @@
     <div class="upcoming-section" *ngIf="!isLoading && upcomingMatches.length > 0">
       <div class="section-header">
         <h2 class="section-title">Próximos Partidos</h2>
+      </div>
+
+      <div
+        class="upcoming-section__mobile-cta"
+        *ngIf="hasJoinedTournaments() && firstPredictableUpcomingMatch">
+        <button
+          type="button"
+          class="predict-btn"
+          (click)="predictMatch(firstPredictableUpcomingMatch!)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+          Predecir
+        </button>
       </div>
 
       <div class="upcoming-matches-list">
@@ -139,6 +156,9 @@
           <div class="match-center-col">
             <div class="score-display past-score score-display--inline">
               <span class="current-score">{{ match.currentScore?.home }} - {{ match.currentScore?.away }}</span>
+              <span class="penalty-score" *ngIf="match.penaltyScore">
+                ({{ match.penaltyScore.home }} - {{ match.penaltyScore.away }})
+              </span>
             </div>
           </div>
 
@@ -200,22 +220,31 @@
     </button>
 
     <div class="modal-header" *ngIf="selectedMatch">
-      <div class="match-info-header match-info-header--stacked">
-        <div class="team-stack team-stack--home">
-          <img [src]="selectedMatch.homeTeam.flagUrl" [alt]="selectedMatch.homeTeam.name"
-               class="flag flag-stack modal-team-flag" [class.flag--ch]="isSwitzerland(selectedMatch.homeTeam)">
-          <span class="team-name-stack">{{ selectedMatch.homeTeam.name }}</span>
-        </div>
-        <div class="match-score">
-          <span class="match-multiplier-badge" *ngIf="selectedMatch.hasMultiplier" title="Partido con multiplicador">★</span>
-          <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
+      <div class="match-info-header">
+        <div
+          class="modal-header-substatus"
+          *ngIf="selectedMatch.status === 'live' || selectedMatch.status === 'finished'">
           <span class="match-time-label live" *ngIf="selectedMatch.status === 'live'">{{ selectedMatch.matchTime }}</span>
           <span class="match-time-label finished" *ngIf="selectedMatch.status === 'finished'">FT</span>
         </div>
-        <div class="team-stack team-stack--away">
-          <img [src]="selectedMatch.awayTeam.flagUrl" [alt]="selectedMatch.awayTeam.name"
-               class="flag flag-stack modal-team-flag" [class.flag--ch]="isSwitzerland(selectedMatch.awayTeam)">
-          <span class="team-name-stack">{{ selectedMatch.awayTeam.name }}</span>
+        <div class="modal-header-teamsrow">
+          <div class="modal-team modal-team--home">
+            <img [src]="selectedMatch.homeTeam.flagUrl" [alt]="selectedMatch.homeTeam.name"
+                 class="flag modal-team-flag" [class.flag--ch]="isSwitzerland(selectedMatch.homeTeam)">
+            <span class="modal-team-name">{{ selectedMatch.homeTeam.name }}</span>
+          </div>
+          <div class="match-score">
+            <span class="match-multiplier-badge" *ngIf="selectedMatch.hasMultiplier" title="Partido con multiplicador">★</span>
+            <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
+            <span class="penalty-score" *ngIf="selectedMatch.penaltyScore">
+              ({{ selectedMatch.penaltyScore.home }} - {{ selectedMatch.penaltyScore.away }})
+            </span>
+          </div>
+          <div class="modal-team modal-team--away">
+            <img [src]="selectedMatch.awayTeam.flagUrl" [alt]="selectedMatch.awayTeam.name"
+                 class="flag modal-team-flag" [class.flag--ch]="isSwitzerland(selectedMatch.awayTeam)">
+            <span class="modal-team-name">{{ selectedMatch.awayTeam.name }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -250,15 +279,18 @@
               *ngFor="let pred of tournamentPred.predictions"
               [class.current-user]="pred.isCurrentUser">
               <div class="member-info">
-                <div class="member-avatar">{{ pred.avatarInitials }}</div>
-                <span class="member-name">
-                  {{ predictionLabel(pred) }}
-                  <span class="you-tag" *ngIf="pred.isCurrentUser">Tú</span>
-                </span>
+                <span class="member-name">{{ predictionLabel(pred) }}</span>
+                <span class="you-tag" *ngIf="pred.isCurrentUser">Tú</span>
               </div>
               <div class="member-right">
-                <span class="member-prediction">
-                  {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+                <span
+                  class="member-prediction"
+                  [class.member-prediction--empty]="!pred.hasPrediction"
+                  [ngClass]="memberPredictionStatusClasses(pred)">
+                  <ng-container *ngIf="pred.hasPrediction; else emptyPrediction">
+                    {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+                  </ng-container>
+                  <ng-template #emptyPrediction>–</ng-template>
                 </span>
                 <span
                   *ngIf="pred.predictionStatus && pred.predictionStatus !== 'PENDING'"

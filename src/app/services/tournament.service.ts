@@ -355,6 +355,10 @@ export class TournamentService implements ITournamentService {
     const pred = p.prediction;
     const username = p.user.username;
     const fullName = p.user.fullname?.trim();
+    // A user without a submitted prediction has `pred == null` on the API
+    // payload. We still build a placeholder `predictedScore` so the shape of
+    // `MemberPrediction` stays uniform (the UI checks `hasPrediction` before
+    // deciding whether to actually render the score).
     return {
       oddsId: p.id ?? `${p.user.id}-${p.match.id}`,
       username,
@@ -364,6 +368,7 @@ export class TournamentService implements ITournamentService {
         home: pred?.home_goals ?? 0,
         away: pred?.away_goals ?? 0
       },
+      hasPrediction: pred != null,
       isCurrentUser: username === this.currentUsername,
       predictionStatus: pred?.status ?? 'PENDING'
     };
