@@ -203,6 +203,16 @@
   color: var(--text-muted);
 }
 
+.candidates-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  color: #e05252;
+}
+
 /* Ancho fijo: fuente ancha de puntajes + 10º/88º + º; mismo tamaño en todas las tarjetas */
 .ranking-badge {
   --ranking-badge-width: 9.75rem;
@@ -249,6 +259,48 @@
 .card-arrow {
   color: var(--text-muted);
   transition: all 0.3s ease;
+}
+
+// Candidate section separator
+.candidate-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 4px 2px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+// Candidate (pending approval) variant
+.tournament-card--candidate {
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.75;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    transform: translateX(2px);
+  }
+}
+
+.ranking-badge--pending {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.pending-hourglass {
+  color: var(--text-muted);
+  opacity: 0.8;
+  animation: hourglassPulse 2s ease-in-out infinite;
+}
+
+@keyframes hourglassPulse {
+  0%, 100% { opacity: 0.8; }
+  50%       { opacity: 0.4; }
 }
 
 // Loading State
@@ -351,6 +403,10 @@
   .tournament-meta {
     flex-direction: column;
     gap: 8px;
+
+    .participants { order: 1; }
+    .candidates-label { order: 2; }
+    .points { order: 3; }
   }
 
   .ranking-badge {

@@ -11,7 +11,8 @@ import {
   UserPredictions,
   MatchPrediction,
   GroupRole,
-  LastStandingPrediction
+  LastStandingPrediction,
+  GroupCandidate
 } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
@@ -48,6 +49,11 @@ export class TournamentStandingsComponent implements OnInit {
   editGroupIsPrivate: boolean = false;
   isSavingGroup: boolean = false;
   editGroupError: string = '';
+
+  // Candidates (pending join requests — admins only)
+  candidates: GroupCandidate[] = [];
+  isLoadingCandidates: boolean = false;
+  candidateActionInProgress: Set<string> = new Set();
 
   constructor(
     private router: Router,
@@ -89,11 +95,59 @@ export class TournamentStandingsComponent implements OnInit {
       this.standings = standings;
       this.isLoading = false;
       this.isRefreshingLive = false;
-      // If navigated directly to predictions tab (e.g. back from edit), load immediately
       if (this.activeTab === 'predictions') {
         this.loadPredictions();
       }
+      if (this.canEditGroup()) {
+        this.loadCandidates();
+      }
     });
+  }
+
+  loadCandidates(): void {
+    this.isLoadingCandidates = true;
+    this.tournamentService.getCandidates(this.tournamentId).subscribe({
+      next: candidates => {
+        this.candidates = candidates;
+        this.isLoadingCandidates = false;
+      },
+      error: () => {
+        this.isLoadingCandidates = false;
+      }
+    });
+  }
+
+  acceptCandidate(candidate: GroupCandidate): void {
+    if (this.candidateActionInProgress.has(candidate.id)) return;
+    this.candidateActionInProgress.add(candidate.id);
+    this.tournamentService.acceptCandidate(this.tournamentId, candidate.id).subscribe({
+      next: () => {
+        this.candidates = this.candidates.filter(c => c.id !== candidate.id);
+        this.candidateActionInProgress.delete(candidate.id);
+        this.loadData();
+      },
+      error: () => {
+        this.candidateActionInProgress.delete(candidate.id);
+      }
+    });
+  }
+
+  rejectCandidate(candidate: GroupCandidate): void {
+    if (this.candidateActionInProgress.has(candidate.id)) return;
+    this.candidateActionInProgress.add(candidate.id);
+    this.tournamentService.rejectCandidate(this.tournamentId, candidate.id).subscribe({
+      next: () => {
+        this.candidates = this.candidates.filter(c => c.id !== candidate.id);
+        this.candidateActionInProgress.delete(candidate.id);
+      },
+      error: () => {
+        this.candidateActionInProgress.delete(candidate.id);
+      }
+    });
+  }
+
+  isCandidateActionInProgress(candidateId: string): boolean {
+    return this.candidateActionInProgress.has(candidateId);
   }
 
   toggleLiveMode(): void {

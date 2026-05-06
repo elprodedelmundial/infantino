@@ -39,6 +39,47 @@
       </div>
     </div>
 
+    <!-- Candidates Panel (admins only, when there are pending join requests) -->
+    <div class="candidates-panel" *ngIf="!isLoading && canEditGroup() && (candidates.length > 0 || isLoadingCandidates)">
+      <div class="candidates-header">
+        <div class="candidates-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3.5 1H12.5M3.5 15H12.5M5 1C5 5 8 7 8 8C8 9 5 11 5 15M11 1C11 5 8 7 8 8C8 9 11 11 11 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Postulados ({{ candidates.length }})</span>
+        </div>
+      </div>
+      <div class="candidates-loading" *ngIf="isLoadingCandidates">
+        <div class="candidates-spinner"></div>
+      </div>
+      <ul class="candidates-list" *ngIf="!isLoadingCandidates && candidates.length > 0">
+        <li class="candidate-row" *ngFor="let candidate of candidates">
+          <div class="candidate-avatar">{{ candidate.username.substring(0, 2).toUpperCase() }}</div>
+          <span class="candidate-name">{{ candidate.fullName || candidate.username }}</span>
+          <div class="candidate-actions">
+            <button
+              class="candidate-btn candidate-btn--accept"
+              [disabled]="isCandidateActionInProgress(candidate.id)"
+              (click)="acceptCandidate(candidate)"
+              title="Aceptar">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button
+              class="candidate-btn candidate-btn--reject"
+              [disabled]="isCandidateActionInProgress(candidate.id)"
+              (click)="rejectCandidate(candidate)"
+              title="Rechazar">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+
     <!-- Tab Navigation -->
     <div class="tabs" *ngIf="!isLoading">
       <button 
@@ -145,7 +186,7 @@
             </div>
           </div>
           <div class="points">
-            {{ (player.points ?? 0) | number: '1.2-2' : 'en-US' }}
+            {{ player.points | number: '1.2-2' : 'en-US' }}
           </div>
         </div>
       </div>
