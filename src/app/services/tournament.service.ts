@@ -29,7 +29,8 @@ import {
   AllPredictionsData,
   GroupRole,
   AdminTournamentListItem,
-  AdminTournamentDetail
+  AdminTournamentDetail,
+  GroupCandidate
 } from '../models/tournament.model';
 import { ITournamentService } from './tournament-service.interface';
 import { TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
@@ -127,14 +128,20 @@ interface GroupResponse {
   max_members: number;
   has_started: boolean;
   standings?: GroupStandingResponse[];
+  /** Pending join-request users (from getGroupById response) */
+  candidates?: UserResponseApi[];
 }
 
-/** grondona UserGroupResponse: { group: GroupResponse, tournament_id, tournament_name?, member_count, points, rank, role } */
+/** grondona UserGroupResponse */
 interface UserGroupResponse {
   group: GroupResponse;
   tournament_id: string;
   tournament_name?: string;
+  /** API may send either name depending on backend version */
+  total_members?: number;
   member_count?: number;
+  total_candidates?: number | null;
+  candidates_count?: number | null;
   points: number;
   rank: number | null;
   role: string;
@@ -273,7 +280,7 @@ export class TournamentService implements ITournamentService {
       tournament: {
         id: ug.group.id,
         name: ug.group.name,
-        participantsCount: ug.member_count ?? ug.group.standings?.length ?? 0,
+        participantsCount: ug.total_members ?? ug.member_count ?? ug.group.standings?.length ?? 0,
         maxParticipants: ug.group.max_members,
         startDate: new Date(),
         isJoined: true,
@@ -282,7 +289,8 @@ export class TournamentService implements ITournamentService {
       },
       userRanking: ug.rank ?? null,
       userPoints: ug.points,
-      role: ug.role as GroupRole
+      role: ug.role as GroupRole,
+      totalCandidates: ug.total_candidates ?? ug.candidates_count ?? null
     };
   }
 
@@ -466,6 +474,53 @@ export class TournamentService implements ITournamentService {
         console.error('Update group error:', error);
         if (error.status === 409) return throwError(() => new Error('Nombre de grupo ya registrado'));
         return throwError(() => new Error('Error al actualizar el grupo'));
+      })
+    );
+  }
+
+  getCandidates(groupId: string): Observable<GroupCandidate[]> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http.get<GroupResponse>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(group => (group.candidates ?? []).map(u => ({
+        id: u.id,
+        username: u.username,
+        fullName: u.fullname?.trim() || undefined
+      }))),
+      catchError(error => {
+        console.error('Get candidates error:', error);
+        return of([]);
+      })
+    );
+  }
+
+  acceptCandidate(groupId: string, candidateId: string): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http.put<void>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/accept/${candidateId}`,
+      null,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(() => true),
+      catchError(error => {
+        console.error('Accept candidate error:', error);
+        return throwError(() => new Error('Error al aceptar el usuario'));
+      })
+    );
+  }
+
+  rejectCandidate(groupId: string, candidateId: string): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http.delete<void>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/reject/${candidateId}`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(() => true),
+      catchError(error => {
+        console.error('Reject candidate error:', error);
+        return throwError(() => new Error('Error al rechazar el usuario'));
       })
     );
   }

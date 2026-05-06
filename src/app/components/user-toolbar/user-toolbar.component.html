@@ -29,17 +29,21 @@
       <!-- Desktop: avatar + username + chevron (hidden on mobile via CSS) -->
       <div class="avatar">
         <span class="avatar-initials">{{ initials }}</span>
+        <span class="avatar-notification-dot" *ngIf="hasJoinRequests()" aria-hidden="true"></span>
       </div>
       <span class="username">{{ displayedUsername() }}</span>
       <svg class="chevron" [class.open]="isDropdownOpen" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
         <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <!-- Mobile: hamburger / close icon (hidden on desktop via CSS) -->
-      <svg class="hamburger" [class.open]="isDropdownOpen" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-        <line class="hamburger-bar hamburger-bar--1" x1="4" y1="7"  x2="18" y2="7"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        <line class="hamburger-bar hamburger-bar--2" x1="4" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        <line class="hamburger-bar hamburger-bar--3" x1="4" y1="15" x2="18" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
+      <div class="hamburger-wrap">
+        <svg class="hamburger" [class.open]="isDropdownOpen" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <line class="hamburger-bar hamburger-bar--1" x1="4" y1="7"  x2="18" y2="7"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line class="hamburger-bar hamburger-bar--2" x1="4" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line class="hamburger-bar hamburger-bar--3" x1="4" y1="15" x2="18" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="hamburger-notification-dot" *ngIf="hasJoinRequests()" aria-hidden="true"></span>
+      </div>
     </button>
     
     <div class="dropdown" [class.open]="isDropdownOpen">
@@ -99,6 +103,22 @@
 
       <div class="dropdown-divider"></div>
 
+      <!-- Administrar Grupos — only shown when there are pending join requests -->
+      <div class="dropdown-section" *ngIf="hasJoinRequests()">
+        <div class="dropdown-label dropdown-label--admin-groups">Administrar Grupos</div>
+        <button class="dropdown-item dropdown-item--manage-groups" (click)="openJoinRequestsOverlay()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="13" cy="3" r="2.5" fill="#e05252"/>
+          </svg>
+          Aceptar usuarios
+          <span class="manage-groups-badge">{{ joinRequests().length }}</span>
+        </button>
+      </div>
+
+      <div class="dropdown-divider" *ngIf="hasJoinRequests()"></div>
+
       <button class="dropdown-item logout" (click)="logout()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M6 14H3C2.44772 14 2 13.5523 2 13V3C2 2.44772 2.44772 2 3 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -117,3 +137,57 @@
   the drawer. Desktop hides it via CSS, so it never interferes with the popover dropdown.
 -->
 <div class="drawer-backdrop" [class.open]="isDropdownOpen" (click)="closeDropdown()" aria-hidden="true"></div>
+
+<!-- Join Requests Overlay -->
+<div class="join-requests-overlay" *ngIf="showJoinRequestsOverlay" role="dialog" aria-modal="true" aria-label="Administrar solicitudes de unión">
+  <div class="join-requests-backdrop" (click)="closeJoinRequestsOverlay()" aria-hidden="true"></div>
+  <div class="join-requests-panel">
+    <div class="join-requests-panel-header">
+      <h2 class="join-requests-panel-title">Solicitudes de unión</h2>
+      <button class="join-requests-close-btn" (click)="closeJoinRequestsOverlay()" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="join-requests-groups">
+      <div class="join-request-group" *ngFor="let group of joinRequests()">
+        <div class="join-request-group-name">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 7C8.38071 7 9.5 5.88071 9.5 4.5C9.5 3.11929 8.38071 2 7 2C5.61929 2 4.5 3.11929 4.5 4.5C4.5 5.88071 5.61929 7 7 7Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2 12C2 10.067 4.23858 8.5 7 8.5C9.76142 8.5 12 10.067 12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          {{ group.groupName }}
+          <span class="join-request-count">{{ group.users.length }}</span>
+        </div>
+        <ul class="join-request-users">
+          <li class="join-request-user-row" *ngFor="let user of group.users">
+            <div class="join-request-avatar">{{ user.username.substring(0, 2).toUpperCase() }}</div>
+            <span class="join-request-username">{{ memberDisplay.displayName(user.username, user.fullName || null) }}</span>
+            <div class="join-request-actions">
+              <button
+                class="join-request-btn join-request-btn--accept"
+                [disabled]="isJoinRequestActionInProgress(group.groupId, user.id)"
+                (click)="acceptJoinRequest(group.groupId, user)"
+                title="Aceptar">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button
+                class="join-request-btn join-request-btn--reject"
+                [disabled]="isJoinRequestActionInProgress(group.groupId, user.id)"
+                (click)="rejectJoinRequest(group.groupId, user)"
+                title="Rechazar">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

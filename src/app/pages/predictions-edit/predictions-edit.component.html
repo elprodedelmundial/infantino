@@ -135,9 +135,8 @@
             <span
               class="draw-odds"
               *ngIf="match.odds && !match.isPlayed"
-              >
-              <span class="draw-odds__mobile">+{{ match.odds.draw.toFixed(1) }}</span>
-              <span class="draw-odds__desktop">Empate +{{ match.odds.draw.toFixed(1) }}</span>
+              [attr.aria-label]="'Cuota empate +' + match.odds.draw.toFixed(1)">
+              +{{ match.odds.draw.toFixed(1) }}
             </span>
             <div class="score-section">
               <!-- Desktop: read mode + +/- steppers when editing -->

@@ -15,7 +15,8 @@ import {
   AllPredictionsData,
   AdminTournamentListItem,
   AdminTournamentDetail,
-  TournamentAwardWinners
+  TournamentAwardWinners,
+  GroupCandidate
 } from '../models/tournament.model';
 import { TournamentPredictions } from './match-service.interface';
 
@@ -51,6 +52,12 @@ export interface ITournamentService {
     tournamentId: string,
     payload: { name: string; status: string; winners: TournamentAwardWinners }
   ): Observable<boolean>;
+  /** GET group by ID and extract candidates array */
+  getCandidates(groupId: string): Observable<GroupCandidate[]>;
+  /** PUT accept a candidate into the group */
+  acceptCandidate(groupId: string, candidateId: string): Observable<boolean>;
+  /** DELETE reject a candidate from the group */
+  rejectCandidate(groupId: string, candidateId: string): Observable<boolean>;
 }
 
 export const TOURNAMENT_SERVICE = 'TOURNAMENT_SERVICE';

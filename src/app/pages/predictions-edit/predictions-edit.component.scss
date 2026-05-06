@@ -397,53 +397,31 @@
   min-width: 0;
 }
 
-.match-col--home {
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-
-  .team-odds {
-    order: 2;
-    flex-shrink: 0;
-  }
-
-  .team.home {
-    order: 1;
-    min-width: 0;
-  }
-}
-
+/* Cuotas 1/2 arriba del bloque (bandera + nombre); DOM: .team-odds, luego .team */
+.match-col--home,
 .match-col--away {
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-
-  .team-odds {
-    order: 1;
-    flex-shrink: 0;
-  }
-
-  .team.away {
-    order: 2;
-    min-width: 0;
-  }
+  justify-content: center;
+  gap: 10px;
 }
 
+.match-col--home .team-odds,
+.match-col--away .team-odds {
+  flex-shrink: 0;
+}
+
+.match-col--home .team.home,
+.match-col--away .team.away {
+  min-width: 0;
+}
+
+/* Empate: cuota arriba del marcador (orden del DOM) */
 .match-col--center {
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-
-  .draw-odds {
-    order: 2;
-  }
-
-  .score-section {
-    order: 1;
-  }
 }
 
 .team {
@@ -500,14 +478,6 @@
   background: rgba(232, 255, 71, 0.08);
   border: 1px solid rgba(232, 255, 71, 0.28);
   border-radius: 5px;
-}
-
-.draw-odds__mobile {
-  display: none;
-}
-
-.draw-odds__desktop {
-  display: inline;
 }
 
 .score-section {
@@ -976,14 +946,6 @@
     font-size: 0.72rem;
   }
 
-  .draw-odds__mobile {
-    display: inline;
-  }
-
-  .draw-odds__desktop {
-    display: none;
-  }
-
   .score-section__desktop {
     display: none;
   }
@@ -1035,14 +997,6 @@
     justify-content: flex-start;
     gap: 12px;
     min-width: 0;
-
-    .draw-odds {
-      order: 1;
-    }
-
-    .score-section {
-      order: 2;
-    }
   }
 
   .match-footer {

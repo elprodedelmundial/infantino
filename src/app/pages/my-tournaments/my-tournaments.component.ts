@@ -17,6 +17,18 @@ export class MyTournamentsComponent implements OnInit {
   joinedTournaments: JoinedTournament[] = [];
   isLoading: boolean = true;
 
+  get memberGroups(): JoinedTournament[] {
+    return this.joinedTournaments.filter(t => t.role !== 'CANDIDATE');
+  }
+
+  get candidateGroups(): JoinedTournament[] {
+    return this.joinedTournaments.filter(t => t.role === 'CANDIDATE');
+  }
+
+  isCandidate(joined: JoinedTournament): boolean {
+    return joined.role === 'CANDIDATE';
+  }
+
   constructor(
     private router: Router,
     @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService

@@ -10,13 +10,30 @@ export interface Tournament {
   hasStarted?: boolean;
 }
 
-export type GroupRole = 'OWNER' | 'ADMIN' | 'MEMBER';
+export type GroupRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CANDIDATE';
 
 export interface JoinedTournament {
   tournament: Tournament;
   userRanking: number | null;
   userPoints: number;
   role?: GroupRole;
+  /** From getMyGroups: total_candidates — pending join requests (admins only, may be null) */
+  totalCandidates?: number | null;
+}
+
+/** A user pending approval to join a group */
+export interface GroupCandidate {
+  id: string;
+  username: string;
+  fullName?: string;
+}
+
+/** A group with its pending join-request users (from CurrentUserResponse.join_requests) */
+export interface GroupJoinRequest {
+  groupId: string;
+  groupName: string;
+  tournamentId: string;
+  users: GroupCandidate[];
 }
 
 export type PredictionResult = 'correct' | 'incorrect' | 'half' | 'bonus';

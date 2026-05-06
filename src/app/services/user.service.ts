@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { UserProfile, UserProfileUpdate, RegisterUserData, RegistrationError, UserPermission } from '../models/user.model';
+import { UserProfile, UserProfileUpdate, RegisterUserData, RegistrationError, UserPermission, UserJoinRequest } from '../models/user.model';
 import { IUserService } from './user-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
 
@@ -15,6 +15,21 @@ interface AuthResponse {
   permissions?: string;
 }
 
+interface JoinRequestUserApi {
+  id: string;
+  username: string;
+  fullname: string;
+}
+
+interface JoinGroupRequestApi {
+  group: {
+    id: string;
+    name: string;
+    tournament_id: string;
+  };
+  users: JoinRequestUserApi[];
+}
+
 interface UserResponse {
   id: string;
   fullname: string;
@@ -24,6 +39,8 @@ interface UserResponse {
   updated_at?: string;
   /** grondona: USER | SUPERUSER */
   permissions?: string;
+  /** From CurrentUserResponse: pending join requests for groups where user is admin */
+  join_requests?: JoinGroupRequestApi[];
 }
 
 interface ConflictErrorResponse {
@@ -83,12 +100,28 @@ export class UserService implements IUserService {
   }
 
   private mapUserResponse(response: UserResponse): UserProfile {
+    const joinRequests: UserJoinRequest[] | undefined = response.join_requests?.length
+      ? response.join_requests
+          .filter(jr => jr.users?.length > 0)
+          .map(jr => ({
+            groupId: jr.group.id,
+            groupName: jr.group.name,
+            tournamentId: jr.group.tournament_id,
+            users: jr.users.map(u => ({
+              id: u.id,
+              username: u.username,
+              fullName: u.fullname?.trim() || u.username
+            }))
+          }))
+      : undefined;
+
     return {
       id: response.id,
       username: response.username,
       fullName: response.fullname,
       email: response.email,
-      permissions: this.mapPermission(response.permissions)
+      permissions: this.mapPermission(response.permissions),
+      joinRequests: joinRequests?.length ? joinRequests : undefined
     };
   }
 

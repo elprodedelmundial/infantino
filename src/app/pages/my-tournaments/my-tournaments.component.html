@@ -43,38 +43,82 @@
     <!-- Joined Tournaments List -->
     <div class="tournaments-section" *ngIf="!isLoading && joinedTournaments.length > 0">
       <div class="tournaments-list">
-        <div 
-          class="tournament-card" 
-          *ngFor="let joined of joinedTournaments"
-          (click)="openTournament(joined)">
-          <div class="tournament-info">
-            <h3 class="tournament-name">{{ joined.tournament.name }}</h3>
-            <div class="tournament-meta">
-              <span class="participants">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 7C8.38071 7 9.5 5.88071 9.5 4.5C9.5 3.11929 8.38071 2 7 2C5.61929 2 4.5 3.11929 4.5 4.5C4.5 5.88071 5.61929 7 7 7Z" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M2 12C2 10.067 4.23858 8.5 7 8.5C9.76142 8.5 12 10.067 12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                {{ joined.tournament.participantsCount }} participantes
-              </span>
-              <span class="points">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 2L8.09 5.26L11.63 5.27L8.77 7.14L9.86 10.41L7 8.55L4.14 10.41L5.23 7.14L2.37 5.27L5.91 5.26L7 2Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
-                </svg>
-                {{ joined.userPoints }} puntos
-              </span>
+
+        <!-- Member / Admin / Owner groups -->
+        <ng-container *ngFor="let joined of memberGroups">
+          <div class="tournament-card" (click)="openTournament(joined)">
+            <div class="tournament-info">
+              <h3 class="tournament-name">{{ joined.tournament.name }}</h3>
+              <div class="tournament-meta">
+                <span class="participants">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 7C8.38071 7 9.5 5.88071 9.5 4.5C9.5 3.11929 8.38071 2 7 2C5.61929 2 4.5 3.11929 4.5 4.5C4.5 5.88071 5.61929 7 7 7Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M2 12C2 10.067 4.23858 8.5 7 8.5C9.76142 8.5 12 10.067 12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                  {{ joined.tournament.participantsCount }} participantes
+                </span>
+                <span class="candidates-label" *ngIf="joined.totalCandidates">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 1.5H11M3 12.5H11M4 1.5C4 4.5 7 6 7 7C7 8 4 9.5 4 12.5M10 1.5C10 4.5 7 6 7 7C7 8 10 9.5 10 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ joined.totalCandidates }} postulados
+                </span>
+                <span class="points">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 2L8.09 5.26L11.63 5.27L8.77 7.14L9.86 10.41L7 8.55L4.14 10.41L5.23 7.14L2.37 5.27L5.91 5.26L7 2Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                  </svg>
+                  {{ joined.userPoints }} puntos
+                </span>
+              </div>
+            </div>
+            <div class="ranking-badge">
+              <span class="ranking-position">{{ formatRanking(joined.userRanking) }}</span>
+              <span class="ranking-label">posición</span>
+            </div>
+            <div class="card-arrow">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
           </div>
-          <div class="ranking-badge">
-            <span class="ranking-position">{{ formatRanking(joined.userRanking) }}</span>
-            <span class="ranking-label">posición</span>
+        </ng-container>
+
+        <!-- Candidate groups (waiting for approval) — shown at the bottom -->
+        <ng-container *ngIf="candidateGroups.length > 0">
+          <div class="candidate-section-label" *ngIf="memberGroups.length > 0">
+            Solicitudes pendientes
           </div>
-          <div class="card-arrow">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <div
+            class="tournament-card tournament-card--candidate"
+            *ngFor="let joined of candidateGroups"
+            (click)="openTournament(joined)">
+            <div class="tournament-info">
+              <h3 class="tournament-name">{{ joined.tournament.name }}</h3>
+              <div class="tournament-meta">
+                <span class="participants">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 7C8.38071 7 9.5 5.88071 9.5 4.5C9.5 3.11929 8.38071 2 7 2C5.61929 2 4.5 3.11929 4.5 4.5C4.5 5.88071 5.61929 7 7 7Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M2 12C2 10.067 4.23858 8.5 7 8.5C9.76142 8.5 12 10.067 12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                  {{ joined.tournament.participantsCount }} participantes
+                </span>
+              </div>
+            </div>
+            <!-- Sandclock badge instead of ranking -->
+            <div class="ranking-badge ranking-badge--pending">
+              <svg class="pending-hourglass" width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M6 3H22M6 25H22M8 3C8 9 14 12 14 14C14 16 8 19 8 25M20 3C20 9 14 12 14 14C14 16 20 19 20 25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="ranking-label">pendiente</span>
+            </div>
+            <div class="card-arrow">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
-        </div>
+        </ng-container>
+
       </div>
     </div>
 

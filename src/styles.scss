@@ -21,9 +21,9 @@ img.flag.flag--ch {
   --error: #ff6b6b;
   --success: #4ade80;
 
-  /* Match / prediction numeric scores (larger for readability) */
+  /* Scores, points, rank boxes: Inter for clearer tabular numerals; Syne stays for titles/body */
   --score-line-height: 1.18;
-  --score-font-numeric: 'Syne', sans-serif;
+  --score-font-numeric: 'Inter', 'Syne', system-ui, -apple-system, sans-serif;
   --score-size-table: 1.22rem;
   --score-size-row: 1.38rem;
   --score-size-display: 1.48rem;
