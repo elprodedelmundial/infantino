@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { IUserService, USER_SERVICE } from '../../services/user-service.interface';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
-import { UserPermission, UserProfile, UserJoinRequest, JoinRequestUser } from '../../models/user.model';
+import { UserPermission, UserProfile, UserJoinRequest, JoinRequestUser, PredictionMode } from '../../models/user.model';
+import { JoinedTournament } from '../../models/tournament.model';
 
 @Component({
   selector: 'app-user-toolbar',
@@ -35,6 +36,18 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   // Join requests overlay
   showJoinRequestsOverlay: boolean = false;
   joinRequestActionInProgress: Set<string> = new Set();
+
+  // Prediction mode
+  private static readonly PRED_MODE_KEY = 'prode_prediction_mode_v1';
+  readonly predictionMode = signal<PredictionMode>(
+    (localStorage.getItem(UserToolbarComponent.PRED_MODE_KEY) as PredictionMode | null) ?? 'per_group'
+  );
+  readonly isUniquePredictions = computed(() => this.predictionMode() === 'unique');
+
+  // Master group picker overlay
+  showMasterGroupPicker: boolean = false;
+  masterGroupPickerGroups: JoinedTournament[] = [];
+  isPredictionModeUpdating: boolean = false;
 
   constructor(
     private router: Router,
@@ -163,6 +176,61 @@ export class UserToolbarComponent implements OnInit, OnChanges {
     if (updated.length === 0) {
       this.showJoinRequestsOverlay = false;
     }
+  }
+
+  selectPerGroupPredictions(): void {
+    if (this.predictionMode() === 'per_group' || this.isPredictionModeUpdating) return;
+    this.isPredictionModeUpdating = true;
+    this.userService.updatePredictionMode(false).subscribe({
+      next: () => {
+        this.predictionMode.set('per_group');
+        localStorage.setItem(UserToolbarComponent.PRED_MODE_KEY, 'per_group');
+        this.isPredictionModeUpdating = false;
+      },
+      error: () => { this.isPredictionModeUpdating = false; }
+    });
+  }
+
+  selectUniquePredictions(): void {
+    if (this.predictionMode() === 'unique' || this.isPredictionModeUpdating) return;
+    // Fetch joined groups and filter out CANDIDATEs
+    this.tournamentService.getJoinedTournaments().subscribe({
+      next: groups => {
+        const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
+        if (memberGroups.length <= 1) {
+          // No group picker needed
+          this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
+        } else {
+          // Show master group picker
+          this.masterGroupPickerGroups = memberGroups;
+          this.closeDropdown();
+          this.showMasterGroupPicker = true;
+        }
+      },
+      error: () => { /* silently ignore */ }
+    });
+  }
+
+  confirmMasterGroup(group: JoinedTournament): void {
+    this.showMasterGroupPicker = false;
+    this.applyUniquePredictions(group.tournament.id);
+  }
+
+  closeMasterGroupPicker(): void {
+    this.showMasterGroupPicker = false;
+    this.masterGroupPickerGroups = [];
+  }
+
+  private applyUniquePredictions(masterGroupId: string | null): void {
+    this.isPredictionModeUpdating = true;
+    this.userService.updatePredictionMode(true, masterGroupId).subscribe({
+      next: () => {
+        this.predictionMode.set('unique');
+        localStorage.setItem(UserToolbarComponent.PRED_MODE_KEY, 'unique');
+        this.isPredictionModeUpdating = false;
+      },
+      error: () => { this.isPredictionModeUpdating = false; }
+    });
   }
 
   goToDashboard(): void {

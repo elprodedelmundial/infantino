@@ -32,7 +32,12 @@ export interface UserProfileUpdate {
   email?: string;
   currentPassword?: string;
   newPassword?: string;
+  uniquePredictions?: boolean;
+  /** Group id to use as the prediction source when uniquePredictions is true */
+  uniquePredictionsMaster?: string | null;
 }
+
+export type PredictionMode = 'unique' | 'per_group';
 
 export interface RegisterUserData {
   fullName: string;

@@ -13,6 +13,8 @@ export interface IUserService {
   updateProfile(update: UserProfileUpdate): Observable<UserProfile>;
   changePassword(currentPassword: string, newPassword: string): Observable<boolean>;
   deleteUser(): Observable<boolean>;
+  /** PATCH unique_predictions (and optionally unique_predictions_master) on the current user. */
+  updatePredictionMode(unique: boolean, masterGroupId?: string | null): Observable<boolean>;
 }
 
 export const USER_SERVICE = 'USER_SERVICE';
