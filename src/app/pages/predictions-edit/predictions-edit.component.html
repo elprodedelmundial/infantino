@@ -139,46 +139,8 @@
               +{{ match.odds.draw.toFixed(1) }}
             </span>
             <div class="score-section">
-              <!-- Desktop: read mode + +/- steppers when editing -->
-              <div class="score-section__desktop">
-                <div class="score-display" *ngIf="!match.isEditing">
-                  <span class="predicted-score" [class.predicted-score--empty]="!match.hasPrediction">
-                    {{ match.hasPrediction ? (match.predictedScore.home + ' - ' + match.predictedScore.away) : '–' }}
-                  </span>
-                  <span class="actual-score" *ngIf="match.isPlayed && match.actualScore">
-                    Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
-                  </span>
-                </div>
-
-                <div class="score-edit" *ngIf="match.isEditing">
-                  <div class="score-input-group">
-                    <button type="button" class="score-btn" (click)="decrementScore(match, 'home')">−</button>
-                    <input
-                      type="number"
-                      class="score-input"
-                      [(ngModel)]="match.editedHomeScore"
-                      (ngModelChange)="onScoreChange(match)"
-                      min="0"
-                      max="9">
-                    <button type="button" class="score-btn" (click)="incrementScore(match, 'home')">+</button>
-                  </div>
-                  <span class="score-separator">-</span>
-                  <div class="score-input-group">
-                    <button type="button" class="score-btn" (click)="decrementScore(match, 'away')">−</button>
-                    <input
-                      type="number"
-                      class="score-input"
-                      [(ngModel)]="match.editedAwayScore"
-                      (ngModelChange)="onScoreChange(match)"
-                      min="0"
-                      max="9">
-                    <button type="button" class="score-btn" (click)="incrementScore(match, 'away')">+</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Mobile: boxed goals; tap to type (no per-match Editar) -->
-              <div class="score-section__mobile" *ngIf="match.isPlayed">
+              <!-- Played: static boxes -->
+              <div class="score-section__boxes" *ngIf="match.isPlayed">
                 <div class="score-boxes">
                   <span class="score-box score-box--static">{{ match.predictedScore.home }}</span>
                   <span class="score-boxes__sep" aria-hidden="true">-</span>
@@ -188,7 +150,8 @@
                   Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
                 </span>
               </div>
-              <div class="score-section__mobile" *ngIf="!match.isPlayed && isMatchLocked(match)">
+              <!-- Locked but not played: static boxes -->
+              <div class="score-section__boxes" *ngIf="!match.isPlayed && isMatchLocked(match)">
                 <div class="score-boxes">
                   <span class="score-box score-box--static" [class.score-box--empty]="!match.hasPrediction">
                     {{ match.hasPrediction ? match.predictedScore.home : '–' }}
@@ -199,7 +162,8 @@
                   </span>
                 </div>
               </div>
-              <div class="score-section__mobile" *ngIf="!match.isPlayed && !isMatchLocked(match)">
+              <!-- Editable: tap/click a box to enter score -->
+              <div class="score-section__boxes" *ngIf="!match.isPlayed && !isMatchLocked(match)">
                 <div class="score-boxes score-boxes--edit">
                   <input
                     type="number"
@@ -264,32 +228,17 @@
           </div>
 
           <div class="match-footer-trailing">
-            <!-- Edit controls for non-locked future matches -->
-            <div class="edit-controls" *ngIf="!isMatchLocked(match)">
-              <button 
-                class="edit-btn" 
-                *ngIf="!match.isEditing"
-                (click)="startEditing(match)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                </svg>
-                Editar
+            <!-- Save/cancel shown as soon as there are unsaved changes -->
+            <div class="edit-actions" *ngIf="!isMatchLocked(match) && match.hasChanges">
+              <button class="cancel-btn" (click)="cancelEditing(match)">
+                Cancelar
               </button>
-              
-              <div class="edit-actions" *ngIf="match.isEditing">
-                <button class="cancel-btn" (click)="cancelEditing(match)">
-                  Cancelar
-                </button>
-                <button 
-                  class="save-btn" 
-                  [disabled]="!match.hasChanges"
-                  (click)="saveMatch(match)">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Guardar
-                </button>
-              </div>
+              <button class="save-btn" (click)="saveMatch(match)">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Guardar
+              </button>
             </div>
           </div>
         </div>

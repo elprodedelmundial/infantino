@@ -259,6 +259,7 @@ export class PredictionsEditComponent implements OnInit {
     if (this.isMatchLocked(match) || match.isPlayed) {
       return;
     }
+    match.isEditing = true;
     if (which === 'home') {
       match.mobileHomeBackup = this.scoreNum(match.editedHomeScore);
       match.editedHomeScore = null;
@@ -303,24 +304,6 @@ export class PredictionsEditComponent implements OnInit {
       return 9;
     }
     return n;
-  }
-
-  incrementScore(match: EditablePrediction, team: 'home' | 'away'): void {
-    if (team === 'home' && this.scoreNum(match.editedHomeScore) < 9) {
-      match.editedHomeScore = this.scoreNum(match.editedHomeScore) + 1;
-    } else if (team === 'away' && this.scoreNum(match.editedAwayScore) < 9) {
-      match.editedAwayScore = this.scoreNum(match.editedAwayScore) + 1;
-    }
-    this.onScoreChange(match);
-  }
-
-  decrementScore(match: EditablePrediction, team: 'home' | 'away'): void {
-    if (team === 'home' && this.scoreNum(match.editedHomeScore) > 0) {
-      match.editedHomeScore = this.scoreNum(match.editedHomeScore) - 1;
-    } else if (team === 'away' && this.scoreNum(match.editedAwayScore) > 0) {
-      match.editedAwayScore = this.scoreNum(match.editedAwayScore) - 1;
-    }
-    this.onScoreChange(match);
   }
 
   saveAllChanges(): void {
