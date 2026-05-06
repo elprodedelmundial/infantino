@@ -281,12 +281,26 @@ export class ResultsComponent implements OnInit, OnDestroy {
     return this.expandedTournaments.has(tournamentId);
   }
 
+  private isUniquePredictionsMode(): boolean {
+    return localStorage.getItem('prode_prediction_mode_v1') === 'unique';
+  }
+
   // Predict for upcoming match
   predictMatch(match: LiveMatch): void {
     if (!this.hasJoinedTournaments()) return;
-    
+
     this.selectedMatch = match;
-    
+
+    // When unique-predictions mode is active, skip the group selector and go
+    // directly to the first non-candidate group's edit page.
+    if (this.isUniquePredictionsMode()) {
+      const memberGroups = this.joinedTournaments.filter(j => j.role !== 'CANDIDATE');
+      if (memberGroups.length > 0) {
+        this.goToPredictions(memberGroups[0].tournament.id);
+      }
+      return;
+    }
+
     if (this.joinedTournaments.length === 1) {
       this.goToPredictions(this.joinedTournaments[0].tournament.id);
     } else {
@@ -308,7 +322,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tournament', tournamentId, 'edit'], {
       state: { 
         username: this.username,
-        highlightMatch: this.selectedMatch?.id
+        highlightMatch: this.selectedMatch?.id,
+        fromResults: true
       }
     });
     this.selectedMatch = null;

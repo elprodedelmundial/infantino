@@ -44,6 +44,8 @@ export class PredictionsEditComponent implements OnInit {
   isSaving: boolean = false;
   tournamentId: string = '';
   highlightMatchId: string | null = null;
+  fromResults: boolean = false;
+  isUniquePredictions: boolean = false;
   
   // Filters
   timeFilter: PredictionFilter = 'future';
@@ -60,7 +62,7 @@ export class PredictionsEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const historyState = history.state as { username: string; highlightMatch?: string } | undefined;
+    const historyState = history.state as { username: string; highlightMatch?: string; fromResults?: boolean } | undefined;
     if (historyState?.username) {
       this.username = historyState.username;
       this.tournamentService.setCurrentUser(this.username);
@@ -68,6 +70,8 @@ export class PredictionsEditComponent implements OnInit {
     if (historyState?.highlightMatch) {
       this.highlightMatchId = historyState.highlightMatch;
     }
+    this.fromResults = historyState?.fromResults === true;
+    this.isUniquePredictions = localStorage.getItem('prode_prediction_mode_v1') === 'unique';
 
     this.route.params.subscribe(params => {
       this.tournamentId = params['id'];
@@ -344,9 +348,15 @@ export class PredictionsEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/tournament', this.tournamentId], {
-      state: { username: this.username, activeTab: 'predictions' }
-    });
+    if (this.fromResults) {
+      this.router.navigate(['/results'], {
+        state: { username: this.username }
+      });
+    } else {
+      this.router.navigate(['/tournament', this.tournamentId], {
+        state: { username: this.username, activeTab: 'predictions' }
+      });
+    }
   }
 
   scrollToMatch(matchId: string): void {

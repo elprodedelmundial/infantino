@@ -13,7 +13,7 @@
         <span class="page-title__desktop">Editar Predicciones</span>
         <span class="page-title__mobile">Predicciones</span>
       </h1>
-      <p class="page-subtitle">{{ tournament.name }}</p>
+      <p class="page-subtitle" *ngIf="!isUniquePredictions">{{ tournament.name }}</p>
     </div>
 
     <!-- Filters -->
