@@ -403,7 +403,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;
 }
 
 .match-col--home .team-odds,
@@ -421,7 +421,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 9px;
 }
 
 .team {
@@ -488,16 +488,8 @@
   width: 100%;
 }
 
-.score-section__desktop {
+.score-section__boxes {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-}
-
-.score-section__mobile {
-  display: none;
   flex-direction: column;
   align-items: center;
   gap: 6px;
@@ -527,14 +519,21 @@
 }
 
 .score-box--static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--score-font-numeric);
-  font-size: var(--score-size-hero);
+  font-size: 1.6rem;
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
-  min-width: 2.5rem;
+  min-width: 3rem;
+  min-height: 3rem;
   text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-secondary);
 }
 
 .score-box--empty {
@@ -543,13 +542,13 @@
 
 .score-box-input {
   box-sizing: border-box;
-  width: 2.5rem;
-  min-width: 2.5rem;
-  max-width: 2.5rem;
-  height: 2.5rem;
+  width: 3rem;
+  min-width: 3rem;
+  max-width: 3rem;
+  height: 3rem;
   text-align: center;
   font-family: var(--score-font-numeric);
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -596,67 +595,6 @@
   color: var(--accent);
 }
 
-.score-edit {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.score-input-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.score-btn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  font-weight: 600;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-}
-
-.score-input {
-  width: 56px;
-  height: 46px;
-  text-align: center;
-  font-family: var(--score-font-numeric);
-  font-size: 1.65rem;
-  font-weight: 800;
-  line-height: var(--score-line-height);
-  font-variant-numeric: tabular-nums;
-  background: var(--bg-secondary);
-  border: 2px solid var(--accent);
-  color: var(--accent);
-  outline: none;
-
-  &::-webkit-inner-spin-button,
-  &::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-}
-
-.score-separator {
-  font-family: var(--score-font-numeric);
-  font-size: 1.65rem;
-  font-weight: 800;
-  line-height: var(--score-line-height);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-}
 
 .match-footer {
   display: grid;
@@ -946,14 +884,6 @@
     font-size: 0.72rem;
   }
 
-  .score-section__desktop {
-    display: none;
-  }
-
-  .score-section__mobile {
-    display: flex;
-  }
-
   .team-odds {
     font-size: 0.62rem;
     font-weight: 600;
@@ -1017,37 +947,10 @@
     font-size: 1.08rem;
   }
 
-  .score-input {
-    width: 48px;
-    height: 40px;
-    font-size: 1.35rem;
-  }
-
-  .score-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 1.15rem;
-  }
-
-  .predicted-score {
-    font-size: 1.55rem;
-  }
-
-  .score-separator {
-    font-size: 1.35rem;
-  }
-
-  .score-boxes .score-box--static {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  .score-box--static {
     min-width: 2.5rem;
     min-height: 2.5rem;
     font-size: 1.4rem;
-    line-height: 1;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--bg-secondary);
   }
 
   .score-box-input {
