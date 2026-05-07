@@ -44,6 +44,10 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   );
   readonly isUniquePredictions = computed(() => this.predictionMode() === 'unique');
 
+  // Prediction mode confirmation
+  showPredictionModeConfirm: boolean = false;
+  pendingPredictionMode: PredictionMode | null = null;
+
   // Master group picker overlay
   showMasterGroupPicker: boolean = false;
   masterGroupPickerGroups: JoinedTournament[] = [];
@@ -180,35 +184,50 @@ export class UserToolbarComponent implements OnInit, OnChanges {
 
   selectPerGroupPredictions(): void {
     if (this.predictionMode() === 'per_group' || this.isPredictionModeUpdating) return;
-    this.isPredictionModeUpdating = true;
-    this.userService.updatePredictionMode(false).subscribe({
-      next: () => {
-        this.predictionMode.set('per_group');
-        localStorage.setItem(UserToolbarComponent.PRED_MODE_KEY, 'per_group');
-        this.isPredictionModeUpdating = false;
-      },
-      error: () => { this.isPredictionModeUpdating = false; }
-    });
+    this.pendingPredictionMode = 'per_group';
+    this.closeDropdown();
+    this.showPredictionModeConfirm = true;
   }
 
   selectUniquePredictions(): void {
     if (this.predictionMode() === 'unique' || this.isPredictionModeUpdating) return;
-    // Fetch joined groups and filter out CANDIDATEs
-    this.tournamentService.getJoinedTournaments().subscribe({
-      next: groups => {
-        const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
-        if (memberGroups.length <= 1) {
-          // No group picker needed
-          this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
-        } else {
-          // Show master group picker
-          this.masterGroupPickerGroups = memberGroups;
-          this.closeDropdown();
-          this.showMasterGroupPicker = true;
-        }
-      },
-      error: () => { /* silently ignore */ }
-    });
+    this.pendingPredictionMode = 'unique';
+    this.closeDropdown();
+    this.showPredictionModeConfirm = true;
+  }
+
+  confirmPredictionModeChange(): void {
+    this.showPredictionModeConfirm = false;
+    if (this.pendingPredictionMode === 'per_group') {
+      this.isPredictionModeUpdating = true;
+      this.userService.updatePredictionMode(false).subscribe({
+        next: () => {
+          this.predictionMode.set('per_group');
+          localStorage.setItem(UserToolbarComponent.PRED_MODE_KEY, 'per_group');
+          this.isPredictionModeUpdating = false;
+        },
+        error: () => { this.isPredictionModeUpdating = false; }
+      });
+    } else if (this.pendingPredictionMode === 'unique') {
+      this.tournamentService.getJoinedTournaments().subscribe({
+        next: groups => {
+          const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
+          if (memberGroups.length <= 1) {
+            this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
+          } else {
+            this.masterGroupPickerGroups = memberGroups;
+            this.showMasterGroupPicker = true;
+          }
+        },
+        error: () => { /* silently ignore */ }
+      });
+    }
+    this.pendingPredictionMode = null;
+  }
+
+  cancelPredictionModeChange(): void {
+    this.showPredictionModeConfirm = false;
+    this.pendingPredictionMode = null;
   }
 
   confirmMasterGroup(group: JoinedTournament): void {

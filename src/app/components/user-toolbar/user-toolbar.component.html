@@ -175,6 +175,52 @@
 -->
 <div class="drawer-backdrop" [class.open]="isDropdownOpen" (click)="closeDropdown()" aria-hidden="true"></div>
 
+<!-- Prediction Mode Confirmation -->
+<div class="join-requests-overlay" *ngIf="showPredictionModeConfirm" role="dialog" aria-modal="true" aria-label="Confirmar cambio de modo">
+  <div class="join-requests-backdrop" (click)="cancelPredictionModeChange()" aria-hidden="true"></div>
+  <div class="join-requests-panel pred-confirm-panel">
+    <div class="join-requests-panel-header pred-confirm-header">
+      <h2 class="join-requests-panel-title">
+        {{ pendingPredictionMode === 'unique' ? 'Predicciones únicas' : 'Predicciones por grupo' }}
+      </h2>
+    </div>
+
+    <div class="pred-confirm-body">
+      <!-- Icon -->
+      <div class="pred-confirm-icon" [class.pred-confirm-icon--unique]="pendingPredictionMode === 'unique'">
+        <svg *ngIf="pendingPredictionMode === 'unique'" width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="3" y="8" width="22" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="10" y1="8" x2="10" y2="20" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="18" y1="8" x2="18" y2="20" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <svg *ngIf="pendingPredictionMode === 'per_group'" width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="3"  y="3"  width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="15" y="3"  width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="3"  y="15" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="15" y="15" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+      </div>
+
+      <p class="pred-confirm-message" *ngIf="pendingPredictionMode === 'unique'">
+        Solo tendrás que ingresar tus predicciones <strong>una vez</strong>, y se copiarán automáticamente a todos tus grupos.
+      </p>
+      <p class="pred-confirm-message" *ngIf="pendingPredictionMode === 'per_group'">
+        Tendrás que ingresar tus predicciones de forma <strong>independiente</strong> para cada grupo al que pertenezcas.
+      </p>
+    </div>
+
+    <div class="pred-confirm-actions">
+      <button class="pred-confirm-btn pred-confirm-btn--cancel" (click)="cancelPredictionModeChange()">
+        Cancelar
+      </button>
+      <button class="pred-confirm-btn pred-confirm-btn--confirm" (click)="confirmPredictionModeChange()" [disabled]="isPredictionModeUpdating">
+        <span class="spinner-small" *ngIf="isPredictionModeUpdating"></span>
+        <span *ngIf="!isPredictionModeUpdating">Confirmar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Master Group Picker Overlay -->
 <div class="join-requests-overlay" *ngIf="showMasterGroupPicker" role="dialog" aria-modal="true" aria-label="Elegir grupo maestro">
   <div class="join-requests-backdrop" (click)="closeMasterGroupPicker()" aria-hidden="true"></div>
