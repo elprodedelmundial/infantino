@@ -472,7 +472,9 @@
 // Bonus ★ floats inside the reserved strip on the left of the home team column,
 // vertically centered on the whole card so it never nudges other content. Works for every
 // row (live/upcoming/past) because the grid shape is identical across sections.
-.results-match-grid > .match-multiplier-badge--schedule-gap {
+// NOTE: the badge is a child of .match-schedule; since .match-schedule has no
+// position:relative on desktop, the containing block is still .results-match-grid.
+.results-match-grid .match-multiplier-badge--schedule-gap {
   position: absolute;
   top: 50%;
   left: calc(
@@ -1434,16 +1436,19 @@
     padding-bottom: 4px;
   }
 
-  // The bonus ★ sits at the far right of the header, vertically centered against the
-  // schedule text (not the padded header box). With card padding-top = 14px and a
-  // ~22px schedule content row, the content midpoint is ~y=25px — a 26px-tall badge
-  // with `top: 12px` places its center at y=25, comfortably clear of the header's
-  // border-bottom divider which sits at y≈44px.
-  .results-match-grid > .match-multiplier-badge--schedule-gap {
-    top: 12px;
+  // On mobile the badge lives inside .match-schedule which becomes the header row.
+  // Make .match-schedule the positioning context so top:50% / translateY(-50%) centers
+  // the badge relative to that row rather than the full card.
+  .results-match-grid .match-schedule,
+  .results-match-grid .match-schedule--live {
+    position: relative;
+  }
+
+  .results-match-grid .match-multiplier-badge--schedule-gap {
+    top: 50%;
     left: auto;
-    right: 12px;
-    transform: none;
+    right: 0;
+    transform: translateY(-50%);
   }
 
   // Bigger flags so the body reads as the hero of the card.

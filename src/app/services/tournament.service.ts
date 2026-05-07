@@ -126,6 +126,8 @@ interface GroupResponse {
   name: string;
   is_private: boolean;
   max_members: number;
+  /** Current number of members (from API v2+) */
+  total_members?: number;
   has_started: boolean;
   standings?: GroupStandingResponse[];
   /** Pending join-request users (from getGroupById response) */
@@ -232,7 +234,7 @@ export class TournamentService implements ITournamentService {
     return {
       id: group.id,
       name: group.name,
-      participantsCount: group.standings?.length ?? 0,
+      participantsCount: group.total_members ?? group.standings?.length ?? 0,
       maxParticipants: group.max_members,
       startDate: new Date(),
       isJoined: false,

@@ -319,6 +319,24 @@ export class UserService implements IUserService {
     );
   }
 
+  updatePredictionMode(unique: boolean, masterGroupId?: string | null): Observable<boolean> {
+    const body: Record<string, unknown> = { unique_predictions: unique };
+    if (masterGroupId !== undefined) {
+      body['unique_predictions_master'] = masterGroupId ?? null;
+    }
+    return this.http.patch<UserResponse>(`${this.baseUrl}/api/users`, body, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(() => true),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Update prediction mode error:', error);
+        if (error.status === 401) return throwError(() => new Error('Sesión expirada'));
+        if (error.status >= 500) return throwError(() => new Error('Error del servidor'));
+        return throwError(() => new Error('Error al actualizar el modo de predicciones'));
+      })
+    );
+  }
+
   deleteUser(): Observable<boolean> {
     return this.http.delete<void>(`${this.baseUrl}/api/users/${this.currentUser.id}`, {
       headers: this.getAuthHeaders()
