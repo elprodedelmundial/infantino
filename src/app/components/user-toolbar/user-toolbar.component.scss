@@ -654,10 +654,10 @@
 }
 
 .master-group-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.92rem;
   color: var(--text-muted);
-  margin: 0 0 16px;
-  padding: 0 20px;
+  margin: 0 0 18px;
+  padding: 16px 24px 0;
   line-height: 1.5;
 }
 
@@ -685,6 +685,17 @@
     border-color: var(--accent);
     background: rgba(232, 255, 71, 0.05);
   }
+
+  &--pending {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  &--selected {
+    opacity: 1;
+    border-color: var(--accent);
+    background: rgba(232, 255, 71, 0.08);
+  }
 }
 
 .master-group-icon {
@@ -708,9 +719,11 @@
   word-break: break-word;
 }
 
-.master-group-chevron {
-  flex-shrink: 0;
-  color: var(--text-muted);
+.master-group-error {
+  margin: -8px 24px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--error);
 }
 
 /* ─── Prediction mode confirmation modal ────────────────────────────────────── */

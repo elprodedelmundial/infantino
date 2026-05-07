@@ -51,6 +51,8 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   // Master group picker overlay
   showMasterGroupPicker: boolean = false;
   masterGroupPickerGroups: JoinedTournament[] = [];
+  masterGroupPickerError: string = '';
+  selectedMasterGroupId: string | null = null;
   isPredictionModeUpdating: boolean = false;
 
   constructor(
@@ -216,6 +218,8 @@ export class UserToolbarComponent implements OnInit, OnChanges {
             this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
           } else {
             this.masterGroupPickerGroups = memberGroups;
+            this.masterGroupPickerError = '';
+            this.selectedMasterGroupId = null;
             this.showMasterGroupPicker = true;
           }
         },
@@ -231,13 +235,34 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   }
 
   confirmMasterGroup(group: JoinedTournament): void {
-    this.showMasterGroupPicker = false;
-    this.applyUniquePredictions(group.tournament.id);
+    if (this.isPredictionModeUpdating) return;
+
+    const masterGroupId = group.tournament.id;
+    this.isPredictionModeUpdating = true;
+    this.selectedMasterGroupId = masterGroupId;
+    this.masterGroupPickerError = '';
+
+    this.userService.updatePredictionMode(true, masterGroupId).subscribe({
+      next: () => {
+        this.predictionMode.set('unique');
+        localStorage.setItem(UserToolbarComponent.PRED_MODE_KEY, 'unique');
+        this.isPredictionModeUpdating = false;
+        this.closeMasterGroupPicker();
+      },
+      error: () => {
+        this.isPredictionModeUpdating = false;
+        this.selectedMasterGroupId = null;
+        this.masterGroupPickerError = 'No pudimos guardar el grupo principal. Intentá nuevamente.';
+      }
+    });
   }
 
   closeMasterGroupPicker(): void {
+    if (this.isPredictionModeUpdating) return;
     this.showMasterGroupPicker = false;
     this.masterGroupPickerGroups = [];
+    this.masterGroupPickerError = '';
+    this.selectedMasterGroupId = null;
   }
 
   private applyUniquePredictions(masterGroupId: string | null): void {
