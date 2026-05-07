@@ -226,24 +226,40 @@
   <div class="join-requests-backdrop" (click)="closeMasterGroupPicker()" aria-hidden="true"></div>
   <div class="join-requests-panel master-group-panel">
     <div class="join-requests-panel-header">
-      <h2 class="join-requests-panel-title">Elegir grupo principal</h2>
+      <h2 class="join-requests-panel-title">Predicciones únicas</h2>
       <button class="join-requests-close-btn" (click)="closeMasterGroupPicker()" aria-label="Cancelar">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
-    <p class="master-group-subtitle">
-      Tus predicciones únicas se copiarán desde el grupo que elijas como principal.
-    </p>
+    <div class="master-group-intro">
+      <div class="pred-confirm-icon pred-confirm-icon--unique">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="3" y="8" width="22" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="10" y1="8" x2="10" y2="20" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="18" y1="8" x2="18" y2="20" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <p class="master-group-subtitle">
+        Ingresarás tus predicciones <strong>sólo una vez</strong>, y se copiarán automáticamente a todos tus grupos. Elegí desde qué grupo principal copiarlas.
+      </p>
+      <p class="master-group-warning">
+        Todas las futuras predicciones existentes serán sobrescritas con las predicciones del grupo seleccionado.
+      </p>
+    </div>
     <p class="master-group-error" *ngIf="masterGroupPickerError">{{ masterGroupPickerError }}</p>
+    <div class="master-group-loading" *ngIf="isPredictionModeUpdating && !selectedMasterGroupId">
+      <span class="spinner-small"></span>
+      Cargando grupos...
+    </div>
     <ul class="master-group-list">
       <li
         class="master-group-row"
         *ngFor="let group of masterGroupPickerGroups"
         [class.master-group-row--pending]="isPredictionModeUpdating"
         [class.master-group-row--selected]="selectedMasterGroupId === group.tournament.id"
-        (click)="confirmMasterGroup(group)">
+        (click)="selectMasterGroup(group)">
         <div class="master-group-icon">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M9 9C10.6569 9 12 7.65685 12 6C12 4.34315 10.6569 3 9 3C7.34315 3 6 4.34315 6 6C6 7.65685 7.34315 9 9 9Z" stroke="currentColor" stroke-width="1.4"/>
@@ -251,9 +267,24 @@
           </svg>
         </div>
         <span class="master-group-name">{{ group.tournament.name }}</span>
-        <span class="spinner-small" *ngIf="selectedMasterGroupId === group.tournament.id"></span>
+        <span class="spinner-small" *ngIf="isPredictionModeUpdating && selectedMasterGroupId === group.tournament.id"></span>
       </li>
     </ul>
+    <div class="pred-confirm-actions master-group-actions">
+      <button
+        class="pred-confirm-btn pred-confirm-btn--cancel"
+        [disabled]="isPredictionModeUpdating"
+        (click)="closeMasterGroupPicker()">
+        Cancelar
+      </button>
+      <button
+        class="pred-confirm-btn pred-confirm-btn--confirm"
+        [disabled]="isPredictionModeUpdating || !selectedMasterGroupId"
+        (click)="confirmSelectedMasterGroup()">
+        <span class="spinner-small" *ngIf="isPredictionModeUpdating && selectedMasterGroupId"></span>
+        <span *ngIf="!(isPredictionModeUpdating && selectedMasterGroupId)">Confirmar</span>
+      </button>
+    </div>
   </div>
 </div>
 

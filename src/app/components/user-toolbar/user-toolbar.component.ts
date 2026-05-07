@@ -193,9 +193,29 @@ export class UserToolbarComponent implements OnInit, OnChanges {
 
   selectUniquePredictions(): void {
     if (this.predictionMode() === 'unique' || this.isPredictionModeUpdating) return;
-    this.pendingPredictionMode = 'unique';
     this.closeDropdown();
-    this.showPredictionModeConfirm = true;
+    this.showMasterGroupPicker = true;
+    this.masterGroupPickerGroups = [];
+    this.masterGroupPickerError = '';
+    this.selectedMasterGroupId = null;
+    this.isPredictionModeUpdating = true;
+
+    this.tournamentService.getJoinedTournaments().subscribe({
+      next: groups => {
+        const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
+        this.isPredictionModeUpdating = false;
+        if (memberGroups.length <= 1) {
+          this.showMasterGroupPicker = false;
+          this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
+          return;
+        }
+        this.masterGroupPickerGroups = memberGroups;
+      },
+      error: () => {
+        this.isPredictionModeUpdating = false;
+        this.masterGroupPickerError = 'No pudimos cargar tus grupos. Intentá nuevamente.';
+      }
+    });
   }
 
   confirmPredictionModeChange(): void {
@@ -210,21 +230,6 @@ export class UserToolbarComponent implements OnInit, OnChanges {
         },
         error: () => { this.isPredictionModeUpdating = false; }
       });
-    } else if (this.pendingPredictionMode === 'unique') {
-      this.tournamentService.getJoinedTournaments().subscribe({
-        next: groups => {
-          const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
-          if (memberGroups.length <= 1) {
-            this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
-          } else {
-            this.masterGroupPickerGroups = memberGroups;
-            this.masterGroupPickerError = '';
-            this.selectedMasterGroupId = null;
-            this.showMasterGroupPicker = true;
-          }
-        },
-        error: () => { /* silently ignore */ }
-      });
     }
     this.pendingPredictionMode = null;
   }
@@ -234,12 +239,17 @@ export class UserToolbarComponent implements OnInit, OnChanges {
     this.pendingPredictionMode = null;
   }
 
-  confirmMasterGroup(group: JoinedTournament): void {
+  selectMasterGroup(group: JoinedTournament): void {
     if (this.isPredictionModeUpdating) return;
+    this.selectedMasterGroupId = group.tournament.id;
+    this.masterGroupPickerError = '';
+  }
 
-    const masterGroupId = group.tournament.id;
+  confirmSelectedMasterGroup(): void {
+    if (this.isPredictionModeUpdating || !this.selectedMasterGroupId) return;
+
+    const masterGroupId = this.selectedMasterGroupId;
     this.isPredictionModeUpdating = true;
-    this.selectedMasterGroupId = masterGroupId;
     this.masterGroupPickerError = '';
 
     this.userService.updatePredictionMode(true, masterGroupId).subscribe({
