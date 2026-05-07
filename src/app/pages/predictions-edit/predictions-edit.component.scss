@@ -593,6 +593,8 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.76rem;
   color: var(--accent);
+  display: block;
+  text-align: center;
 }
 
 
@@ -902,7 +904,7 @@
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 8px 10px;
     padding: 30px 12px;
-    align-items: start;
+    align-items: center;
   }
 
   .match-col--home,
@@ -924,9 +926,11 @@
   .match-col--center {
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 12px;
-    min-width: 0;
+    /* Keep the center column wide enough even when there are no score boxes,
+       so the layout stays balanced and the "Real:" line appears centered. */
+    min-width: 7rem;
   }
 
   .match-footer {
@@ -944,7 +948,10 @@
   }
 
   .team-name {
-    font-size: 1.08rem;
+    /* Full 1.08rem at ≥ 390px; scales down linearly to 0.84rem at 360px so that
+       long single words (e.g. "Herzegovina") never break mid-word on narrow phones.
+       Natural hyphen/space breaks ("Bosnia-" / "Herzegovina") are still allowed. */
+    font-size: clamp(0.84rem, calc(-0.73rem + 7vw), 1.08rem);
   }
 
   .score-box--static {

@@ -27,8 +27,8 @@
           class="live-match-card results-match-grid"
           *ngFor="let match of liveMatches"
           (click)="onResultsMatchCardClick($event, match, 'live')">
-          <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule match-schedule--live">
+            <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
             <div class="match-time-badge live">
               <span class="live-indicator"></span>
               {{ match.matchTime }}
@@ -82,8 +82,8 @@
           class="upcoming-match-card results-match-grid"
           *ngFor="let match of upcomingMatches"
           (click)="onResultsMatchCardClick($event, match, 'upcoming')">
-          <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule">
+            <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time">{{ formatMatchTime(match) }}</span>
           </div>
@@ -136,8 +136,8 @@
           class="past-match-card results-match-grid"
           *ngFor="let match of pastMatches"
           (click)="onResultsMatchCardClick($event, match, 'past')">
-          <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
           <div class="match-schedule">
+            <span class="match-multiplier-badge match-multiplier-badge--schedule-gap" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time finished-tag">FT</span>
           </div>

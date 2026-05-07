@@ -139,9 +139,9 @@
               +{{ match.odds.draw.toFixed(1) }}
             </span>
             <div class="score-section">
-              <!-- Played: static boxes -->
+              <!-- Played: static boxes (only when the user made a prediction) -->
               <div class="score-section__boxes" *ngIf="match.isPlayed">
-                <div class="score-boxes">
+                <div class="score-boxes" *ngIf="match.hasPrediction">
                   <span class="score-box score-box--static">{{ match.predictedScore.home }}</span>
                   <span class="score-boxes__sep" aria-hidden="true">-</span>
                   <span class="score-box score-box--static">{{ match.predictedScore.away }}</span>
