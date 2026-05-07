@@ -53,6 +53,7 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   masterGroupPickerGroups: JoinedTournament[] = [];
   masterGroupPickerError: string = '';
   selectedMasterGroupId: string | null = null;
+  isMasterGroupSelectorOpen: boolean = false;
   isPredictionModeUpdating: boolean = false;
 
   constructor(
@@ -210,6 +211,8 @@ export class UserToolbarComponent implements OnInit, OnChanges {
           return;
         }
         this.masterGroupPickerGroups = memberGroups;
+        this.selectedMasterGroupId = memberGroups[0]?.tournament.id ?? null;
+        this.isMasterGroupSelectorOpen = false;
       },
       error: () => {
         this.isPredictionModeUpdating = false;
@@ -243,6 +246,20 @@ export class UserToolbarComponent implements OnInit, OnChanges {
     if (this.isPredictionModeUpdating) return;
     this.selectedMasterGroupId = group.tournament.id;
     this.masterGroupPickerError = '';
+    this.isMasterGroupSelectorOpen = false;
+  }
+
+  selectedMasterGroup(): JoinedTournament | null {
+    return this.masterGroupPickerGroups.find(g => g.tournament.id === this.selectedMasterGroupId) ?? null;
+  }
+
+  selectableMasterGroups(): JoinedTournament[] {
+    return this.masterGroupPickerGroups.filter(g => g.tournament.id !== this.selectedMasterGroupId);
+  }
+
+  toggleMasterGroupSelector(): void {
+    if (this.isPredictionModeUpdating || this.masterGroupPickerGroups.length <= 1) return;
+    this.isMasterGroupSelectorOpen = !this.isMasterGroupSelectorOpen;
   }
 
   confirmSelectedMasterGroup(): void {
@@ -273,6 +290,7 @@ export class UserToolbarComponent implements OnInit, OnChanges {
     this.masterGroupPickerGroups = [];
     this.masterGroupPickerError = '';
     this.selectedMasterGroupId = null;
+    this.isMasterGroupSelectorOpen = false;
   }
 
   private applyUniquePredictions(masterGroupId: string | null): void {
