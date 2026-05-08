@@ -43,7 +43,7 @@ interface UserResponse {
   join_requests?: JoinGroupRequestApi[];
 }
 
-interface ConflictErrorResponse {
+export interface ConflictErrorResponse {
   status: number;
   error: string;
   message: string;

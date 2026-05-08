@@ -1,0 +1,54 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <button type="button" class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <div class="header-content">
+        <div class="header-icon admin-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="page-title">Administrar</h1>
+          <p class="page-subtitle">Herramientas de superusuario</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="admin-options">
+      <button type="button" class="admin-option-card" (click)="goEditTournament()">
+        <div class="option-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M14 4L20 10L10 20H4V14L14 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M12.5 5.5L18.5 11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Editar torneo</h2>
+          <p>Modificar nombre, estado y premios oficiales.</p>
+        </div>
+      </button>
+
+      <button type="button" class="admin-option-card" (click)="goAddMatches()">
+        <div class="option-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 3V7M16 3V7M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 13V17M10 15H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Agregar partidos</h2>
+          <p>Crear nuevos encuentros para un torneo.</p>
+        </div>
+      </button>
+    </section>
+  </div>
+</main>

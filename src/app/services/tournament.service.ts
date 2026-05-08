@@ -30,12 +30,14 @@ import {
   GroupRole,
   AdminTournamentListItem,
   AdminTournamentDetail,
+  AdminCreateMatchPayload,
   GroupCandidate
 } from '../models/tournament.model';
 import { ITournamentService } from './tournament-service.interface';
 import { TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
 import { getMatchStageInfo, ALL_STAGE_INFOS } from '../utils/match-stage.utils';
+import { ConflictErrorResponse } from './user.service';
 
 // Prediction API response interfaces
 interface TeamApiResponse {
@@ -1059,6 +1061,43 @@ export class TournamentService implements ITournamentService {
           );
         })
       );
+  }
+
+  createAdminMatches(tournamentId: string, payload: AdminCreateMatchPayload[]): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    const body = {
+      matches: payload.map(match => ({
+        code: match.code,
+        home_team: match.homeTeamId,
+        away_team: match.awayTeamId,
+        started_at: match.startedAt,
+        has_multiplier: match.hasMultiplier
+      }))
+    };
+
+    return this.http
+      .post(`${this.baseUrl}/api/tournaments/${tournamentId}/matches`, body, {
+        headers: this.getAuthHeaders()
+      })
+      .pipe(
+        map(() => true),
+        catchError(error => {
+          console.error('Create admin matches error:', error);
+          return throwError(() => new Error(this.getCreateMatchesErrorMessage(error)));
+        })
+      );
+  }
+
+  private getCreateMatchesErrorMessage(error: any): string {
+    const body = error?.error as ConflictErrorResponse | undefined;
+    const rejectedValue = body?.data?.rejected_value;
+    const rejectedCodes = rejectedValue?.split(',').map(code => code.trim()).filter(Boolean) ?? [];
+
+    if (error?.status === 409 && body?.data?.field === 'code' && rejectedCodes.length > 0) {
+      return `Algunos códigos no se pueden registrar porque ya existen en el servicio: ${rejectedCodes.join(', ')}.`;
+    }
+
+    return typeof body?.message === 'string' ? body.message : 'No se pudieron crear los partidos';
   }
 
   private parseAdminTournamentList(body: unknown): AdminTournamentListItem[] {

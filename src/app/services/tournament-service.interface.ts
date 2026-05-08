@@ -15,6 +15,7 @@ import {
   AllPredictionsData,
   AdminTournamentListItem,
   AdminTournamentDetail,
+  AdminCreateMatchPayload,
   TournamentAwardWinners,
   GroupCandidate
 } from '../models/tournament.model';
@@ -52,6 +53,7 @@ export interface ITournamentService {
     tournamentId: string,
     payload: { name: string; status: string; winners: TournamentAwardWinners }
   ): Observable<boolean>;
+  createAdminMatches(tournamentId: string, payload: AdminCreateMatchPayload[]): Observable<boolean>;
   /** GET group by ID and extract candidates array */
   getCandidates(groupId: string): Observable<GroupCandidate[]>;
   /** PUT accept a candidate into the group */

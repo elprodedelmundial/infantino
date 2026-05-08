@@ -51,6 +51,9 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   // Master group picker overlay
   showMasterGroupPicker: boolean = false;
   masterGroupPickerGroups: JoinedTournament[] = [];
+  masterGroupPickerError: string = '';
+  selectedMasterGroupId: string | null = null;
+  isMasterGroupSelectorOpen: boolean = false;
   isPredictionModeUpdating: boolean = false;
 
   constructor(
@@ -191,9 +194,31 @@ export class UserToolbarComponent implements OnInit, OnChanges {
 
   selectUniquePredictions(): void {
     if (this.predictionMode() === 'unique' || this.isPredictionModeUpdating) return;
-    this.pendingPredictionMode = 'unique';
     this.closeDropdown();
-    this.showPredictionModeConfirm = true;
+    this.showMasterGroupPicker = true;
+    this.masterGroupPickerGroups = [];
+    this.masterGroupPickerError = '';
+    this.selectedMasterGroupId = null;
+    this.isPredictionModeUpdating = true;
+
+    this.tournamentService.getJoinedTournaments().subscribe({
+      next: groups => {
+        const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
+        this.isPredictionModeUpdating = false;
+        if (memberGroups.length <= 1) {
+          this.showMasterGroupPicker = false;
+          this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
+          return;
+        }
+        this.masterGroupPickerGroups = memberGroups;
+        this.selectedMasterGroupId = memberGroups[0]?.tournament.id ?? null;
+        this.isMasterGroupSelectorOpen = false;
+      },
+      error: () => {
+        this.isPredictionModeUpdating = false;
+        this.masterGroupPickerError = 'No pudimos cargar tus grupos. Intentá nuevamente.';
+      }
+    });
   }
 
   confirmPredictionModeChange(): void {
@@ -208,19 +233,6 @@ export class UserToolbarComponent implements OnInit, OnChanges {
         },
         error: () => { this.isPredictionModeUpdating = false; }
       });
-    } else if (this.pendingPredictionMode === 'unique') {
-      this.tournamentService.getJoinedTournaments().subscribe({
-        next: groups => {
-          const memberGroups = groups.filter(g => g.role !== 'CANDIDATE');
-          if (memberGroups.length <= 1) {
-            this.applyUniquePredictions(memberGroups[0]?.tournament.id ?? null);
-          } else {
-            this.masterGroupPickerGroups = memberGroups;
-            this.showMasterGroupPicker = true;
-          }
-        },
-        error: () => { /* silently ignore */ }
-      });
     }
     this.pendingPredictionMode = null;
   }
@@ -230,14 +242,55 @@ export class UserToolbarComponent implements OnInit, OnChanges {
     this.pendingPredictionMode = null;
   }
 
-  confirmMasterGroup(group: JoinedTournament): void {
-    this.showMasterGroupPicker = false;
-    this.applyUniquePredictions(group.tournament.id);
+  selectMasterGroup(group: JoinedTournament): void {
+    if (this.isPredictionModeUpdating) return;
+    this.selectedMasterGroupId = group.tournament.id;
+    this.masterGroupPickerError = '';
+    this.isMasterGroupSelectorOpen = false;
+  }
+
+  selectedMasterGroup(): JoinedTournament | null {
+    return this.masterGroupPickerGroups.find(g => g.tournament.id === this.selectedMasterGroupId) ?? null;
+  }
+
+  selectableMasterGroups(): JoinedTournament[] {
+    return this.masterGroupPickerGroups.filter(g => g.tournament.id !== this.selectedMasterGroupId);
+  }
+
+  toggleMasterGroupSelector(): void {
+    if (this.isPredictionModeUpdating || this.masterGroupPickerGroups.length <= 1) return;
+    this.isMasterGroupSelectorOpen = !this.isMasterGroupSelectorOpen;
+  }
+
+  confirmSelectedMasterGroup(): void {
+    if (this.isPredictionModeUpdating || !this.selectedMasterGroupId) return;
+
+    const masterGroupId = this.selectedMasterGroupId;
+    this.isPredictionModeUpdating = true;
+    this.masterGroupPickerError = '';
+
+    this.userService.updatePredictionMode(true, masterGroupId).subscribe({
+      next: () => {
+        this.predictionMode.set('unique');
+        localStorage.setItem(UserToolbarComponent.PRED_MODE_KEY, 'unique');
+        this.isPredictionModeUpdating = false;
+        this.closeMasterGroupPicker();
+      },
+      error: () => {
+        this.isPredictionModeUpdating = false;
+        this.selectedMasterGroupId = null;
+        this.masterGroupPickerError = 'No pudimos guardar el grupo principal. Intentá nuevamente.';
+      }
+    });
   }
 
   closeMasterGroupPicker(): void {
+    if (this.isPredictionModeUpdating) return;
     this.showMasterGroupPicker = false;
     this.masterGroupPickerGroups = [];
+    this.masterGroupPickerError = '';
+    this.selectedMasterGroupId = null;
+    this.isMasterGroupSelectorOpen = false;
   }
 
   private applyUniquePredictions(masterGroupId: string | null): void {
