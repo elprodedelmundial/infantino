@@ -128,7 +128,7 @@ export class AdminTournamentComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard'], { state: { username: this.username } });
+    this.router.navigate(['/admin'], { state: { username: this.username } });
   }
 
   markChanged(): void {

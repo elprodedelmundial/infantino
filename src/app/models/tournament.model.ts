@@ -219,6 +219,14 @@ export interface AdminTournamentDetail {
   awardWinners: TournamentAwardWinners | null;
 }
 
+export interface AdminCreateMatchPayload {
+  code: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  startedAt: string;
+  hasMultiplier: boolean;
+}
+
 /** GET .../predictions/awards (group) + standings in one load */
 export interface GroupAwardPredictionsLoadPayload {
   /**

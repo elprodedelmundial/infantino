@@ -1,0 +1,172 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <button type="button" class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <div class="header-content">
+        <div class="header-icon admin-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 3V7M16 3V7M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 13V17M10 15H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="page-title">Agregar partidos</h1>
+          <p class="page-subtitle">Crear encuentros del torneo</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="alert alert--error" *ngIf="loadError">{{ loadError }}</p>
+    <p class="alert alert--error" *ngIf="saveError">{{ saveError }}</p>
+    <p class="alert alert--success" *ngIf="saveSuccess">{{ saveSuccess }}</p>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando...</p>
+    </div>
+
+    <div class="queued-actions" *ngIf="queuedMatches.length > 0">
+      <button type="button" class="save-btn" [disabled]="!canCreateMatches()" (click)="submitMatches()">
+        <span class="spinner-small" *ngIf="isSaving"></span>
+        {{ isSaving ? 'Creando...' : 'Crear partidos' }}
+      </button>
+    </div>
+    <p class="alert alert--error" *ngIf="hasQueuedPastMatches()">No se pueden crear partidos en el pasado.</p>
+
+    <div class="queued-matches" *ngIf="queuedMatches.length > 0">
+      <div class="queued-match" *ngFor="let match of queuedMatches; let i = index">
+        <div>
+          <h3>Partido {{ match.code }}</h3>
+          <p>{{ match.homeTeamName }} vs {{ match.awayTeamName }}</p>
+        </div>
+        <button type="button" class="remove-queued-btn" (click)="removeQueuedMatch(i)" aria-label="Quitar partido">×</button>
+      </div>
+    </div>
+
+    <button type="button" class="reopen-form-btn" *ngIf="!isLoading && !isFormOpen" (click)="openForm()" aria-label="Agregar otro partido">
+      +
+    </button>
+
+    <form class="match-form card" *ngIf="!isLoading && isFormOpen" (ngSubmit)="addMatch()">
+      <div class="form-row">
+        <label class="form-label" for="match-tournament">Torneo</label>
+        <select
+          id="match-tournament"
+          class="form-control"
+          [(ngModel)]="selectedTournamentId"
+          name="tournament"
+          (ngModelChange)="onTournamentSelect()">
+          <option *ngFor="let t of tournaments" [value]="t.id">{{ t.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label" for="match-code">Código</label>
+        <input
+          id="match-code"
+          type="text"
+          class="form-control"
+          [(ngModel)]="code"
+          name="code"
+          maxlength="10"
+          autocomplete="off"
+          placeholder="Ej: M001" />
+      </div>
+
+      <div class="teams-grid">
+        <div class="form-row">
+          <label class="form-label" for="home-team">Local</label>
+          <div class="team-select-shell">
+            <img *ngIf="selectedHomeTeam as team" [src]="team.flagUrl" [alt]="team.name" class="team-select-flag" />
+            <select
+              id="home-team"
+              class="form-control team-select"
+              [(ngModel)]="homeTeamId"
+              name="homeTeam"
+              [disabled]="isLoadingTeams">
+              <option value="" disabled>Elegir equipo</option>
+              <option *ngFor="let team of availableHomeTeams" [value]="team.id">{{ team.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="away-team">Visitante</label>
+          <div class="team-select-shell">
+            <img *ngIf="selectedAwayTeam as team" [src]="team.flagUrl" [alt]="team.name" class="team-select-flag" />
+            <select
+              id="away-team"
+              class="form-control team-select"
+              [(ngModel)]="awayTeamId"
+              name="awayTeam"
+              [disabled]="isLoadingTeams">
+              <option value="" disabled>Elegir equipo</option>
+              <option *ngFor="let team of availableAwayTeams" [value]="team.id">{{ team.name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label" for="match-started-at">Fecha de inicio</label>
+        <div class="datetime-grid">
+          <input
+            id="match-started-at"
+            type="text"
+            class="form-control"
+            [ngModel]="startedAtDateInput"
+            (ngModelChange)="onStartedDateInput($event)"
+            name="startedAtDate"
+            inputmode="numeric"
+            maxlength="10"
+            autocomplete="off"
+            placeholder="DD/MM/YYYY" />
+
+          <input
+            type="text"
+            class="form-control"
+            [ngModel]="startedAtTimeInput"
+            (ngModelChange)="onStartedTimeInput($event)"
+            name="startedAtTime"
+            inputmode="numeric"
+            maxlength="5"
+            autocomplete="off"
+            placeholder="HH:mm" />
+
+          <select class="form-control" [(ngModel)]="selectedTimeZone" name="startedAtTimeZone">
+            <option *ngFor="let timeZone of timeZones" [value]="timeZone">{{ timeZone }}</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="multiplier-toggle">
+        <input type="checkbox" [(ngModel)]="hasMultiplier" name="hasMultiplier" />
+        <span class="toggle-box"></span>
+        <span>Partido Destacado</span>
+      </label>
+
+      <div class="save-bar-inline">
+        <button type="submit" class="save-btn" [disabled]="!canAddMatch()">
+          Agregar partido
+        </button>
+        <span class="hint" *ngIf="homeTeamId && awayTeamId && homeTeamId === awayTeamId">
+          Local y visitante deben ser distintos.
+        </span>
+        <span class="hint" *ngIf="isCodeDuplicated()">
+          Ya agregaste un partido con ese código.
+        </span>
+        <span class="hint" *ngIf="isStartedAtInPast()">
+          No se pueden agregar partidos en el pasado.
+        </span>
+      </div>
+    </form>
+  </div>
+</main>
