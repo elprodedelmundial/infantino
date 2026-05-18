@@ -5,5 +5,5 @@
  */
 window.__APP_CONFIG__ = {
   // Base URL for the Grondona API
-  'grondona-url': 'http://localhost:8080',
+  'grondona-url': 'https://grondona-897932846991.southamerica-east1.run.app',
 };
