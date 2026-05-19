@@ -47,6 +47,50 @@ body {
   overflow-x: hidden;
 }
 
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+
+html.standalone-app,
+html.standalone-app body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html.standalone-app *,
+html.standalone-app *::before,
+html.standalone-app *::after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html.standalone-app::-webkit-scrollbar,
+html.standalone-app body::-webkit-scrollbar,
+html.standalone-app *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 // Animated background
 .bg-pattern {
   position: fixed;
