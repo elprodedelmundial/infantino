@@ -16,6 +16,7 @@ help:
 	@echo "  clean       Remove build artifacts and node_modules"
 	@echo "  test        Run unit tests"
 	@echo "  lint        Run linter"
+	@echo "  deploy      Deploy static content to Firebase Hosting"
 	@echo "  format      Format code with Prettier (if available)"
 	@echo ""
 
@@ -38,6 +39,10 @@ build:
 
 build-prod:
 	npm run build -- --configuration production
+
+
+deploy: install build-prod
+	firebase deploy --only hosting
 
 # Clean build artifacts
 clean:
