@@ -211,8 +211,9 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  word-break: break-word;
-  hyphens: auto;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 
 // schedule | home | vs/score | away | action
@@ -888,7 +889,7 @@
     max-width: 100%;
     overflow-wrap: break-word;
     word-break: normal;
-    hyphens: auto;
+    hyphens: manual;
   }
 
   .modal-header-substatus .match-time-label {
@@ -1379,6 +1380,8 @@
     --results-action-btn-height: 42px;
     --results-column-gap: 10px;
     --results-card-padding-x: 14px;
+    --results-card-padding-top: 14px;
+    --results-mobile-header-height: 54px;
     // Team stacks no longer need reserved outer padding — the bonus badge floats on the
     // card instead of sitting inline with the home team column.
     --results-bonus-area: 0px;
@@ -1389,6 +1392,7 @@
     grid-template-areas:
       "header header header"
       "home   center away  ";
+    grid-template-rows: var(--results-mobile-header-height) auto;
     column-gap: var(--results-column-gap);
     row-gap: 14px;
     min-height: 0;
@@ -1401,6 +1405,11 @@
     padding: 14px;
   }
 
+  .upcoming-match-card {
+    --results-card-padding-top: 0px;
+    padding-top: 0;
+  }
+
   // Schedule becomes the top header row. It was flex-column on desktop; on mobile it
   // flows horizontally (date · time) and is separated from the body by a bottom divider.
   .results-match-grid > .match-schedule,
@@ -1410,10 +1419,12 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 0 0 10px 0;
+    padding: 0 46px;
     border-right: none;
     border-bottom: 1px solid var(--border);
     width: 100%;
+    height: var(--results-mobile-header-height);
+    min-height: var(--results-mobile-header-height);
     min-width: 0;
   }
 
@@ -1436,18 +1447,18 @@
     padding-bottom: 4px;
   }
 
-  // On mobile the badge lives inside .match-schedule which becomes the header row.
-  // Make .match-schedule the positioning context so top:50% / translateY(-50%) centers
-  // the badge relative to that row rather than the full card.
+  // On mobile the badge visually belongs to the schedule header. Position it from the
+  // card's actual top padding plus half the explicit header row height so the full
+  // square centers in that band, independent of the date/time text metrics.
   .results-match-grid .match-schedule,
   .results-match-grid .match-schedule--live {
-    position: relative;
+    position: static;
   }
 
   .results-match-grid .match-multiplier-badge--schedule-gap {
-    top: 50%;
+    top: calc(var(--results-card-padding-top) + var(--results-mobile-header-height) / 2);
     left: auto;
-    right: 0;
+    right: var(--results-card-padding-x);
     transform: translateY(-50%);
   }
 
@@ -1462,9 +1473,9 @@
     height: 36px;
   }
 
-  // Bigger country names, and prefer wrapping at natural break points (the hyphen in
-  // "Bosnia-Herzegovina" is a soft break opportunity, so `overflow-wrap: break-word`
-  // with `word-break: normal` lets the browser split after it instead of mid-word).
+  // Bigger country names, and prefer wrapping at natural break points. `hyphens: manual`
+  // keeps "Bosnia-Herzegovina" available to split after its existing hyphen instead of
+  // auto-hyphenating the second word as "Herze-govina".
   .team-name-stack {
     font-size: 0.95rem;
     line-height: 1.3;
