@@ -6,6 +6,7 @@ import { MyTournamentsComponent } from './pages/my-tournaments/my-tournaments.co
 import { TournamentSearchComponent } from './pages/tournament-search/tournament-search.component';
 import { TournamentStandingsComponent } from './pages/tournament-standings/tournament-standings.component';
 import { PredictionsEditComponent } from './pages/predictions-edit/predictions-edit.component';
+import { ProfileComponent } from './pages/profile/profile.component';
 import { ProfileEditComponent } from './pages/profile-edit/profile-edit.component';
 import { TournamentAwardsComponent } from './pages/tournament-awards/tournament-awards.component';
 import { RulesComponent } from './pages/rules/rules.component';
@@ -19,7 +20,8 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'results', component: ResultsComponent },
   { path: 'my-tournaments', component: MyTournamentsComponent },
-  { path: 'profile', component: ProfileEditComponent },
+  { path: 'profile', component: ProfileComponent },
+  { path: 'profile/edit', component: ProfileEditComponent },
   { path: 'tournaments', component: TournamentSearchComponent },
   { path: 'tournament/:id', component: TournamentStandingsComponent },
   { path: 'tournament/:id/edit', component: PredictionsEditComponent },
