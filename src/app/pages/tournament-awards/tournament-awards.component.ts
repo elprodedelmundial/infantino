@@ -65,6 +65,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   countries: Country[] = [];
   allPlayers: Player[] = [];
   countryFilterCode: string = '';
+  isCountryFilterOpen = false;
 
   predictions: TournamentAwardPrediction = {
     champion: [],
@@ -133,6 +134,37 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       }
     }
     return Array.from(byCode.values()).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  }
+
+  get selectedCountryFilter(): Country | null {
+    if (!this.countryFilterCode) {
+      return null;
+    }
+    return this.countryFilterOptions.find(c => c.code === this.countryFilterCode) ?? null;
+  }
+
+  get countryFilterLabel(): string {
+    return this.selectedCountryFilter?.name ?? 'Todos los países';
+  }
+
+  toggleCountryFilter(): void {
+    this.isCountryFilterOpen = !this.isCountryFilterOpen;
+  }
+
+  selectCountryFilter(code: string): void {
+    this.countryFilterCode = code;
+    this.isCountryFilterOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isCountryFilterOpen) {
+      return;
+    }
+    const target = event.target as HTMLElement;
+    if (!target.closest('.country-filter-selector')) {
+      this.isCountryFilterOpen = false;
+    }
   }
 
   get viewPredictions(): TournamentAwardPrediction {
@@ -395,6 +427,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   setActiveCategory(category: AwardCategory): void {
     this.activeCategory = category;
     this.searchTerm = '';
+    this.isCountryFilterOpen = false;
     if (category.type !== 'player') {
       this.countryFilterCode = '';
     }
