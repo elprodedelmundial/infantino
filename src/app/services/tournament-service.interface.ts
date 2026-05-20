@@ -25,6 +25,7 @@ export interface ITournamentService {
   setCurrentUser(username: string): void;
   getAvailableTournaments(): Observable<Tournament[]>;
   getJoinedTournaments(): Observable<JoinedTournament[]>;
+  createGroup(payload: { name: string; maxMembers: number; isPrivate?: boolean }): Observable<string>;
   joinTournament(tournamentId: string): Observable<boolean>;
   leaveTournament(tournamentId: string): Observable<boolean>;
   getTournamentStandings(tournamentId: string, live?: boolean): Observable<TournamentStandings | null>;

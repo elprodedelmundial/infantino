@@ -133,6 +133,16 @@
     color: var(--bg-primary);
   }
 
+  &.pending {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: #f59e0b;
+    color: #f59e0b;
+
+    .pending-hourglass {
+      animation: hourglassPulse 2s ease-in-out infinite;
+    }
+  }
+
   &.loading {
     border-color: var(--text-muted);
   }
@@ -155,6 +165,11 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes hourglassPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
 .loading-state {

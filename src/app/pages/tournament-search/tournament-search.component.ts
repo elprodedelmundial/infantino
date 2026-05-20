@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { Tournament } from '../../models/tournament.model';
@@ -34,20 +35,48 @@ export class TournamentSearchComponent implements OnInit {
 
   loadTournaments(): void {
     this.isLoading = true;
-    this.tournamentService.getAvailableTournaments().subscribe(tournaments => {
-      this.tournaments = tournaments;
+    forkJoin({
+      available: this.tournamentService.getAvailableTournaments(),
+      joined: this.tournamentService.getJoinedTournaments()
+    }).subscribe(({ available, joined }) => {
+      const joinedById = new Map(joined.map(j => [j.tournament.id, j]));
+      this.tournaments = available.map(t => {
+        const membership = joinedById.get(t.id);
+        if (membership?.role === 'CANDIDATE') {
+          return {
+            ...t,
+            isPrivate: membership.tournament.isPrivate,
+            isPendingApproval: true,
+            isJoined: false
+          };
+        }
+        return {
+          ...t,
+          isPrivate: membership?.tournament.isPrivate ?? t.isPrivate
+        };
+      });
       this.isLoading = false;
     });
   }
 
   joinTournament(tournament: Tournament): void {
-    if (tournament.isJoined || this.joiningId) return;
-    
+    if (tournament.isJoined || tournament.isPendingApproval || this.joiningId) return;
+
     this.joiningId = tournament.id;
     this.tournamentService.joinTournament(tournament.id).subscribe(() => {
-      tournament.isJoined = true;
-      tournament.participantsCount++;
-      this.joiningId = null;
+      this.tournamentService.getJoinedTournaments().subscribe(joined => {
+        const membership = joined.find(j => j.tournament.id === tournament.id);
+        if (membership?.role === 'CANDIDATE') {
+          tournament.isPendingApproval = true;
+          tournament.isJoined = false;
+          tournament.isPrivate = membership.tournament.isPrivate;
+        } else {
+          tournament.isPendingApproval = false;
+          tournament.isJoined = true;
+          tournament.participantsCount++;
+        }
+        this.joiningId = null;
+      });
     });
   }
 

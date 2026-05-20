@@ -99,6 +99,12 @@ export class AuthFormComponent {
       return;
     }
 
+    if (/\s/.test(this.username)) {
+      this.errorMessage = 'El nombre de usuario no puede contener espacios';
+      this.errorField = 'username';
+      return;
+    }
+
     // Validate password confirmation
     if (this.password !== this.confirmPassword) {
       this.errorMessage = '¡Las contraseñas no coinciden!';
