@@ -14,7 +14,10 @@
           <h1 class="page-title">Mis Grupos</h1>
           <p class="page-subtitle">Gestiona tus grupos y predicciones</p>
         </div>
-        <div class="header-actions" *ngIf="featureFlagsLoaded && joinedTournaments.length > 0">
+        <div
+          class="header-actions"
+          [class.header-actions--dual]="allowNewGroups"
+          *ngIf="featureFlagsLoaded && joinedTournaments.length > 0">
           <button class="btn-primary" (click)="searchTournament()">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M9 4V14M4 9H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -43,18 +46,19 @@
       </div>
       <h2 class="empty-title">No te has unido a ningún grupo</h2>
       <p class="empty-subtitle">Busca grupos disponibles y comienza a competir</p>
-      <div class="empty-actions">
+      <div class="empty-actions" [class.empty-actions--dual]="allowNewGroups">
         <button class="btn-accent" (click)="searchTournament()">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M9 4V14M4 9H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          Unirse a un Grupo
+          <span class="btn-label-long">Unirse a un grupo</span>
+          <span class="btn-label-short">Unirse a<br>un grupo</span>
         </button>
         <button class="btn-secondary btn-secondary--empty" *ngIf="allowNewGroups" (click)="openCreateGroup()">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M9 4V14M4 9H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          Crear grupo
+          Crear un nuevo grupo
         </button>
       </div>
     </div>
