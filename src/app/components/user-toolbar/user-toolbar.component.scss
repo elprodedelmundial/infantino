@@ -519,8 +519,9 @@
 
 @media (max-width: 768px) {
   .toolbar {
-    padding: 0 20px;
-    height: 60px;
+    top: 0;
+    padding: env(safe-area-inset-top, 0px) 20px 0;
+    height: calc(env(safe-area-inset-top, 0px) + 60px);
   }
 
   .logo-text {
@@ -572,14 +573,14 @@
   // containing-block height constraint and let the drawer overflow the toolbar visually.
   .dropdown {
     position: fixed;
-    top: 60px;
+    top: calc(env(safe-area-inset-top, 0px) + 60px);
     right: 0;
     bottom: auto;
     left: auto;
     width: min(320px, 85vw);
     min-width: 0;
-    height: calc(100vh - 60px);
-    max-height: calc(100vh - 60px);
+    height: calc(100vh - env(safe-area-inset-top, 0px) - 60px);
+    max-height: calc(100vh - env(safe-area-inset-top, 0px) - 60px);
     padding-top: 8px;
     padding-bottom: 12px;
     border: none;
@@ -604,7 +605,7 @@
   .drawer-backdrop {
     display: block;
     position: fixed;
-    top: 60px;
+    top: calc(env(safe-area-inset-top, 0px) + 60px);
     left: 0;
     right: 0;
     bottom: 0;

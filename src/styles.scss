@@ -31,6 +31,8 @@ img.flag.flag--ch {
   --score-size-modal: 1.62rem;
   --score-size-hero: 1.9rem;
   --score-mono: 1.1rem;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --mobile-toolbar-height: 60px;
 }
 
 * {
@@ -39,12 +41,66 @@ img.flag.flag--ch {
   box-sizing: border-box;
 }
 
+html {
+  width: 100%;
+  min-height: 100%;
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   font-family: 'Syne', sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
+  width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
+  touch-action: pan-x pan-y;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+
+html.standalone-app,
+html.standalone-app body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html.standalone-app *,
+html.standalone-app *::before,
+html.standalone-app *::after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html.standalone-app::-webkit-scrollbar,
+html.standalone-app body::-webkit-scrollbar,
+html.standalone-app *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 // Animated background
@@ -113,5 +169,10 @@ body {
 @media (max-width: 768px) {
   button.back-btn {
     display: none !important;
+  }
+
+  app-user-toolbar + .main,
+  app-toolbar + .main {
+    padding-top: calc(var(--safe-area-top) + var(--mobile-toolbar-height) + 20px) !important;
   }
 }

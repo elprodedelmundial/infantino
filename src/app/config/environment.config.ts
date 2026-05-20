@@ -2,6 +2,10 @@ import { InjectionToken } from '@angular/core';
 
 export interface EnvironmentConfig {
   grondonaUrl: string;
+  firebaseProjectId: string;
+  firebaseApiKey: string;
+  firebaseAppId: string;
+  firebaseMessagingSenderId: string;
 }
 
 export const ENVIRONMENT_CONFIG = new InjectionToken<EnvironmentConfig>('ENVIRONMENT_CONFIG');
@@ -12,6 +16,10 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
   
   return {
     grondonaUrl: windowConfig?.['grondona-url'] || 'http://localhost:8080',
+    firebaseProjectId: windowConfig?.['firebase-project-id'] || 'elprodedelmundial-7d579',
+    firebaseApiKey: windowConfig?.['firebase-api-key'] || '',
+    firebaseAppId: windowConfig?.['firebase-app-id'] || '',
+    firebaseMessagingSenderId: windowConfig?.['firebase-messaging-sender-id'] || '',
   };
 }
 

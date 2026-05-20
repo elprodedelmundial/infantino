@@ -816,7 +816,7 @@ export class TournamentService implements ITournamentService {
       }))
     };
     return this.http.post<void>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/predictions/matches`,
       body,
       { headers: this.getAuthHeaders() }
     ).pipe(

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IUserService, USER_SERVICE } from '../../services/user-service.interface';
 import { RegistrationError } from '../../models/user.model';
+import { FeatureFlagService } from '../../services/feature-flag.service';
 
 type AuthTab = 'login' | 'register';
 
@@ -32,7 +33,8 @@ export class AuthFormComponent {
 
   constructor(
     private router: Router,
-    @Inject(USER_SERVICE) private userService: IUserService
+    @Inject(USER_SERVICE) private userService: IUserService,
+    private featureFlagService: FeatureFlagService
   ) {}
 
   switchTab(tab: AuthTab): void {
@@ -111,6 +113,23 @@ export class AuthFormComponent {
 
     this.isSubmitting = true;
 
+    this.featureFlagService.isUserRegistrationAllowed().subscribe({
+      next: isAllowed => {
+        if (!isAllowed) {
+          this.isSubmitting = false;
+          this.errorMessage = 'Actualmente no está permitido registrar nuevos usuarios';
+          return;
+        }
+
+        this.submitRegistration();
+      },
+      error: () => {
+        this.submitRegistration();
+      }
+    });
+  }
+
+  private submitRegistration(): void {
     this.userService.register({
       fullName: this.fullName,
       username: this.username,
