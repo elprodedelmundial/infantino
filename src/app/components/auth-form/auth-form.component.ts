@@ -8,6 +8,9 @@ import { FeatureFlagService } from '../../services/feature-flag.service';
 
 type AuthTab = 'login' | 'register';
 
+/** Letters, numbers, and underscore only */
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+
 @Component({
   selector: 'app-auth-form',
   standalone: true,
@@ -101,6 +104,12 @@ export class AuthFormComponent {
 
     if (/\s/.test(this.username)) {
       this.errorMessage = 'El nombre de usuario no puede contener espacios';
+      this.errorField = 'username';
+      return;
+    }
+
+    if (!USERNAME_PATTERN.test(this.username)) {
+      this.errorMessage = 'El nombre de usuario solo puede contener letras, números y guión bajo';
       this.errorField = 'username';
       return;
     }

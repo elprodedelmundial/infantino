@@ -45,9 +45,10 @@
           [(ngModel)]="username"
           name="username"
           autocomplete="username"
+          pattern="[a-zA-Z0-9_]+"
           required
           minlength="3">
-        <span class="form-hint">Mínimo 3 caracteres</span>
+        <span class="form-hint">Mínimo 3 caracteres. Solo letras, números y guión bajo</span>
       </div>
 
       <!-- Email -->
