@@ -33,6 +33,7 @@ img.flag.flag--ch {
   --score-mono: 1.1rem;
   --safe-area-top: env(safe-area-inset-top, 0px);
   --mobile-toolbar-height: 60px;
+  --mobile-footer-height: 68px;
 }
 
 * {
@@ -174,5 +175,6 @@ html.standalone-app *::-webkit-scrollbar {
   app-user-toolbar + .main,
   app-toolbar + .main {
     padding-top: calc(var(--safe-area-top) + var(--mobile-toolbar-height) + 20px) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--mobile-footer-height) + 24px) !important;
   }
 }

@@ -1,0 +1,126 @@
+.main {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 100px 40px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 520px;
+  animation: fadeUp 0.8s ease-out both;
+}
+
+.profile-card,
+.loading-state {
+  border: 1px solid var(--border);
+  background: rgba(17, 17, 19, 0.65);
+  backdrop-filter: blur(12px);
+  padding: 44px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+  box-shadow: 0 0 40px rgba(232, 255, 71, 0.18);
+
+  span {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: var(--bg-primary);
+    letter-spacing: 0.04em;
+  }
+}
+
+.profile-name {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.profile-handle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.profile-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(232, 255, 71, 0.38);
+  background: rgba(232, 255, 71, 0.08);
+  padding: 12px 16px;
+}
+
+.loading-state {
+  gap: 16px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 80px 20px 40px;
+    align-items: flex-start;
+  }
+
+  .profile-card,
+  .loading-state {
+    padding: 36px 22px;
+  }
+
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+  }
+
+  .profile-name {
+    font-size: 1.35rem;
+  }
+}

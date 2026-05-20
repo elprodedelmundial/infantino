@@ -306,14 +306,43 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   }
 
   goToDashboard(): void {
+    this.closeDropdown();
     this.router.navigate(['/dashboard'], {
+      state: { username: this.usernameState() }
+    });
+  }
+
+  goToResults(): void {
+    this.closeDropdown();
+    this.router.navigate(['/results'], {
+      state: { username: this.usernameState() }
+    });
+  }
+
+  goToMyTournaments(): void {
+    this.closeDropdown();
+    this.router.navigate(['/my-tournaments'], {
+      state: { username: this.usernameState() }
+    });
+  }
+
+  goToRules(): void {
+    this.closeDropdown();
+    this.router.navigate(['/rules'], {
+      state: { username: this.usernameState() }
+    });
+  }
+
+  goToProfile(): void {
+    this.closeDropdown();
+    this.router.navigate(['/profile'], {
       state: { username: this.usernameState() }
     });
   }
 
   editProfile(): void {
     this.closeDropdown();
-    this.router.navigate(['/profile'], {
+    this.router.navigate(['/profile/edit'], {
       state: { username: this.usernameState() }
     });
   }
@@ -331,6 +360,11 @@ export class UserToolbarComponent implements OnInit, OnChanges {
   }
 
   get initials(): string {
-    return this.usernameState().substring(0, 2).toUpperCase();
+    const display = this.userFullName() || this.usernameState();
+    return display.substring(0, 2).toUpperCase();
+  }
+
+  isRouteActive(path: string): boolean {
+    return this.router.url === path || this.router.url.startsWith(`${path}/`);
   }
 }
