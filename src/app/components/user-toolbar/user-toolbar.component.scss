@@ -519,9 +519,9 @@
 
 @media (max-width: 768px) {
   .toolbar {
-    top: env(safe-area-inset-top, 0px);
-    padding: 0 20px;
-    height: 60px;
+    top: 0;
+    padding: env(safe-area-inset-top, 0px) 20px 0;
+    height: calc(env(safe-area-inset-top, 0px) + 60px);
   }
 
   .logo-text {
