@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>PRODE</title>
   <base href="/">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -16,6 +16,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    // iOS standalone PWAs can preserve pinch zoom between launches unless gestures are blocked.
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((eventName) => {
+      document.addEventListener(eventName, (event) => event.preventDefault(), { passive: false });
+    });
+  </script>
   <!-- Runtime configuration - edit config.js to set the grondona API URL -->
   <script src="config.js"></script>
 </head>
