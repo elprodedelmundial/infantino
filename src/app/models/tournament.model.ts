@@ -5,6 +5,10 @@ export interface Tournament {
   maxParticipants: number;
   startDate: Date;
   isJoined?: boolean;
+  /** Group requires admin approval to join */
+  isPrivate?: boolean;
+  /** User requested access and is waiting for approval */
+  isPendingApproval?: boolean;
   tournamentId?: string;
   /** From GET group: tournament has started (award picks locked) */
   hasStarted?: boolean;

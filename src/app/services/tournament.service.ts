@@ -126,7 +126,10 @@ interface GroupResponse {
   id: string;
   tournament_id: string;
   name: string;
-  is_private: boolean;
+  /** grondona GroupResponse.isPrivate — JSON key is "private" */
+  private?: boolean;
+  /** Legacy / alternate serialization */
+  is_private?: boolean;
   max_members: number;
   /** Current number of members (from API v2+) */
   total_members?: number;
@@ -232,6 +235,10 @@ export class TournamentService implements ITournamentService {
     return headers;
   }
 
+  private isGroupPrivate(group: GroupResponse): boolean {
+    return group.private === true || group.is_private === true;
+  }
+
   private mapGroupToTournament(group: GroupResponse): Tournament {
     return {
       id: group.id,
@@ -240,6 +247,7 @@ export class TournamentService implements ITournamentService {
       maxParticipants: group.max_members,
       startDate: new Date(),
       isJoined: false,
+      isPrivate: this.isGroupPrivate(group),
       tournamentId: group.tournament_id,
       hasStarted: group.has_started
     };
@@ -288,6 +296,7 @@ export class TournamentService implements ITournamentService {
         maxParticipants: ug.group.max_members,
         startDate: new Date(),
         isJoined: true,
+        isPrivate: this.isGroupPrivate(ug.group),
         tournamentId: ug.tournament_id,
         hasStarted: ug.group.has_started
       },
@@ -411,6 +420,31 @@ export class TournamentService implements ITournamentService {
       catchError(error => {
         console.error('Get joined groups error:', error);
         return throwError(() => new Error('Error al obtener tus grupos'));
+      })
+    );
+  }
+
+  createGroup(payload: { name: string; maxMembers: number; isPrivate?: boolean }): Observable<string> {
+    const body = {
+      name: payload.name.trim(),
+      max_members: payload.maxMembers,
+      is_private: payload.isPrivate ?? false
+    };
+
+    return this.http.post<GroupResponse>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups`,
+      body,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      tap(group => {
+        this.joinedGroupIds = [...this.joinedGroupIds, group.id];
+      }),
+      map(group => group.id),
+      catchError(error => {
+        console.error('Create group error:', error);
+        if (error.status === 409) return throwError(() => new Error('Nombre de grupo ya registrado'));
+        if (error.status === 400) return throwError(() => new Error('Datos del grupo inválidos'));
+        return throwError(() => new Error('Error al crear el grupo'));
       })
     );
   }
