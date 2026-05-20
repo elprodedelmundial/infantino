@@ -255,11 +255,52 @@
               [(ngModel)]="searchTerm">
           </div>
           <div class="country-filter" *ngIf="activeCategory.type === 'player'">
-            <label class="country-filter-label" for="award-country-filter">País</label>
-            <select id="award-country-filter" class="country-select" [(ngModel)]="countryFilterCode">
-              <option value="">Todos los países</option>
-              <option *ngFor="let c of countryFilterOptions" [value]="c.code">{{ c.name }}</option>
-            </select>
+            <label class="country-filter-label" id="award-country-filter-label">País</label>
+            <div class="country-filter-selector">
+              <button
+                type="button"
+                class="country-filter-row country-filter-toggle"
+                [class.country-filter-toggle--open]="isCountryFilterOpen"
+                (click)="toggleCountryFilter()"
+                aria-haspopup="listbox"
+                [attr.aria-expanded]="isCountryFilterOpen"
+                aria-labelledby="award-country-filter-label">
+                <div class="country-filter-flag-slot" [class.country-filter-flag-slot--all]="!selectedCountryFilter">
+                  <img
+                    *ngIf="selectedCountryFilter as country"
+                    [src]="country.flagUrl"
+                    [alt]="country.name"
+                    class="country-filter-flag">
+                </div>
+                <span class="country-filter-name">{{ countryFilterLabel }}</span>
+                <svg class="country-filter-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <ul class="country-filter-list" *ngIf="isCountryFilterOpen" role="listbox">
+                <li
+                  class="country-filter-row"
+                  role="option"
+                  [attr.aria-selected]="!countryFilterCode"
+                  [class.country-filter-row--selected]="!countryFilterCode"
+                  (click)="selectCountryFilter('')">
+                  <div class="country-filter-flag-slot country-filter-flag-slot--all"></div>
+                  <span class="country-filter-name">Todos los países</span>
+                </li>
+                <li
+                  class="country-filter-row"
+                  *ngFor="let c of countryFilterOptions"
+                  role="option"
+                  [attr.aria-selected]="countryFilterCode === c.code"
+                  [class.country-filter-row--selected]="countryFilterCode === c.code"
+                  (click)="selectCountryFilter(c.code)">
+                  <div class="country-filter-flag-slot">
+                    <img [src]="c.flagUrl" [alt]="c.name" class="country-filter-flag">
+                  </div>
+                  <span class="country-filter-name">{{ c.name }}</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
