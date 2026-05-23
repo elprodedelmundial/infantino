@@ -23,6 +23,9 @@
             <span class="page-title__mobile">Premios</span>
           </h1>
           <p class="page-subtitle">{{ tournament.name }}</p>
+          <p class="awards-deadline-notice" *ngIf="canEdit && !isLoading">
+            Tenés tiempo hasta el inicio del torneo para completar tus predicciones de premios.
+          </p>
         </div>
       </div>
     </div>

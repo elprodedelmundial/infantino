@@ -329,39 +329,6 @@
   color: var(--text-primary);
 }
 
-.match-multiplier-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #ffedd5;
-  background: #9a3412;
-  border-radius: 6px;
-  flex-shrink: 0;
-  border: 1px solid rgba(251, 146, 60, 0.35);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.35),
-    0 0 14px rgba(154, 52, 18, 0.22);
-}
-
-.match-multiplier-badge--star {
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
 .match-group {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
@@ -387,7 +354,7 @@
   grid-template-columns: 1fr auto 1fr;
   gap: 24px;
   padding: 20px 24px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .match-col--home,
@@ -397,12 +364,14 @@
   min-width: 0;
 }
 
-/* Cuotas 1/2 arriba del bloque (bandera + nombre); DOM: .team-odds, luego .team */
+/* Cuotas 1/2 arriba del bloque (bandera + nombre); DOM: .team-odds, luego .team
+   Use flex-start so the quota + flag stay at the same height for both teams,
+   even when one team name wraps to multiple lines. */
 .match-col--home,
 .match-col--away {
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 15px;
 }
 
@@ -904,7 +873,7 @@
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 8px 10px;
     padding: 30px 12px;
-    align-items: center;
+    align-items: stretch;
   }
 
   .match-col--home,

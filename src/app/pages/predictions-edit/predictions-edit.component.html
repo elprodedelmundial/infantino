@@ -208,7 +208,7 @@
 
         <div class="match-footer">
           <div class="match-footer-leading">
-            <span class="match-multiplier-badge match-multiplier-badge--star" *ngIf="match.hasMultiplier" title="Partido con multiplicador">★</span>
+            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="star"></app-match-multiplier-badge>
 
             <!-- Result badge for played matches -->
             <span [ngClass]="getResultBadgeClass(match)" *ngIf="match.isPlayed && match.result">

@@ -537,7 +537,7 @@ export class TournamentService implements ITournamentService {
   acceptCandidate(groupId: string, candidateId: string): Observable<boolean> {
     this.token = localStorage.getItem('auth_token');
     return this.http.put<void>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/accept/${candidateId}`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/members/${candidateId}/accept`,
       null,
       { headers: this.getAuthHeaders() }
     ).pipe(
@@ -552,7 +552,7 @@ export class TournamentService implements ITournamentService {
   rejectCandidate(groupId: string, candidateId: string): Observable<boolean> {
     this.token = localStorage.getItem('auth_token');
     return this.http.delete<void>(
-      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/reject/${candidateId}`,
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/members/${candidateId}/reject`,
       { headers: this.getAuthHeaders() }
     ).pipe(
       map(() => true),

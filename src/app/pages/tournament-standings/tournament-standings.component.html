@@ -5,7 +5,8 @@
     <div class="page-header" *ngIf="standings">
       <button class="back-btn" (click)="goBack()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
         </svg>
         Volver
       </button>
@@ -14,8 +15,11 @@
           <h1 class="page-title">{{ standings.tournament.name }}</h1>
           <p class="page-subtitle">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z"
+                stroke="currentColor" stroke-width="1.5" />
+              <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" />
             </svg>
             {{ standings.tournament.participantsCount }} participantes
           </p>
@@ -23,15 +27,17 @@
         <div class="header-actions">
           <button class="edit-group-btn" *ngIf="canEditGroup()" (click)="openEditGroup()">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M13 2L16 5L6 15H3V12L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M13 2L16 5L6 15H3V12L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
             </svg>
             Editar Grupo
           </button>
           <button class="leave-btn" (click)="promptLeaveTournament()">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M6 2H4C3.44772 2 3 2.44772 3 3V15C3 15.5523 3.44772 16 4 16H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M12 12L15 9L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M7 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6 2H4C3.44772 2 3 2.44772 3 3V15C3 15.5523 3.44772 16 4 16H6" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" />
+              <path d="M12 12L15 9L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M7 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
             Abandonar Grupo
           </button>
@@ -40,11 +46,13 @@
     </div>
 
     <!-- Candidates Panel (admins only, when there are pending join requests) -->
-    <div class="candidates-panel" *ngIf="!isLoading && canEditGroup() && (candidates.length > 0 || isLoadingCandidates)">
+    <div class="candidates-panel"
+      *ngIf="!isLoading && canEditGroup() && (candidates.length > 0 || isLoadingCandidates)">
       <div class="candidates-header">
         <div class="candidates-title">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3.5 1H12.5M3.5 15H12.5M5 1C5 5 8 7 8 8C8 9 5 11 5 15M11 1C11 5 8 7 8 8C8 9 11 11 11 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.5 1H12.5M3.5 15H12.5M5 1C5 5 8 7 8 8C8 9 5 11 5 15M11 1C11 5 8 7 8 8C8 9 11 11 11 15"
+              stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           <span>Postulados ({{ candidates.length }})</span>
         </div>
@@ -57,22 +65,17 @@
           <div class="candidate-avatar">{{ candidate.username.substring(0, 2).toUpperCase() }}</div>
           <span class="candidate-name">{{ candidate.fullName || candidate.username }}</span>
           <div class="candidate-actions">
-            <button
-              class="candidate-btn candidate-btn--accept"
-              [disabled]="isCandidateActionInProgress(candidate.id)"
-              (click)="acceptCandidate(candidate)"
-              title="Aceptar">
+            <button class="candidate-btn candidate-btn--accept" [disabled]="isCandidateActionInProgress(candidate.id)"
+              (click)="acceptCandidate(candidate)" title="Aceptar">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </button>
-            <button
-              class="candidate-btn candidate-btn--reject"
-              [disabled]="isCandidateActionInProgress(candidate.id)"
-              (click)="rejectCandidate(candidate)"
-              title="Rechazar">
+            <button class="candidate-btn candidate-btn--reject" [disabled]="isCandidateActionInProgress(candidate.id)"
+              (click)="rejectCandidate(candidate)" title="Rechazar">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
               </svg>
             </button>
           </div>
@@ -82,23 +85,17 @@
 
     <!-- Tab Navigation -->
     <div class="tabs" *ngIf="!isLoading">
-      <button 
-        class="tab-btn" 
-        [class.active]="activeTab === 'standings'"
-        (click)="setActiveTab('standings')">
+      <button class="tab-btn" [class.active]="activeTab === 'standings'" (click)="setActiveTab('standings')">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M6 14V8M9 14V4M12 14V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M6 14V8M9 14V4M12 14V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
         Clasificación
       </button>
-      <button 
-        class="tab-btn" 
-        [class.active]="activeTab === 'predictions'"
-        (click)="setActiveTab('predictions')">
+      <button class="tab-btn" [class.active]="activeTab === 'predictions'" (click)="setActiveTab('predictions')">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <rect x="2" y="3" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M2 7H16" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M9 7V15" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="2" y="3" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5" />
+          <path d="M2 7H16" stroke="currentColor" stroke-width="1.5" />
+          <path d="M9 7V15" stroke="currentColor" stroke-width="1.5" />
         </svg>
         Mis Predicciones
       </button>
@@ -106,17 +103,14 @@
 
     <!-- Standings Tab: Premios card and tabla are separate blocks (gap between, full banner border) -->
     <div class="standings-tab-layout" *ngIf="!isLoading && standings && activeTab === 'standings'">
-      <div
-        class="awards-banner awards-banner--standings"
-        *ngIf="tournamentHasStarted"
-        (click)="goToAwards()"
-        role="button"
-        tabindex="0"
-        (keydown.enter)="goToAwards()"
+      <div class="awards-banner awards-banner--standings" *ngIf="tournamentHasStarted" (click)="goToAwards()"
+        role="button" tabindex="0" (keydown.enter)="goToAwards()"
         (keydown.space)="$event.preventDefault(); goToAwards()">
         <div class="banner-icon awards">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path
+              d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z"
+              stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
           </svg>
         </div>
         <div class="banner-text">
@@ -124,92 +118,80 @@
           <p>Ver las predicciones de premios de todos los jugadores del grupo</p>
         </div>
         <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
         </svg>
       </div>
 
       <!-- Mobile: above the standings card, not inside it (avoids the table border wrapping this control) -->
       <div class="standings-live-bar">
-        <button
-          type="button"
-          class="live-toggle-btn"
-          [class.live-toggle-btn--active]="liveMode"
-          [disabled]="isRefreshingLive"
-          (click)="toggleLiveMode()">
+        <button type="button" class="live-toggle-btn" [class.live-toggle-btn--active]="liveMode"
+          [disabled]="isRefreshingLive" (click)="toggleLiveMode()">
           <span class="live-dot" [class.live-dot--active]="liveMode"></span>
           EN VIVO
         </button>
       </div>
 
       <div class="standings-container">
-      <div class="standings-header">
-        <span class="header-pos">#</span>
-        <span class="header-player">
-          Jugador
-          <button
-            type="button"
-            class="live-toggle-btn live-toggle--header-only"
-            [class.live-toggle-btn--active]="liveMode"
-            [disabled]="isRefreshingLive"
-            (click)="toggleLiveMode()">
-            <span class="live-dot" [class.live-dot--active]="liveMode"></span>
-            EN VIVO
-          </button>
-        </span>
-        <span class="header-predictions">Últimas</span>
-        <span class="header-points">Pts</span>
-      </div>
+        <div class="standings-header">
+          <span class="header-pos">#</span>
+          <span class="header-player">
+            Jugador
+            <button type="button" class="live-toggle-btn live-toggle--header-only"
+              [class.live-toggle-btn--active]="liveMode" [disabled]="isRefreshingLive" (click)="toggleLiveMode()">
+              <span class="live-dot" [class.live-dot--active]="liveMode"></span>
+              EN VIVO
+            </button>
+          </span>
+          <span class="header-predictions">Últimas</span>
+          <span class="header-points">Pts</span>
+        </div>
 
-      <div class="standings-list">
-        <div 
-          class="player-row" 
-          *ngFor="let player of standings.players"
-          [class.current-user]="isCurrentUser(player)">
-          <div [ngClass]="getPositionClass(player.position)">
-            {{ player.position }}
-          </div>
-          <div class="player-info">
-            <div class="player-avatar">
-              <span>{{ player.avatarInitials }}</span>
+        <div class="standings-list">
+          <div class="player-row" *ngFor="let player of standings.players" [class.current-user]="isCurrentUser(player)">
+            <div [ngClass]="getPositionClass(player.position)">
+              {{ player.position }}
             </div>
-            <span class="player-name">
-              {{ playerLabel(player) }}
-              <span class="you-badge" *ngIf="isCurrentUser(player)">Tú</span>
-            </span>
-          </div>
-          <div class="predictions-dots">
-            <div 
-              *ngFor="let dot of player.lastPredictions"
-              [ngClass]="getPredictionClass(dot.result)"
-              [title]="lastPredictionTitle(dot)">
-              <span class="prediction-multiplier-glyph" *ngIf="dot.hasMultiplier">×</span>
+            <div class="player-info">
+              <div class="player-avatar">
+                <span>{{ player.avatarInitials }}</span>
+              </div>
+              <span class="player-name">
+                {{ playerLabel(player) }}
+                <span class="you-badge" *ngIf="isCurrentUser(player)">Tú</span>
+              </span>
+            </div>
+            <div class="predictions-dots">
+              <div *ngFor="let dot of player.lastPredictions" [ngClass]="getPredictionClass(dot.result)"
+                [title]="lastPredictionTitle(dot)">
+                <span class="prediction-multiplier-glyph" *ngIf="dot.hasMultiplier">×</span>
+              </div>
+            </div>
+            <div class="points">
+              {{ player.points | number: '1.2-2' : 'en-US' }}
             </div>
           </div>
-          <div class="points">
-            {{ player.points | number: '1.2-2' : 'en-US' }}
+        </div>
+
+        <div class="legend">
+          <span class="legend-title">Leyenda:</span>
+          <div class="legend-item">
+            <div class="prediction incorrect"></div>
+            <span>Incorrecto</span>
+          </div>
+          <div class="legend-item">
+            <div class="prediction half"></div>
+            <span>Parcial</span>
+          </div>
+          <div class="legend-item">
+            <div class="prediction correct"></div>
+            <span>Correcto</span>
+          </div>
+          <div class="legend-item">
+            <div class="prediction bonus"></div>
+            <span>Bonus</span>
           </div>
         </div>
-      </div>
-
-      <div class="legend">
-        <span class="legend-title">Leyenda:</span>
-        <div class="legend-item">
-          <div class="prediction incorrect"></div>
-          <span>Incorrecto</span>
-        </div>
-        <div class="legend-item">
-          <div class="prediction half"></div>
-          <span>Parcial</span>
-        </div>
-        <div class="legend-item">
-          <div class="prediction correct"></div>
-          <span>Correcto</span>
-        </div>
-        <div class="legend-item">
-          <div class="prediction bonus"></div>
-          <span>Bonus</span>
-        </div>
-      </div>
       </div>
     </div>
 
@@ -220,55 +202,63 @@
     </div>
 
     <!-- Predictions Tab -->
-    <div class="predictions-container" *ngIf="!isLoading && predictions && activeTab === 'predictions' && !isLoadingPredictions">
-      
-      <!-- Predictions Banner -->
-      <div class="predictions-banner" (click)="editAllPredictions()">
-        <div class="banner-icon predictions">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M17 3L21 7L8 20H4V16L17 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M14 6L18 10" stroke="currentColor" stroke-width="2"/>
+    <div class="predictions-container"
+      *ngIf="!isLoading && predictions && activeTab === 'predictions' && !isLoadingPredictions">
+
+      <div class="action-banners">
+        <!-- Predictions Banner -->
+        <div class="predictions-banner" (click)="editAllPredictions()">
+          <div class="banner-icon predictions">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M17 3L21 7L8 20H4V16L17 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              <path d="M14 6L18 10" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </div>
+          <div class="banner-text">
+            <h4>Editar Predicciones</h4>
+            <p>Ingresa tus predicciones para los próximos partidos analizando las cuotas de estos.</p>
+          </div>
+          <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
           </svg>
         </div>
-        <div class="banner-text">
-          <h4>Editar Predicciones</h4>
-          <p>Ingresa tus predicciones para los próximos partidos analizando las cuotas de estos.</p>
+
+        <!-- Awards (solo antes del inicio del torneo) -->
+        <div class="awards-banner" *ngIf="!tournamentHasStarted" (click)="goToAwards()">
+          <div class="banner-icon awards">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="banner-text">
+            <h4>Editar Premios del Torneo</h4>
+            <p>Predice el campeón, Balón de Oro y otros premios antes de comenzar el torneo.</p>
+          </div>
+          <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </div>
-        <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
       </div>
 
-      <!-- Awards (solo antes del inicio del torneo) -->
-      <div class="awards-banner" *ngIf="!tournamentHasStarted" (click)="goToAwards()">
-        <div class="banner-icon awards">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L14.09 8.26L20.85 9.27L15.92 14.14L17.18 20.88L12 18.27L6.82 20.88L8.08 14.14L3.15 9.27L9.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="banner-text">
-          <h4>Premios del Torneo</h4>
-          <p>Predice el campeón, Balón de Oro, Bota de Oro, Guante de Oro y Mejor Juvenil.</p>
-        </div>
-        <svg class="banner-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      
       <!-- Past Predictions (collapsible) — hidden when there are no past / in-progress rows -->
       <div class="predictions-section" *ngIf="predictions.pastPredictions.length > 0">
         <button class="section-title-toggle" (click)="showPastPredictions = !showPastPredictions">
           <div class="section-title standalone">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M9 5V9L12 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5" />
+              <path d="M9 5V9L12 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
             Últimos Partidos
             <span class="section-count">{{ predictions.pastPredictions.length }}</span>
           </div>
           <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"
-               [class.expanded]="showPastPredictions">
-            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            [class.expanded]="showPastPredictions">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
           </svg>
         </button>
 
@@ -289,16 +279,18 @@
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="match-code-to-teams-gutter">
-                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">★</span>
+                <app-match-multiplier-badge *ngIf="pred.hasMultiplier"></app-match-multiplier-badge>
               </div>
               <div class="team home">
-                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <span class="vs">vs</span>
               <div class="team away">
                 <span class="team-name">{{ pred.awayTeam.name }}</span>
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
             <ng-container *ngIf="pred.matchStatus === 'IN_PROGRESS'; else finishedRow">
@@ -314,14 +306,12 @@
               </span>
             </ng-template>
             <div class="col-status">
-              <span
-                *ngIf="pred.matchStatus === 'IN_PROGRESS' || pred.result"
-                [ngClass]="getResultBadgeClass(pred)">
+              <span *ngIf="pred.matchStatus === 'IN_PROGRESS' || pred.result" [ngClass]="getResultBadgeClass(pred)">
                 {{ pred.matchStatus === 'IN_PROGRESS' ? 'Jugando'
-                   : pred.result === 'correct' ? 'Correcto'
-                   : pred.result === 'half' ? 'Parcial'
-                   : pred.result === 'bonus' ? 'Bonus'
-                   : 'Incorrecto' }}
+                : pred.result === 'correct' ? 'Correcto'
+                : pred.result === 'half' ? 'Parcial'
+                : pred.result === 'bonus' ? 'Bonus'
+                : 'Incorrecto' }}
               </span>
             </div>
           </div>
@@ -332,41 +322,41 @@
           <article class="past-match-card" *ngFor="let pred of predictions.pastPredictions">
             <div class="past-match-card__body">
               <div class="past-match-card__team past-match-card__team--home">
-                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="past-match-card__team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <div class="past-match-card__center">
                 <ng-container *ngIf="pred.matchStatus === 'IN_PROGRESS'; else pastDoneScores">
-                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row" title="Partido con multiplicador">
-                    <span class="match-multiplier-badge" aria-hidden="true">★</span>
+                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
+                    <app-match-multiplier-badge></app-match-multiplier-badge>
                   </div>
                   <span class="past-match-card__field-label">Resultado</span>
                   <span class="past-match-card__score past-match-card__score--resultado">–</span>
                   <span class="past-match-card__field-label">Predicción</span>
-                  <span
-                    class="past-match-card__score past-match-card__score--prediccion"
+                  <span class="past-match-card__score past-match-card__score--prediccion"
                     [ngClass]="getPredictionLineToneClass(pred)">
                     –
                   </span>
                 </ng-container>
                 <ng-template #pastDoneScores>
-                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row" title="Partido con multiplicador">
-                    <span class="match-multiplier-badge" aria-hidden="true">★</span>
+                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
+                    <app-match-multiplier-badge></app-match-multiplier-badge>
                   </div>
                   <span class="past-match-card__field-label">Resultado</span>
                   <span class="past-match-card__score past-match-card__score--resultado">
                     {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
                   </span>
                   <span class="past-match-card__field-label">Predicción</span>
-                  <span
-                    class="past-match-card__score past-match-card__score--prediccion"
+                  <span class="past-match-card__score past-match-card__score--prediccion"
                     [ngClass]="getPredictionLineToneClass(pred)">
                     {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
                   </span>
                 </ng-template>
               </div>
               <div class="past-match-card__team past-match-card__team--away">
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.awayTeam)">
                 <span class="past-match-card__team-name">{{ pred.awayTeam.name }}</span>
               </div>
             </div>
@@ -378,13 +368,13 @@
       <div class="predictions-section upcoming">
         <h3 class="section-title">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <rect x="2" y="3" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M2 7H16" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M6 1V3M12 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <rect x="2" y="3" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5" />
+            <path d="M2 7H16" stroke="currentColor" stroke-width="1.5" />
+            <path d="M6 1V3M12 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
           </svg>
           Próximos Partidos
         </h3>
-        
+
         <!-- Desktop: full table with código, fecha, acción -->
         <div class="predictions-table upcoming-table predictions-table--upcoming-desktop">
           <div class="table-header">
@@ -397,21 +387,23 @@
             <span class="col-date">Fecha</span>
             <span class="col-actions">Acción</span>
           </div>
-          
+
           <div class="table-row" *ngFor="let pred of predictions.upcomingPredictions">
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="match-code-to-teams-gutter">
-                <span class="match-multiplier-badge" *ngIf="pred.hasMultiplier" title="Partido con multiplicador">★</span>
+                <app-match-multiplier-badge *ngIf="pred.hasMultiplier"></app-match-multiplier-badge>
               </div>
               <div class="team home">
-                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <span class="vs">vs</span>
               <div class="team away">
                 <span class="team-name">{{ pred.awayTeam.name }}</span>
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
             <span class="col-prediction score" [class.pending]="pred.hasPrediction">
@@ -421,7 +413,8 @@
             <div class="col-actions">
               <button type="button" class="edit-btn" (click)="editPrediction(pred)" title="Editar predicción">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                  <path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" stroke-width="1.5"
+                    stroke-linejoin="round" />
                 </svg>
               </button>
             </div>
@@ -430,33 +423,29 @@
 
         <!-- Mobile: same 3-col layout as Últimos Partidos; tap row to edit (no code/date/pencil) -->
         <div class="upcoming-matches-mobile" *ngIf="predictions.upcomingPredictions.length > 0">
-          <article
-            *ngFor="let pred of predictions.upcomingPredictions"
-            class="past-match-card upcoming-match-card"
-            (click)="editPrediction(pred)"
-            (keydown.enter)="editPrediction(pred)"
-            (keydown.space)="$event.preventDefault(); editPrediction(pred)"
-            role="button"
-            tabindex="0"
+          <article *ngFor="let pred of predictions.upcomingPredictions" class="past-match-card upcoming-match-card"
+            (click)="editPrediction(pred)" (keydown.enter)="editPrediction(pred)"
+            (keydown.space)="$event.preventDefault(); editPrediction(pred)" role="button" tabindex="0"
             [attr.aria-label]="'Editar predicción: ' + pred.homeTeam.name + ' vs ' + pred.awayTeam.name">
             <div class="past-match-card__body">
               <div class="past-match-card__team past-match-card__team--home">
-                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.homeTeam)">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.homeTeam)">
                 <span class="past-match-card__team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <div class="past-match-card__center past-match-card__center--upcoming">
-                <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row" title="Partido con multiplicador">
-                  <span class="match-multiplier-badge" aria-hidden="true">★</span>
+                <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
+                  <app-match-multiplier-badge></app-match-multiplier-badge>
                 </div>
                 <span class="past-match-card__field-label">Predicción</span>
-                <span
-                  class="past-match-card__score past-match-card__score--prediccion past-match-card__score--upcoming"
+                <span class="past-match-card__score past-match-card__score--prediccion past-match-card__score--upcoming"
                   [class.past-match-card__score--upcoming-pending]="!pred.hasPrediction">
                   {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
                 </span>
               </div>
               <div class="past-match-card__team past-match-card__team--away">
-                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag" [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.awayTeam)">
                 <span class="past-match-card__team-name">{{ pred.awayTeam.name }}</span>
               </div>
             </div>
@@ -474,9 +463,11 @@
     <div class="leave-bar-mobile" *ngIf="standings">
       <button type="button" class="leave-btn" (click)="promptLeaveTournament()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-          <path d="M6 2H4C3.44772 2 3 2.44772 3 3V15C3 15.5523 3.44772 16 4 16H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M12 12L15 9L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M7 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M6 2H4C3.44772 2 3 2.44772 3 3V15C3 15.5523 3.44772 16 4 16H6" stroke="currentColor"
+            stroke-width="1.5" stroke-linecap="round" />
+          <path d="M12 12L15 9L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <path d="M7 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
         </svg>
         Abandonar Grupo
       </button>
@@ -489,13 +480,14 @@
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-icon warning">
       <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
-        <path d="M16 9V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="16" cy="23" r="1.5" fill="currentColor"/>
+        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+        <path d="M16 9V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <circle cx="16" cy="23" r="1.5" fill="currentColor" />
       </svg>
     </div>
     <h3>¿Abandonar Grupo?</h3>
-    <p>Estás a punto de abandonar <strong>{{ standings?.tournament?.name }}</strong>. Perderás tu posición y predicciones. Esta acción no se puede deshacer.</p>
+    <p>Estás a punto de abandonar <strong>{{ standings?.tournament?.name }}</strong>. Perderás tu posición y
+      predicciones. Esta acción no se puede deshacer.</p>
     <div class="modal-actions">
       <button class="modal-btn cancel" (click)="cancelLeave()">Cancelar</button>
       <button class="modal-btn confirm" (click)="confirmLeaveTournament()" [disabled]="isLeaving">
@@ -511,7 +503,7 @@
   <div class="modal-content edit-group-modal" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeEditGroup()">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
     <h3 class="edit-group-title">Editar Grupo</h3>
@@ -520,21 +512,13 @@
     <div class="edit-group-form">
       <div class="form-group">
         <label class="form-label">Nombre del grupo</label>
-        <input
-          type="text"
-          class="form-input"
-          [(ngModel)]="editGroupName"
-          placeholder="Nombre del grupo"
+        <input type="text" class="form-input" [(ngModel)]="editGroupName" placeholder="Nombre del grupo"
           maxlength="100">
       </div>
 
       <div class="form-group">
         <label class="form-label">Máximo de miembros</label>
-        <input
-          type="number"
-          class="form-input"
-          [(ngModel)]="editGroupMaxMembers"
-          placeholder="Máximo de miembros"
+        <input type="number" class="form-input" [(ngModel)]="editGroupMaxMembers" placeholder="Máximo de miembros"
           min="1">
       </div>
 
@@ -557,4 +541,3 @@
     </div>
   </div>
 </div>
-

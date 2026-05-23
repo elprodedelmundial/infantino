@@ -446,50 +446,9 @@
   height: 100%;
 }
 
-// Rust/cream ★ chip, matching the tournament-standings badge style.
-.match-multiplier-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  /* Syne renders the ★ glyph with balanced metrics; mono fonts push it off-center. */
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-  color: #f5e8d3;
-  background: #a53d1b;
-  border-radius: 4px;
-  flex-shrink: 0;
-  border: 1px solid rgba(245, 232, 211, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(165, 61, 27, 0.4);
-}
+// Bonus ★ positioning for results match cards (badge UI lives in app-match-multiplier-badge).
 
-// Bonus ★ floats inside the reserved strip on the left of the home team column,
-// vertically centered on the whole card so it never nudges other content. Works for every
-// row (live/upcoming/past) because the grid shape is identical across sections.
-// NOTE: the badge is a child of .match-schedule; since .match-schedule has no
-// position:relative on desktop, the containing block is still .results-match-grid.
-.results-match-grid .match-multiplier-badge--schedule-gap {
-  position: absolute;
-  top: 50%;
-  left: calc(
-    var(--results-card-padding-x)
-    + var(--results-schedule)
-    + var(--results-column-gap)
-    + var(--results-bonus-area) / 2
-  );
-  transform: translate(-50%, -50%);
-  margin: 0;
-  z-index: 1;
-}
-
-.match-score .match-multiplier-badge {
+.match-score app-match-multiplier-badge {
   margin-bottom: 6px;
 }
 
@@ -1455,7 +1414,7 @@
     position: static;
   }
 
-  .results-match-grid .match-multiplier-badge--schedule-gap {
+  .results-match-grid app-match-multiplier-badge.schedule-gap {
     top: calc(var(--results-card-padding-top) + var(--results-mobile-header-height) / 2);
     left: auto;
     right: var(--results-card-padding-x);

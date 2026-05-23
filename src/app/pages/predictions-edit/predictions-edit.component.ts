@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
+import { MatchMultiplierBadgeComponent } from '../../components/match-multiplier-badge/match-multiplier-badge.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { 
   Tournament,
@@ -28,7 +29,7 @@ interface EditablePrediction extends MatchPrediction {
 @Component({
   selector: 'app-predictions-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserToolbarComponent],
+  imports: [CommonModule, FormsModule, UserToolbarComponent, MatchMultiplierBadgeComponent],
   templateUrl: './predictions-edit.component.html',
   styleUrl: './predictions-edit.component.scss'
 })

@@ -71,6 +71,15 @@
   letter-spacing: 0.05em;
 }
 
+.awards-deadline-notice {
+  margin: 10px 0 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--error);
+  text-align: left;
+}
+
 // Layout
 .awards-layout {
   display: grid;
@@ -1344,6 +1353,10 @@
 
   .page-subtitle,
   .page-hint {
+    text-align: center;
+  }
+
+  .awards-deadline-notice {
     text-align: center;
   }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
+import { MatchMultiplierBadgeComponent } from '../../components/match-multiplier-badge/match-multiplier-badge.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import {
   IMatchService,
@@ -19,7 +20,7 @@ import { MemberPrediction } from '../../models/tournament.model';
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, UserToolbarComponent],
+  imports: [CommonModule, UserToolbarComponent, MatchMultiplierBadgeComponent],
   templateUrl: './results.component.html',
   styleUrl: './results.component.scss'
 })
