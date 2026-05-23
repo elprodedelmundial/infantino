@@ -1003,8 +1003,14 @@
 
   &__text {
     /* Desktop default: keep the whole sentence on one line. The mobile
-       breakpoint below switches to natural wrapping. */
+       breakpoint below switches to natural wrapping and reveals the `<br>`. */
     white-space: nowrap;
+  }
+
+  /* Mobile-only line break injected right after the comma. Hidden on
+     desktop so the message stays on a single line. */
+  &__break {
+    display: none;
   }
 
   /* Triangle pointing toward the badge, drawn as a rotated square. `left`
@@ -1065,6 +1071,10 @@
 
     &__text {
       white-space: normal;
+    }
+
+    &__break {
+      display: inline;
     }
   }
 }

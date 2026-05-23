@@ -80,7 +80,12 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
    * refined so it stays glued to the badge.
    */
   oddsToast: {
-    message: string;
+    /** Identifies the source quota so re-tapping the same badge toggles it off. */
+    matchId: string;
+    which: 'home' | 'draw' | 'away';
+    /** Two halves of the message; CSS-controlled `<br>` lives between them. */
+    before: string;
+    after: string;
     top: number;
     left: number;
     arrowOffset: number;
@@ -419,6 +424,17 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
       return;
     }
     event.stopPropagation();
+
+    // Toggle: tapping the same quota that opened the banner closes it.
+    if (
+      this.oddsToast &&
+      this.oddsToast.matchId === match.id &&
+      this.oddsToast.which === which
+    ) {
+      this.dismissOddsToast();
+      return;
+    }
+
     const anchor = event.currentTarget as HTMLElement | null;
     if (!anchor) {
       return;
@@ -426,14 +442,13 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     const rect = anchor.getBoundingClientRect();
 
     const points = match.odds[which].toFixed(1);
-    let message: string;
-    if (which === 'home') {
-      message = `Si aciertas que gana ${match.homeTeam.name}, ganas +${points} puntos extra.`;
-    } else if (which === 'away') {
-      message = `Si aciertas que gana ${match.awayTeam.name}, ganas +${points} puntos extra.`;
-    } else {
-      message = `Si aciertas el empate, ganas +${points} puntos extra.`;
-    }
+    // Home/away share the same neutral wording so the banner stays the same
+    // width regardless of team-name length.
+    const before =
+      which === 'draw'
+        ? 'Si aciertas el empate,'
+        : 'Si aciertas que gana este equipo,';
+    const after = `ganas +${points} puntos extra.`;
 
     const badgeCenter = rect.left + rect.width / 2;
     this.oddsToastAnchor = { top: rect.top, bottom: rect.bottom, center: badgeCenter };
@@ -446,7 +461,10 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
       : rect.bottom + PredictionsEditComponent.ODDS_TOAST_GAP;
 
     this.oddsToast = {
-      message,
+      matchId: match.id,
+      which,
+      before,
+      after,
       top: initialTop,
       left: initialLeft,
       arrowOffset: badgeCenter - initialLeft,
@@ -483,8 +501,15 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     return typeof window !== 'undefined' && window.innerWidth < 769 ? 80 : 60;
   }
 
-  /** "Above" unless that would cover the header zone, in which case "below". */
+  /**
+   * Desktop always places the banner above the badge. On narrower viewports
+   * we fall back to below the badge when "above" would otherwise bleed into
+   * the page header.
+   */
   private pickPlacement(anchorTop: number, toastHeight: number): 'above' | 'below' {
+    if (typeof window !== 'undefined' && window.innerWidth >= 769) {
+      return 'above';
+    }
     const room = anchorTop - PredictionsEditComponent.ODDS_TOAST_GAP - toastHeight;
     return room >= PredictionsEditComponent.ODDS_TOAST_HEADER_SAFE_ZONE ? 'above' : 'below';
   }

@@ -289,7 +289,7 @@
   aria-live="polite"
   [style.top.px]="oddsToast.top"
   [style.left.px]="oddsToast.left">
-  <span class="odds-toast__text">{{ oddsToast.message }}</span>
+  <span class="odds-toast__text">{{ oddsToast.before }}<br class="odds-toast__break" aria-hidden="true"/>{{ ' ' + oddsToast.after }}</span>
   <span
     class="odds-toast__arrow"
     aria-hidden="true"
