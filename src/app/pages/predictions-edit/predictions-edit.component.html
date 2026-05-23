@@ -117,7 +117,13 @@
           <div class="match-col match-col--home">
             <span
               class="team-odds"
-              *ngIf="match.odds && !match.isPlayed">
+              *ngIf="match.odds && !match.isPlayed"
+              role="button"
+              tabindex="0"
+              (click)="showOddsToast($event, match, 'home')"
+              (keydown.enter)="showOddsToast($event, match, 'home')"
+              (keydown.space)="$event.preventDefault(); showOddsToast($event, match, 'home')"
+              [attr.aria-label]="'Cuota victoria ' + match.homeTeam.name + ' +' + match.odds.home.toFixed(1)">
               +{{ match.odds.home.toFixed(1) }}
             </span>
             <div class="team home">
@@ -130,6 +136,11 @@
             <span
               class="draw-odds"
               *ngIf="match.odds && !match.isPlayed"
+              role="button"
+              tabindex="0"
+              (click)="showOddsToast($event, match, 'draw')"
+              (keydown.enter)="showOddsToast($event, match, 'draw')"
+              (keydown.space)="$event.preventDefault(); showOddsToast($event, match, 'draw')"
               [attr.aria-label]="'Cuota empate +' + match.odds.draw.toFixed(1)">
               +{{ match.odds.draw.toFixed(1) }}
             </span>
@@ -195,7 +206,13 @@
           <div class="match-col match-col--away">
             <span
               class="team-odds"
-              *ngIf="match.odds && !match.isPlayed">
+              *ngIf="match.odds && !match.isPlayed"
+              role="button"
+              tabindex="0"
+              (click)="showOddsToast($event, match, 'away')"
+              (keydown.enter)="showOddsToast($event, match, 'away')"
+              (keydown.space)="$event.preventDefault(); showOddsToast($event, match, 'away')"
+              [attr.aria-label]="'Cuota victoria ' + match.awayTeam.name + ' +' + match.odds.away.toFixed(1)">
               +{{ match.odds.away.toFixed(1) }}
             </span>
             <div class="team away">
@@ -258,3 +275,23 @@
     </div>
   </div>
 </main>
+
+<!-- Popover anchored to the last tapped match quota. Sits above the badge by
+     default and flips below when there isn't enough room above the page
+     header. Width and wrapping are owned by CSS so the message stays on one
+     line on desktop and wraps naturally on mobile. -->
+<div
+  #oddsToastEl
+  class="odds-toast"
+  [class.odds-toast--below]="oddsToast.placement === 'below'"
+  *ngIf="oddsToast"
+  role="status"
+  aria-live="polite"
+  [style.top.px]="oddsToast.top"
+  [style.left.px]="oddsToast.left">
+  <span class="odds-toast__text">{{ oddsToast.message }}</span>
+  <span
+    class="odds-toast__arrow"
+    aria-hidden="true"
+    [style.left.px]="oddsToast.arrowOffset"></span>
+</div>
