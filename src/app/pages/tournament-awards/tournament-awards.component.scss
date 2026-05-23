@@ -702,6 +702,23 @@
   font-size: 0.85rem;
 }
 
+// Hint shown between the save bar and the candidates list.
+.candidates-hint {
+  margin: 16px 0 20px;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--success);
+  text-align: center;
+}
+
+@media (min-width: 769px) {
+  .candidates-hint {
+    text-align: left;
+  }
+}
+
 // Save (stacked: message above button, narrow column beside title)
 .save-bar {
   display: inline-flex;

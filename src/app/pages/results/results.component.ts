@@ -239,6 +239,15 @@ export class ResultsComponent implements OnInit, OnDestroy {
     return this.joinedTournaments.length > 0;
   }
 
+  /**
+   * Groups eligible for editing predictions: CANDIDATE members are pending
+   * approval and cannot submit predictions, so they're excluded from the
+   * group selector and direct-navigation shortcuts.
+   */
+  get predictableTournaments(): JoinedTournament[] {
+    return this.joinedTournaments.filter(j => j.role !== 'CANDIDATE');
+  }
+
   // Active match predictions modal
   viewPredictions(match: LiveMatch): void {
     if (!this.hasJoinedTournaments()) return;
@@ -288,22 +297,20 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   // Predict for upcoming match
   predictMatch(match: LiveMatch): void {
-    if (!this.hasJoinedTournaments()) return;
+    const eligible = this.predictableTournaments;
+    if (eligible.length === 0) return;
 
     this.selectedMatch = match;
 
     // When unique-predictions mode is active, skip the group selector and go
-    // directly to the first non-candidate group's edit page.
+    // directly to the first eligible group's edit page.
     if (this.isUniquePredictionsMode()) {
-      const memberGroups = this.joinedTournaments.filter(j => j.role !== 'CANDIDATE');
-      if (memberGroups.length > 0) {
-        this.goToPredictions(memberGroups[0].tournament.id);
-      }
+      this.goToPredictions(eligible[0].tournament.id);
       return;
     }
 
-    if (this.joinedTournaments.length === 1) {
-      this.goToPredictions(this.joinedTournaments[0].tournament.id);
+    if (eligible.length === 1) {
+      this.goToPredictions(eligible[0].tournament.id);
     } else {
       this.showTournamentSelector = true;
     }

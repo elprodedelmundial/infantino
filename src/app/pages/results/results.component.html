@@ -313,7 +313,7 @@
     <p class="selector-subtitle">¿Para cuál grupo deseas hacer tu predicción?</p>
 
     <div class="tournament-options">
-      <button class="tournament-option" *ngFor="let joined of joinedTournaments"
+      <button class="tournament-option" *ngFor="let joined of predictableTournaments"
         (click)="selectTournamentForPrediction(joined.tournament.id)">
         <span class="tournament-name">{{ joined.tournament.name }}</span>
         <span class="tournament-rank" *ngIf="joined.userRanking !== null">{{ joined.userRanking }}º posición</span>

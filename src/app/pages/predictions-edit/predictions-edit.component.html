@@ -69,11 +69,6 @@
         </div>
       </div>
 
-      <div class="filter-stats" *ngIf="unsavedCount > 0">
-        <span class="unsaved-count">
-          {{ unsavedCount }} sin guardar
-        </span>
-      </div>
     </div>
 
     <!-- Save All Button -->
@@ -166,27 +161,31 @@
               <div class="score-section__boxes" *ngIf="!match.isPlayed && !isMatchLocked(match)">
                 <div class="score-boxes score-boxes--edit">
                   <input
-                    type="number"
+                    #homeScoreBox
+                    type="text"
                     class="score-box-input"
-                    [ngModel]="match.editedHomeScore"
-                    (ngModelChange)="onMobileBoxScoreChange(match, 'home', $event)"
+                    [value]="match.editedHomeScore ?? ''"
+                    (input)="onMobileBoxScoreInput(match, 'home', homeScoreBox)"
                     (focus)="onMobileScoreBoxFocus(match, 'home')"
                     (blur)="onMobileBoxBlur(match, 'home')"
-                    min="0"
-                    max="9"
+                    maxlength="2"
                     inputmode="numeric"
+                    pattern="[0-9]*"
+                    autocomplete="off"
                     [attr.aria-label]="'Goles ' + match.homeTeam.name">
                   <span class="score-boxes__sep" aria-hidden="true">-</span>
                   <input
-                    type="number"
+                    #awayScoreBox
+                    type="text"
                     class="score-box-input"
-                    [ngModel]="match.editedAwayScore"
-                    (ngModelChange)="onMobileBoxScoreChange(match, 'away', $event)"
+                    [value]="match.editedAwayScore ?? ''"
+                    (input)="onMobileBoxScoreInput(match, 'away', awayScoreBox)"
                     (focus)="onMobileScoreBoxFocus(match, 'away')"
                     (blur)="onMobileBoxBlur(match, 'away')"
-                    min="0"
-                    max="9"
+                    maxlength="2"
                     inputmode="numeric"
+                    pattern="[0-9]*"
+                    autocomplete="off"
                     [attr.aria-label]="'Goles ' + match.awayTeam.name">
                 </div>
               </div>

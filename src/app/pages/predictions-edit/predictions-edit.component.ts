@@ -232,15 +232,27 @@ export class PredictionsEditComponent implements OnInit {
       this.effectiveAway(match) !== match.predictedScore.away;
   }
 
-  onMobileBoxScoreChange(
+  /**
+   * Strips anything that isn't a digit and caps at 2 chars before clamping
+   * to the allowed score range. Writes the canonical value straight back to
+   * the input so partially-typed garbage (`93.`, `+10`, `e2`) can never linger
+   * on screen — `[value]` binding wouldn't refresh the DOM when clamping
+   * collapses to the previously-bound number.
+   */
+  onMobileBoxScoreInput(
     match: EditablePrediction,
     which: 'home' | 'away',
-    raw: string | number | null | undefined
+    input: HTMLInputElement
   ): void {
     if (this.isMatchLocked(match) || match.isPlayed) {
+      input.value = '';
       return;
     }
-    if (raw === null || raw === undefined || raw === '') {
+    const sanitized = input.value.replace(/\D/g, '').slice(0, 2);
+    if (sanitized === '') {
+      if (input.value !== '') {
+        input.value = '';
+      }
       if (which === 'home') {
         match.editedHomeScore = null;
       } else {
@@ -249,7 +261,11 @@ export class PredictionsEditComponent implements OnInit {
       this.onScoreChange(match);
       return;
     }
-    const n = this.clampScoreInput(raw);
+    const n = this.clampScoreInput(sanitized);
+    const display = String(n);
+    if (input.value !== display) {
+      input.value = display;
+    }
     if (which === 'home') {
       match.editedHomeScore = n;
       match.mobileHomeBackup = undefined;
