@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -15,4 +15,13 @@ import { CommonModule } from '@angular/common';
 })
 export class MatchMultiplierBadgeComponent {
   @Input() variant: 'default' | 'star' | 'schedule-gap' = 'default';
+  @Output() badgeClick = new EventEmitter<Event>();
+
+  onBadgeClick(event: Event): void {
+    if (event instanceof KeyboardEvent && event.key === ' ') {
+      event.preventDefault();
+    }
+    event.stopPropagation();
+    this.badgeClick.emit(event);
+  }
 }

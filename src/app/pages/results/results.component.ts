@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, Inject, NgZone } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject, NgZone, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin, interval, Subscription } from 'rxjs';
@@ -26,6 +26,9 @@ import { MemberPrediction } from '../../models/tournament.model';
 })
 export class ResultsComponent implements OnInit, OnDestroy {
   private static readonly MATCH_REFRESH_MS = 10_000;
+  private static readonly MULTIPLIER_TOAST_AUTO_DISMISS_MS = 15_000;
+  private static readonly MULTIPLIER_TOAST_HEADER_SAFE_ZONE = 90;
+  private static readonly MULTIPLIER_TOAST_GAP = 10;
 
   /** Exposed for template: Swiss flag needs rectangular crop. */
   readonly isSwitzerland = isSwitzerland;
@@ -62,6 +65,23 @@ export class ResultsComponent implements OnInit, OnDestroy {
   matchPredictionsByTournament: MatchPredictionsByTournament | null = null;
   isLoadingPredictions: boolean = false;
   expandedTournaments: Set<string> = new Set();
+
+  /** Floating banner explaining the x1.5 multiplier on featured matches. */
+  multiplierToast: {
+    matchId: string;
+    before: string;
+    after: string;
+    top: number;
+    left: number;
+    arrowOffset: number;
+    placement: 'above' | 'below';
+  } | null = null;
+  private multiplierToastAnchor: { top: number; bottom: number; center: number } | null = null;
+  private multiplierToastTimer: ReturnType<typeof setTimeout> | null = null;
+  private multiplierToastDismissOnScroll: (() => void) | null = null;
+  private multiplierToastDocumentClick: ((event: Event) => void) | null = null;
+
+  @ViewChild('multiplierToastEl') private multiplierToastEl?: ElementRef<HTMLElement>;
 
   constructor(
     private router: Router,
@@ -108,6 +128,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.resultsLayoutMqlListener?.();
     this.resultsLayoutMqlListener = null;
     this.resultsLayoutMql = null;
+    this.dismissMultiplierToast();
   }
 
   private initResultsLayoutMediaQuery(): void {
@@ -357,6 +378,154 @@ export class ResultsComponent implements OnInit, OnDestroy {
       return 'Mañana';
     }
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }
+
+  /**
+   * Tap on the ★ badge → reveal a banner explaining the x1,5 multiplier.
+   * Re-tapping the same badge toggles it off; click outside, scroll, resize,
+   * or timeout dismisses it.
+   */
+  showMultiplierToast(event: Event, match: LiveMatch): void {
+    event.stopPropagation();
+
+    if (this.multiplierToast?.matchId === match.id) {
+      this.dismissMultiplierToast();
+      return;
+    }
+
+    const anchor =
+      (event.target as HTMLElement | null)?.closest('.match-multiplier-badge-host') ??
+      (event.target as HTMLElement | null);
+    if (!anchor) {
+      return;
+    }
+    const rect = anchor.getBoundingClientRect();
+    const badgeCenter = rect.left + rect.width / 2;
+    this.multiplierToastAnchor = { top: rect.top, bottom: rect.bottom, center: badgeCenter };
+
+    const estimatedHeight = this.estimatedMultiplierToastHeight();
+    const placement = this.pickMultiplierToastPlacement(rect.top, estimatedHeight);
+    const initialLeft = this.clampMultiplierToastLeft(badgeCenter, this.estimatedMultiplierToastWidth());
+    const initialTop = placement === 'above'
+      ? rect.top - ResultsComponent.MULTIPLIER_TOAST_GAP
+      : rect.bottom + ResultsComponent.MULTIPLIER_TOAST_GAP;
+
+    this.multiplierToast = {
+      matchId: match.id,
+      before: 'Partido destacado,',
+      after: 'tus puntos se multiplican por x1,5.',
+      top: initialTop,
+      left: initialLeft,
+      arrowOffset: badgeCenter - initialLeft,
+      placement
+    };
+
+    this.clearMultiplierToastTimer();
+    this.multiplierToastTimer = setTimeout(
+      () => this.dismissMultiplierToast(),
+      ResultsComponent.MULTIPLIER_TOAST_AUTO_DISMISS_MS
+    );
+    this.addMultiplierToastDismissListeners();
+
+    requestAnimationFrame(() => this.refineMultiplierToastPosition());
+  }
+
+  private clampMultiplierToastLeft(badgeCenter: number, width: number): number {
+    const viewportPadding = 12;
+    const minLeft = viewportPadding;
+    const maxLeft = Math.max(minLeft, window.innerWidth - viewportPadding - width);
+    return Math.max(minLeft, Math.min(maxLeft, badgeCenter - width / 2));
+  }
+
+  private estimatedMultiplierToastWidth(): number {
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 769;
+    const max = isDesktop ? 640 : 320;
+    return Math.min(max, window.innerWidth - 24);
+  }
+
+  private estimatedMultiplierToastHeight(): number {
+    return typeof window !== 'undefined' && window.innerWidth < 769 ? 80 : 60;
+  }
+
+  private pickMultiplierToastPlacement(anchorTop: number, toastHeight: number): 'above' | 'below' {
+    if (typeof window !== 'undefined' && window.innerWidth >= 769) {
+      return 'above';
+    }
+    const room = anchorTop - ResultsComponent.MULTIPLIER_TOAST_GAP - toastHeight;
+    return room >= ResultsComponent.MULTIPLIER_TOAST_HEADER_SAFE_ZONE ? 'above' : 'below';
+  }
+
+  private refineMultiplierToastPosition(): void {
+    if (!this.multiplierToast || !this.multiplierToastAnchor) {
+      return;
+    }
+    const el = this.multiplierToastEl?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const measured = el.getBoundingClientRect();
+    const arrowSafeZone = 18;
+    const { top: anchorTop, bottom: anchorBottom, center: badgeCenter } = this.multiplierToastAnchor;
+    const placement = this.pickMultiplierToastPlacement(anchorTop, measured.height);
+    const top = placement === 'above'
+      ? anchorTop - ResultsComponent.MULTIPLIER_TOAST_GAP
+      : anchorBottom + ResultsComponent.MULTIPLIER_TOAST_GAP;
+    const left = this.clampMultiplierToastLeft(badgeCenter, measured.width);
+    const arrowOffset = Math.max(
+      arrowSafeZone,
+      Math.min(measured.width - arrowSafeZone, badgeCenter - left)
+    );
+    this.multiplierToast = { ...this.multiplierToast, top, left, arrowOffset, placement };
+  }
+
+  dismissMultiplierToast(): void {
+    this.clearMultiplierToastTimer();
+    this.removeMultiplierToastDismissListeners();
+    this.multiplierToast = null;
+    this.multiplierToastAnchor = null;
+  }
+
+  private clearMultiplierToastTimer(): void {
+    if (this.multiplierToastTimer !== null) {
+      clearTimeout(this.multiplierToastTimer);
+      this.multiplierToastTimer = null;
+    }
+  }
+
+  private addMultiplierToastDismissListeners(): void {
+    if (!this.multiplierToastDismissOnScroll) {
+      const handler = () => this.dismissMultiplierToast();
+      this.multiplierToastDismissOnScroll = handler;
+      window.addEventListener('scroll', handler, { passive: true, capture: true });
+      window.addEventListener('resize', handler);
+    }
+    if (!this.multiplierToastDocumentClick) {
+      const clickHandler = (e: Event) => {
+        const el = this.multiplierToastEl?.nativeElement;
+        if (el && el.contains(e.target as Node)) {
+          return;
+        }
+        this.dismissMultiplierToast();
+      };
+      this.multiplierToastDocumentClick = clickHandler;
+      setTimeout(() => {
+        if (this.multiplierToastDocumentClick === clickHandler) {
+          document.addEventListener('click', clickHandler);
+        }
+      }, 0);
+    }
+  }
+
+  private removeMultiplierToastDismissListeners(): void {
+    if (this.multiplierToastDismissOnScroll) {
+      window.removeEventListener('scroll', this.multiplierToastDismissOnScroll, true);
+      window.removeEventListener('resize', this.multiplierToastDismissOnScroll);
+      this.multiplierToastDismissOnScroll = null;
+    }
+    if (this.multiplierToastDocumentClick) {
+      document.removeEventListener('click', this.multiplierToastDocumentClick);
+      this.multiplierToastDocumentClick = null;
+    }
   }
 
 }

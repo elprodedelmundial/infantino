@@ -1,6 +1,11 @@
 <span
   class="match-multiplier-badge"
-  aria-label="Partido con multiplicador"
-  title="Partido con multiplicador">
+  role="button"
+  tabindex="0"
+  aria-label="Partido con multiplicador x1,5"
+  title="Partido con multiplicador x1,5"
+  (click)="onBadgeClick($event)"
+  (keydown.enter)="onBadgeClick($event)"
+  (keydown.space)="onBadgeClick($event)">
   ★
 </span>

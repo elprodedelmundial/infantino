@@ -27,7 +27,8 @@
         <div class="live-match-card results-match-grid" *ngFor="let match of liveMatches"
           (click)="onResultsMatchCardClick($event, match, 'live')">
           <div class="match-schedule match-schedule--live">
-            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"></app-match-multiplier-badge>
+            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"
+              (badgeClick)="showMultiplierToast($event, match)"></app-match-multiplier-badge>
             <div class="match-time-badge live">
               <span class="live-indicator"></span>
               {{ match.matchTime }}
@@ -81,7 +82,8 @@
         <div class="upcoming-match-card results-match-grid" *ngFor="let match of upcomingMatches"
           (click)="onResultsMatchCardClick($event, match, 'upcoming')">
           <div class="match-schedule">
-            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"></app-match-multiplier-badge>
+            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"
+              (badgeClick)="showMultiplierToast($event, match)"></app-match-multiplier-badge>
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time">{{ formatMatchTime(match) }}</span>
           </div>
@@ -135,7 +137,8 @@
         <div class="past-match-card results-match-grid" *ngFor="let match of pastMatches"
           (click)="onResultsMatchCardClick($event, match, 'past')">
           <div class="match-schedule">
-            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"></app-match-multiplier-badge>
+            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"
+              (badgeClick)="showMultiplierToast($event, match)"></app-match-multiplier-badge>
             <span class="match-date">{{ formatMatchDate(match) }}</span>
             <span class="match-time finished-tag">FT</span>
           </div>
@@ -229,7 +232,8 @@
             <span class="modal-team-name">{{ selectedMatch.homeTeam.name }}</span>
           </div>
           <div class="match-score">
-            <app-match-multiplier-badge *ngIf="selectedMatch.hasMultiplier"></app-match-multiplier-badge>
+            <app-match-multiplier-badge *ngIf="selectedMatch.hasMultiplier"
+              (badgeClick)="showMultiplierToast($event, selectedMatch)"></app-match-multiplier-badge>
             <span class="score">{{ selectedMatch.currentScore?.home }} - {{ selectedMatch.currentScore?.away }}</span>
             <span class="penalty-score" *ngIf="selectedMatch.penaltyScore">
               ({{ selectedMatch.penaltyScore.home }} - {{ selectedMatch.penaltyScore.away }})
@@ -324,4 +328,21 @@
       </button>
     </div>
   </div>
+</div>
+
+<!-- Multiplier info banner (★ badge tap) -->
+<div
+  #multiplierToastEl
+  class="multiplier-toast"
+  [class.multiplier-toast--below]="multiplierToast.placement === 'below'"
+  *ngIf="multiplierToast"
+  role="status"
+  aria-live="polite"
+  [style.top.px]="multiplierToast.top"
+  [style.left.px]="multiplierToast.left">
+  <span class="multiplier-toast__text">{{ multiplierToast.before }}<br class="multiplier-toast__break" aria-hidden="true"/>{{ ' ' + multiplierToast.after }}</span>
+  <span
+    class="multiplier-toast__arrow"
+    aria-hidden="true"
+    [style.left.px]="multiplierToast.arrowOffset"></span>
 </div>
