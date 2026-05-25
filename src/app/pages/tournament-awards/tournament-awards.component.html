@@ -27,6 +27,11 @@
             Tenés tiempo hasta el inicio del torneo para completar tus predicciones de cada premio.
             Recuerda que cuantos más candidatos selecciones, menos puntos ganarás.
           </p>
+          <div class="awards-summary__actions" *ngIf="showAwardsSummary">
+            <button type="button" class="edit-awards-btn" (click)="startEditAwards()">
+              Editar Predicciones
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -107,10 +112,45 @@
       </button>
     </div>
 
+    <!-- Resumen de mis predicciones (antes de editar) -->
+    <div class="awards-summary" *ngIf="showAwardsSummary">
+      <div class="awards-summary__sections">
+        <div *ngFor="let cat of categories" class="member-all-awards__section">
+          <h2 class="member-all-awards__title">{{ cat.title }}</h2>
+          <div
+            class="selections-container"
+            *ngIf="getSelectionsForCategory(cat).length > 0"
+            [style.--max-picks]="cat.maxSelections">
+            <h4 class="selections-title">{{ getSelectionsSectionTitle() }}</h4>
+            <div
+              class="selections-list"
+              [class.selections-list--player-awards]="cat.type === 'player'">
+              <div class="selection-item" *ngFor="let item of getSelectionsForCategory(cat)">
+                <ng-container *ngIf="cat.type === 'country'">
+                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
+                  <span class="selection-name">{{ asCountry(item).name }}</span>
+                </ng-container>
+                <ng-container *ngIf="cat.type === 'player'">
+                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
+                  <div class="selection-info">
+                    <span class="selection-name">{{ asPlayer(item).name }}</span>
+                    <span class="selection-country">{{ asPlayer(item).country.name }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state empty-state--browse" *ngIf="getSelectionsForCategory(cat).length === 0">
+            <p>Sin predicciones para este premio</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div
       class="awards-layout"
       [class.awards-layout--all-by-member]="showAllAwardsForSelectedMember"
-      *ngIf="!isLoading && (!awardsLocked || browseGroupOpen)">
+      *ngIf="!isLoading && ((showAwardsEdit) || (awardsLocked && browseGroupOpen))">
       <!-- Categories Sidebar (oculto: grupo — Por miembro, lista completa en una columna) -->
       <div class="categories-sidebar" *ngIf="!showAllAwardsForSelectedMember">
         <h3 class="sidebar-title">Premios</h3>
@@ -131,7 +171,7 @@
       <!-- Main: per-member (un premio) / edición; no mostrar con lista completa por miembro -->
       <div
         class="awards-main"
-        *ngIf="(browseLayout === 'per-member' || !awardsLocked) && !showAllAwardsForSelectedMember">
+        *ngIf="showAwardsEdit && !showAllAwardsForSelectedMember">
         <div class="category-header">
           <div class="category-header-row">
             <div class="category-heading-text">

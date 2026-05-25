@@ -51,6 +51,14 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return !this.awardsLocked;
   }
 
+  get showAwardsSummary(): boolean {
+    return this.canEdit && !this.editMode && !this.isLoading;
+  }
+
+  get showAwardsEdit(): boolean {
+    return this.canEdit && this.editMode && !this.isLoading;
+  }
+
   browseGroupOpen: boolean = false;
   browseLayout: 'per-member' | 'per-award' = 'per-award';
   membersAwardPredictions: MemberAwardPrediction[] = [];
@@ -86,6 +94,8 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   activeCategory: AwardCategory = this.categories[0];
   searchTerm: string = '';
   hasChanges: boolean = false;
+  /** When tournament hasn't started: summary first, then edit flow after user taps Editar Predicciones */
+  editMode = false;
 
   /** True award winners from the API; null until published */
   trueWinners: TournamentAwardWinners | null = null;
@@ -633,7 +643,16 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
   }
 
+  startEditAwards(): void {
+    this.editMode = true;
+    this.setActiveCategory(this.categories[0]);
+  }
+
   goBack(): void {
+    if (this.canEdit && this.editMode) {
+      this.editMode = false;
+      return;
+    }
     const activeTab = this.awardsLocked ? ('standings' as const) : ('predictions' as const);
     this.router.navigate(['/tournament', this.tournamentId], {
       state: { username: this.username, activeTab }

@@ -901,6 +901,44 @@
   }
 }
 
+.awards-summary {
+  margin-bottom: 2rem;
+}
+
+.awards-summary__sections {
+  display: flex;
+  flex-direction: column;
+}
+
+.awards-summary__actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.edit-awards-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--accent);
+  border: none;
+  color: var(--bg-primary);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.92;
+  }
+}
+
 .browse-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -1074,7 +1112,7 @@
 }
 
 .member-all-awards__section {
-  margin-bottom: 2.25rem;
+  margin-bottom: 1rem;
 
   &:last-child {
     margin-bottom: 0;
@@ -1105,6 +1143,14 @@
   }
 
   .awards-main--all-by-member .selections-list--player-awards .selection-item {
+    min-width: 0;
+  }
+
+  .awards-summary .selections-list--player-awards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .awards-summary .selections-list--player-awards .selection-item {
     min-width: 0;
   }
 }
