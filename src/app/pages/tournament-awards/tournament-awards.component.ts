@@ -600,12 +600,21 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       next: () => {
         this.isSaving = false;
         this.hasChanges = false;
-        this.goBack();
+        if (this.isMobileLayout()) {
+          this.goToNextCategory();
+        } else {
+          this.goBack();
+        }
       },
       error: () => {
         this.isSaving = false;
       }
     });
+  }
+
+  /** Matches the awards page mobile breakpoint (≤768px). */
+  private isMobileLayout(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
   }
 
   goBack(): void {
