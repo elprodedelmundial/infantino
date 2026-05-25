@@ -81,13 +81,35 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: 0.02em;
 }
 
-.tournament-meta {
+.group-visibility-label {
+  display: inline-block;
+  padding: 2px 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(232, 255, 71, 0.1);
+  border: 1px solid rgba(232, 255, 71, 0.25);
+  flex-shrink: 0;
+
+  &--private {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.28);
+  }
+}
+
+.tournament-meta-row {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .participants,
@@ -212,11 +234,6 @@
 
   .tournament-name {
     font-size: 1rem;
-  }
-
-  .tournament-meta {
-    flex-direction: column;
-    gap: 8px;
   }
 
   .join-btn {
