@@ -515,6 +515,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   toggleSelection(item: Country | Player): void {
     if (!this.canEdit) return;
     const categoryId = this.activeCategory.id;
+    let changed = false;
 
     if (this.activeCategory.type === 'country') {
       const country = item as Country;
@@ -523,8 +524,10 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
 
       if (index >= 0) {
         selections.splice(index, 1);
+        changed = true;
       } else if (selections.length < this.activeCategory.maxSelections) {
         selections.push(country);
+        changed = true;
       }
     } else {
       const player = item as Player;
@@ -533,12 +536,16 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
 
       if (index >= 0) {
         selections.splice(index, 1);
+        changed = true;
       } else if (selections.length < this.activeCategory.maxSelections) {
         selections.push(player);
+        changed = true;
       }
     }
 
-    this.hasChanges = true;
+    if (changed) {
+      this.hasChanges = true;
+    }
   }
 
   onSelectionItemKeydown(event: KeyboardEvent, item: Country | Player): void {
@@ -552,20 +559,29 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   removeSelection(item: Country | Player): void {
     if (!this.canEdit) return;
     const categoryId = this.activeCategory.id;
+    let changed = false;
 
     if (this.activeCategory.type === 'country') {
       const country = item as Country;
       const selections = this.predictions[categoryId] as Country[];
       const index = selections.findIndex(s => this.sameCountry(s, country));
-      if (index >= 0) selections.splice(index, 1);
+      if (index >= 0) {
+        selections.splice(index, 1);
+        changed = true;
+      }
     } else {
       const player = item as Player;
       const selections = this.predictions[categoryId] as Player[];
       const index = selections.findIndex(s => s.id === player.id);
-      if (index >= 0) selections.splice(index, 1);
+      if (index >= 0) {
+        selections.splice(index, 1);
+        changed = true;
+      }
     }
 
-    this.hasChanges = true;
+    if (changed) {
+      this.hasChanges = true;
+    }
   }
 
   getSelectionCount(category: AwardCategory): number {
