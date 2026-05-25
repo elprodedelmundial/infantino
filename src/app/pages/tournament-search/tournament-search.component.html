@@ -17,7 +17,12 @@
       <div class="tournament-card" *ngFor="let tournament of tournaments">
         <div class="tournament-info">
           <h3 class="tournament-name">{{ tournament.name }}</h3>
-          <div class="tournament-meta">
+          <div class="tournament-meta-row">
+            <span
+              class="group-visibility-label"
+              [class.group-visibility-label--private]="tournament.isPrivate">
+              {{ tournament.isPrivate ? 'Privado' : 'Público' }}
+            </span>
             <span class="participants">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>

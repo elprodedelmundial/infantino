@@ -40,7 +40,8 @@ export class TournamentSearchComponent implements OnInit {
       joined: this.tournamentService.getJoinedTournaments()
     }).subscribe(({ available, joined }) => {
       const joinedById = new Map(joined.map(j => [j.tournament.id, j]));
-      this.tournaments = available.map(t => {
+      this.tournaments = available
+        .map(t => {
         const membership = joinedById.get(t.id);
         if (membership?.role === 'CANDIDATE') {
           return {
@@ -54,7 +55,8 @@ export class TournamentSearchComponent implements OnInit {
           ...t,
           isPrivate: membership?.tournament.isPrivate ?? t.isPrivate
         };
-      });
+      })
+        .sort((a, b) => Number(!!a.isPrivate) - Number(!!b.isPrivate));
       this.isLoading = false;
     });
   }
