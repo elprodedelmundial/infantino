@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
+import { MatchMultiplierBadgeComponent } from '../../components/match-multiplier-badge/match-multiplier-badge.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { 
   TournamentStandings, 
@@ -20,7 +21,7 @@ import { MemberDisplayPreferenceService } from '../../services/member-display-pr
 @Component({
   selector: 'app-tournament-standings',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserToolbarComponent],
+  imports: [CommonModule, FormsModule, UserToolbarComponent, MatchMultiplierBadgeComponent],
   templateUrl: './tournament-standings.component.html',
   styleUrl: './tournament-standings.component.scss'
 })

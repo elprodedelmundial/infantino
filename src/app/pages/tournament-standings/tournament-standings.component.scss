@@ -896,6 +896,9 @@
   align-items: center;
   width: 100%;
   min-height: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
   /* 4px here + 4px column gap on .past-match-card__center = 8px to first label */
   padding-bottom: var(--past-center-star-pad, 4px);
 }
@@ -954,29 +957,6 @@
 
 .match-code-to-teams-gutter--header {
   pointer-events: none;
-}
-
-.match-multiplier-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  /* Syne renders the ★ glyph with balanced metrics; JetBrains Mono pushed it off-center. */
-  font-family: 'Syne', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-  color: #f5e8d3;
-  background: #a53d1b;
-  border-radius: 4px;
-  flex-shrink: 0;
-  border: 1px solid rgba(245, 232, 211, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(165, 61, 27, 0.4);
 }
 
 .col-prediction,
@@ -1235,12 +1215,6 @@
     .table-row {
       grid-template-columns: max-content 1fr 80px 60px 50px;
     }
-  }
-
-  .match-multiplier-badge {
-    width: 22px;
-    height: 22px;
-    font-size: 0.85rem;
   }
 
   .team-name {
@@ -1599,6 +1573,12 @@
 }
 
 // Action Banners (Predictions & Awards)
+.action-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .predictions-banner,
 .awards-banner {
   display: flex;
@@ -1634,6 +1614,7 @@
 }
 
 .awards-banner {
+  margin-top: 10px;
   background: linear-gradient(135deg, rgba(232, 255, 71, 0.1) 0%, rgba(232, 255, 71, 0.02) 100%);
   border: 1px solid rgba(232, 255, 71, 0.3);
   box-sizing: border-box;
@@ -1654,6 +1635,7 @@
 
 /* Clasificación: mismo patrón visual que Editar Predicciones, en amarillo — borde completo, bloque aparte del standings */
 .awards-banner--standings {
+  margin-top: 0;
   background: linear-gradient(135deg, rgba(232, 255, 71, 0.12) 0%, rgba(232, 255, 71, 0.02) 100%);
   border: 1px solid rgba(232, 255, 71, 0.4);
 
@@ -1905,7 +1887,7 @@
     background: rgba(17, 17, 19, 0.55);
     border: 1px solid var(--border);
     border-radius: 4px;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .predictions-banner,

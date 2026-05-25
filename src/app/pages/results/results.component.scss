@@ -446,50 +446,9 @@
   height: 100%;
 }
 
-// Rust/cream ★ chip, matching the tournament-standings badge style.
-.match-multiplier-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  /* Syne renders the ★ glyph with balanced metrics; mono fonts push it off-center. */
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-  color: #f5e8d3;
-  background: #a53d1b;
-  border-radius: 4px;
-  flex-shrink: 0;
-  border: 1px solid rgba(245, 232, 211, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(165, 61, 27, 0.4);
-}
+// Bonus ★ positioning for results match cards (badge UI lives in app-match-multiplier-badge).
 
-// Bonus ★ floats inside the reserved strip on the left of the home team column,
-// vertically centered on the whole card so it never nudges other content. Works for every
-// row (live/upcoming/past) because the grid shape is identical across sections.
-// NOTE: the badge is a child of .match-schedule; since .match-schedule has no
-// position:relative on desktop, the containing block is still .results-match-grid.
-.results-match-grid .match-multiplier-badge--schedule-gap {
-  position: absolute;
-  top: 50%;
-  left: calc(
-    var(--results-card-padding-x)
-    + var(--results-schedule)
-    + var(--results-column-gap)
-    + var(--results-bonus-area) / 2
-  );
-  transform: translate(-50%, -50%);
-  margin: 0;
-  z-index: 1;
-}
-
-.match-score .match-multiplier-badge {
+.match-score app-match-multiplier-badge {
   margin-bottom: 6px;
 }
 
@@ -1455,7 +1414,7 @@
     position: static;
   }
 
-  .results-match-grid .match-multiplier-badge--schedule-gap {
+  .results-match-grid app-match-multiplier-badge.schedule-gap {
     top: calc(var(--results-card-padding-top) + var(--results-mobile-header-height) / 2);
     left: auto;
     right: var(--results-card-padding-x);
@@ -1514,5 +1473,106 @@
 
   .selector-modal {
     padding: 24px 20px;
+  }
+}
+
+/* Floating banner shown when the ★ multiplier badge is tapped. Mirrors the
+   quota popover in predictions-edit: anchored above the badge by default,
+   flips below on mobile when it would cover the page header. */
+.multiplier-toast {
+  /* Match the ★ featured-match badge palette (#a53d1b / cream edge). */
+  --multiplier-star: #a53d1b;
+  --multiplier-star-glow: rgba(165, 61, 27, 0.4);
+
+  position: fixed;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  padding: 14px 18px;
+  background: rgba(15, 15, 17, 0.97);
+  border: 1px solid var(--multiplier-star);
+  border-radius: 10px;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.6),
+    0 0 16px var(--multiplier-star-glow);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: center;
+  width: max-content;
+  max-width: min(720px, calc(100vw - 24px));
+  transform: translateY(-100%);
+  animation: multiplierToastIn 160ms ease-out;
+
+  &__text {
+    white-space: nowrap;
+  }
+
+  &__break {
+    display: none;
+  }
+
+  &__arrow {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: rgba(15, 15, 17, 0.97);
+    border-right: 1px solid var(--multiplier-star);
+    border-bottom: 1px solid var(--multiplier-star);
+    bottom: -7px;
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  &--below {
+    transform: translateY(0);
+    animation-name: multiplierToastInBelow;
+
+    .multiplier-toast__arrow {
+      bottom: auto;
+      top: -7px;
+      border-right: none;
+      border-bottom: none;
+      border-top: 1px solid var(--multiplier-star);
+      border-left: 1px solid var(--multiplier-star);
+    }
+  }
+}
+
+@keyframes multiplierToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-100% + 6px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes multiplierToastInBelow {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .multiplier-toast {
+    font-size: 0.85rem;
+    padding: 12px 14px;
+    max-width: min(340px, calc(100vw - 24px));
+
+    &__text {
+      white-space: normal;
+    }
+
+    &__break {
+      display: inline;
+    }
   }
 }

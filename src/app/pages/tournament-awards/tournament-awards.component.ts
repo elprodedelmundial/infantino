@@ -51,6 +51,14 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     return !this.awardsLocked;
   }
 
+  get showAwardsSummary(): boolean {
+    return this.canEdit && !this.editMode && !this.isLoading;
+  }
+
+  get showAwardsEdit(): boolean {
+    return this.canEdit && this.editMode && !this.isLoading;
+  }
+
   browseGroupOpen: boolean = false;
   browseLayout: 'per-member' | 'per-award' = 'per-award';
   membersAwardPredictions: MemberAwardPrediction[] = [];
@@ -86,6 +94,8 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   activeCategory: AwardCategory = this.categories[0];
   searchTerm: string = '';
   hasChanges: boolean = false;
+  /** When tournament hasn't started: summary first, then edit flow after user taps Editar Predicciones */
+  editMode = false;
 
   /** True award winners from the API; null until published */
   trueWinners: TournamentAwardWinners | null = null;
@@ -515,6 +525,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   toggleSelection(item: Country | Player): void {
     if (!this.canEdit) return;
     const categoryId = this.activeCategory.id;
+    let changed = false;
 
     if (this.activeCategory.type === 'country') {
       const country = item as Country;
@@ -523,8 +534,10 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
 
       if (index >= 0) {
         selections.splice(index, 1);
+        changed = true;
       } else if (selections.length < this.activeCategory.maxSelections) {
         selections.push(country);
+        changed = true;
       }
     } else {
       const player = item as Player;
@@ -533,12 +546,16 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
 
       if (index >= 0) {
         selections.splice(index, 1);
+        changed = true;
       } else if (selections.length < this.activeCategory.maxSelections) {
         selections.push(player);
+        changed = true;
       }
     }
 
-    this.hasChanges = true;
+    if (changed) {
+      this.hasChanges = true;
+    }
   }
 
   onSelectionItemKeydown(event: KeyboardEvent, item: Country | Player): void {
@@ -552,20 +569,29 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   removeSelection(item: Country | Player): void {
     if (!this.canEdit) return;
     const categoryId = this.activeCategory.id;
+    let changed = false;
 
     if (this.activeCategory.type === 'country') {
       const country = item as Country;
       const selections = this.predictions[categoryId] as Country[];
       const index = selections.findIndex(s => this.sameCountry(s, country));
-      if (index >= 0) selections.splice(index, 1);
+      if (index >= 0) {
+        selections.splice(index, 1);
+        changed = true;
+      }
     } else {
       const player = item as Player;
       const selections = this.predictions[categoryId] as Player[];
       const index = selections.findIndex(s => s.id === player.id);
-      if (index >= 0) selections.splice(index, 1);
+      if (index >= 0) {
+        selections.splice(index, 1);
+        changed = true;
+      }
     }
 
-    this.hasChanges = true;
+    if (changed) {
+      this.hasChanges = true;
+    }
   }
 
   getSelectionCount(category: AwardCategory): number {
@@ -600,7 +626,11 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       next: () => {
         this.isSaving = false;
         this.hasChanges = false;
-        this.goBack();
+        if (this.isMobileLayout()) {
+          this.goToNextCategory();
+        } else {
+          this.goBack();
+        }
       },
       error: () => {
         this.isSaving = false;
@@ -608,7 +638,21 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /** Matches the awards page mobile breakpoint (≤768px). */
+  private isMobileLayout(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  startEditAwards(): void {
+    this.editMode = true;
+    this.setActiveCategory(this.categories[0]);
+  }
+
   goBack(): void {
+    if (this.canEdit && this.editMode) {
+      this.editMode = false;
+      return;
+    }
     const activeTab = this.awardsLocked ? ('standings' as const) : ('predictions' as const);
     this.router.navigate(['/tournament', this.tournamentId], {
       state: { username: this.username, activeTab }

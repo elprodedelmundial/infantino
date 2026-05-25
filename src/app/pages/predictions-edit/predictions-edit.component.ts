@@ -1,8 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
+import { MatchMultiplierBadgeComponent } from '../../components/match-multiplier-badge/match-multiplier-badge.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { 
   Tournament,
@@ -28,11 +29,18 @@ interface EditablePrediction extends MatchPrediction {
 @Component({
   selector: 'app-predictions-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserToolbarComponent],
+  imports: [CommonModule, FormsModule, UserToolbarComponent, MatchMultiplierBadgeComponent],
   templateUrl: './predictions-edit.component.html',
   styleUrl: './predictions-edit.component.scss'
 })
-export class PredictionsEditComponent implements OnInit {
+export class PredictionsEditComponent implements OnInit, OnDestroy {
+  /** How long the odds banner stays on screen if the user does nothing. */
+  private static readonly ODDS_TOAST_AUTO_DISMISS_MS = 15_000;
+  /** Top of the viewport reserved for the user toolbar; popover won't intrude here. */
+  private static readonly ODDS_TOAST_HEADER_SAFE_ZONE = 90;
+  /** Vertical space between the popover and the badge it points at. */
+  private static readonly ODDS_TOAST_GAP = 10;
+
   readonly isSwitzerland = isSwitzerland;
 
   username: string = 'Usuario';
@@ -54,6 +62,42 @@ export class PredictionsEditComponent implements OnInit {
   
   // Available groups
   groups: string[] = [];
+
+  /**
+   * Floating banner anchored to the last clicked quota badge.
+   *
+   * - `top` / `left` are viewport coordinates. When `placement === 'above'`
+   *   the popover uses `transform: translateY(-100%)` so its bottom edge sits
+   *   at `top`. When `'below'` it uses no translation, so `top` is the top
+   *   edge directly. The flip happens when the popover would otherwise cover
+   *   the page header.
+   * - `arrowOffset` is the px distance from the popover's left edge to where
+   *   the arrow tip should fall (the badge's horizontal center).
+   *
+   * Sizing is driven entirely by CSS (`width: max-content`, single line on
+   * desktop, naturally wrapped on mobile). After the popover renders, real
+   * dimensions are measured and `top`/`left`/`arrowOffset`/`placement` are
+   * refined so it stays glued to the badge.
+   */
+  oddsToast: {
+    /** Identifies the source quota so re-tapping the same badge toggles it off. */
+    matchId: string;
+    which: 'home' | 'draw' | 'away';
+    /** Two halves of the message; CSS-controlled `<br>` lives between them. */
+    before: string;
+    after: string;
+    top: number;
+    left: number;
+    arrowOffset: number;
+    placement: 'above' | 'below';
+  } | null = null;
+  /** Cached anchor rect so the post-measure refine can re-decide placement. */
+  private oddsToastAnchor: { top: number; bottom: number; center: number } | null = null;
+  private oddsToastTimer: ReturnType<typeof setTimeout> | null = null;
+  private oddsToastDismissOnScroll: (() => void) | null = null;
+  private oddsToastDocumentClick: ((event: MouseEvent) => void) | null = null;
+
+  @ViewChild('oddsToastEl') private oddsToastEl?: ElementRef<HTMLElement>;
 
   constructor(
     private router: Router,
@@ -231,15 +275,27 @@ export class PredictionsEditComponent implements OnInit {
       this.effectiveAway(match) !== match.predictedScore.away;
   }
 
-  onMobileBoxScoreChange(
+  /**
+   * Strips anything that isn't a digit and caps at 2 chars before clamping
+   * to the allowed score range. Writes the canonical value straight back to
+   * the input so partially-typed garbage (`93.`, `+10`, `e2`) can never linger
+   * on screen — `[value]` binding wouldn't refresh the DOM when clamping
+   * collapses to the previously-bound number.
+   */
+  onMobileBoxScoreInput(
     match: EditablePrediction,
     which: 'home' | 'away',
-    raw: string | number | null | undefined
+    input: HTMLInputElement
   ): void {
     if (this.isMatchLocked(match) || match.isPlayed) {
+      input.value = '';
       return;
     }
-    if (raw === null || raw === undefined || raw === '') {
+    const sanitized = input.value.replace(/\D/g, '').slice(0, 2);
+    if (sanitized === '') {
+      if (input.value !== '') {
+        input.value = '';
+      }
       if (which === 'home') {
         match.editedHomeScore = null;
       } else {
@@ -248,7 +304,11 @@ export class PredictionsEditComponent implements OnInit {
       this.onScoreChange(match);
       return;
     }
-    const n = this.clampScoreInput(raw);
+    const n = this.clampScoreInput(sanitized);
+    const display = String(n);
+    if (input.value !== display) {
+      input.value = display;
+    }
     if (which === 'home') {
       match.editedHomeScore = n;
       match.mobileHomeBackup = undefined;
@@ -345,6 +405,194 @@ export class PredictionsEditComponent implements OnInit {
 
   get unsavedCount(): number {
     return this.allMatches.filter(m => m.hasChanges).length;
+  }
+
+  ngOnDestroy(): void {
+    this.clearOddsToastTimer();
+    this.removeOddsToastDismissListeners();
+  }
+
+  /**
+   * Tap on a quota badge → reveal a banner explaining how many extra points
+   * are earned when correctly predicting that outcome. The banner is placed
+   * above the badge by default and flips below if it would otherwise cover
+   * the page header. It auto-dismisses after a few seconds, on scroll/resize,
+   * or when the user clicks anywhere outside it.
+   */
+  showOddsToast(event: Event, match: EditablePrediction, which: 'home' | 'draw' | 'away'): void {
+    if (!match.odds) {
+      return;
+    }
+    event.stopPropagation();
+
+    // Toggle: tapping the same quota that opened the banner closes it.
+    if (
+      this.oddsToast &&
+      this.oddsToast.matchId === match.id &&
+      this.oddsToast.which === which
+    ) {
+      this.dismissOddsToast();
+      return;
+    }
+
+    const anchor = event.currentTarget as HTMLElement | null;
+    if (!anchor) {
+      return;
+    }
+    const rect = anchor.getBoundingClientRect();
+
+    const points = match.odds[which].toFixed(1);
+    // Home/away share the same neutral wording so the banner stays the same
+    // width regardless of team-name length.
+    const before =
+      which === 'draw'
+        ? 'Si aciertas el empate,'
+        : 'Si aciertas que gana este equipo,';
+    const after = `ganas +${points} puntos extra.`;
+
+    const badgeCenter = rect.left + rect.width / 2;
+    this.oddsToastAnchor = { top: rect.top, bottom: rect.bottom, center: badgeCenter };
+
+    const estimatedHeight = this.estimatedToastHeight();
+    const placement = this.pickPlacement(rect.top, estimatedHeight);
+    const initialLeft = this.clampToastLeft(badgeCenter, this.estimatedToastWidth());
+    const initialTop = placement === 'above'
+      ? rect.top - PredictionsEditComponent.ODDS_TOAST_GAP
+      : rect.bottom + PredictionsEditComponent.ODDS_TOAST_GAP;
+
+    this.oddsToast = {
+      matchId: match.id,
+      which,
+      before,
+      after,
+      top: initialTop,
+      left: initialLeft,
+      arrowOffset: badgeCenter - initialLeft,
+      placement
+    };
+
+    this.clearOddsToastTimer();
+    this.oddsToastTimer = setTimeout(
+      () => this.dismissOddsToast(),
+      PredictionsEditComponent.ODDS_TOAST_AUTO_DISMISS_MS
+    );
+    this.addOddsToastDismissListeners();
+
+    requestAnimationFrame(() => this.refineOddsToastPosition());
+  }
+
+  /** Centers the popover on `badgeCenter`, clamped to the viewport. */
+  private clampToastLeft(badgeCenter: number, width: number): number {
+    const viewportPadding = 12;
+    const minLeft = viewportPadding;
+    const maxLeft = Math.max(minLeft, window.innerWidth - viewportPadding - width);
+    return Math.max(minLeft, Math.min(maxLeft, badgeCenter - width / 2));
+  }
+
+  /** First-paint width guess so the popover doesn't visibly jump on refine. */
+  private estimatedToastWidth(): number {
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 769;
+    const max = isDesktop ? 640 : 320;
+    return Math.min(max, window.innerWidth - 24);
+  }
+
+  /** First-paint height guess used only to choose initial placement. */
+  private estimatedToastHeight(): number {
+    return typeof window !== 'undefined' && window.innerWidth < 769 ? 80 : 60;
+  }
+
+  /**
+   * Desktop always places the banner above the badge. On narrower viewports
+   * we fall back to below the badge when "above" would otherwise bleed into
+   * the page header.
+   */
+  private pickPlacement(anchorTop: number, toastHeight: number): 'above' | 'below' {
+    if (typeof window !== 'undefined' && window.innerWidth >= 769) {
+      return 'above';
+    }
+    const room = anchorTop - PredictionsEditComponent.ODDS_TOAST_GAP - toastHeight;
+    return room >= PredictionsEditComponent.ODDS_TOAST_HEADER_SAFE_ZONE ? 'above' : 'below';
+  }
+
+  /**
+   * After the popover renders, replace the estimated dimensions with the
+   * real measured ones and re-decide placement so the arrow stays glued to
+   * the badge and the banner never bleeds into the page header.
+   */
+  private refineOddsToastPosition(): void {
+    if (!this.oddsToast || !this.oddsToastAnchor) {
+      return;
+    }
+    const el = this.oddsToastEl?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const measured = el.getBoundingClientRect();
+    const arrowSafeZone = 18;
+    const { top: anchorTop, bottom: anchorBottom, center: badgeCenter } = this.oddsToastAnchor;
+    const placement = this.pickPlacement(anchorTop, measured.height);
+    const top = placement === 'above'
+      ? anchorTop - PredictionsEditComponent.ODDS_TOAST_GAP
+      : anchorBottom + PredictionsEditComponent.ODDS_TOAST_GAP;
+    const left = this.clampToastLeft(badgeCenter, measured.width);
+    const arrowOffset = Math.max(
+      arrowSafeZone,
+      Math.min(measured.width - arrowSafeZone, badgeCenter - left)
+    );
+    this.oddsToast = { ...this.oddsToast, top, left, arrowOffset, placement };
+  }
+
+  dismissOddsToast(): void {
+    this.clearOddsToastTimer();
+    this.removeOddsToastDismissListeners();
+    this.oddsToast = null;
+    this.oddsToastAnchor = null;
+  }
+
+  private clearOddsToastTimer(): void {
+    if (this.oddsToastTimer !== null) {
+      clearTimeout(this.oddsToastTimer);
+      this.oddsToastTimer = null;
+    }
+  }
+
+  private addOddsToastDismissListeners(): void {
+    if (!this.oddsToastDismissOnScroll) {
+      const handler = () => this.dismissOddsToast();
+      this.oddsToastDismissOnScroll = handler;
+      window.addEventListener('scroll', handler, { passive: true, capture: true });
+      window.addEventListener('resize', handler);
+    }
+    if (!this.oddsToastDocumentClick) {
+      // Click-outside-to-dismiss. Deferred so the current click (the one that
+      // opened the popover, or that switched to a different badge) doesn't
+      // immediately close the freshly-shown banner.
+      const clickHandler = (e: MouseEvent) => {
+        const el = this.oddsToastEl?.nativeElement;
+        if (el && el.contains(e.target as Node)) {
+          return;
+        }
+        this.dismissOddsToast();
+      };
+      this.oddsToastDocumentClick = clickHandler;
+      setTimeout(() => {
+        if (this.oddsToastDocumentClick === clickHandler) {
+          document.addEventListener('click', clickHandler);
+        }
+      }, 0);
+    }
+  }
+
+  private removeOddsToastDismissListeners(): void {
+    if (this.oddsToastDismissOnScroll) {
+      window.removeEventListener('scroll', this.oddsToastDismissOnScroll, true);
+      window.removeEventListener('resize', this.oddsToastDismissOnScroll);
+      this.oddsToastDismissOnScroll = null;
+    }
+    if (this.oddsToastDocumentClick) {
+      document.removeEventListener('click', this.oddsToastDocumentClick);
+      this.oddsToastDocumentClick = null;
+    }
   }
 
   goBack(): void {
