@@ -132,8 +132,8 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
       this.tournamentService.getAllPredictions(this.tournamentId).subscribe(data => {
         this.allMatches = data.matches.map(m => ({
           ...m,
-          editedHomeScore: m.predictedScore.home,
-          editedAwayScore: m.predictedScore.away,
+          editedHomeScore: m.hasPrediction ? m.predictedScore.home : null,
+          editedAwayScore: m.hasPrediction ? m.predictedScore.away : null,
           isEditing: false,
           hasChanges: false
         }));
@@ -215,8 +215,8 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
   }
 
   cancelEditing(match: EditablePrediction): void {
-    match.editedHomeScore = match.predictedScore.home;
-    match.editedAwayScore = match.predictedScore.away;
+    match.editedHomeScore = match.hasPrediction ? match.predictedScore.home : null;
+    match.editedAwayScore = match.hasPrediction ? match.predictedScore.away : null;
     match.mobileHomeBackup = undefined;
     match.mobileAwayBackup = undefined;
     match.isEditing = false;
@@ -233,6 +233,7 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     
     this.tournamentService.updatePrediction(this.tournamentId, match.id, newScore).subscribe(success => {
       if (success) {
+        match.hasPrediction = true;
         match.predictedScore = { ...newScore };
         match.editedHomeScore = newScore.home;
         match.editedAwayScore = newScore.away;
@@ -242,10 +243,6 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
         match.hasChanges = false;
       }
     });
-  }
-
-  private scoreNum(v: number | null | undefined): number {
-    return v === null || v === undefined ? 0 : v;
   }
 
   /** Effective value while editing (uses backup if the box is still empty) */
@@ -270,6 +267,11 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
   }
 
   onScoreChange(match: EditablePrediction): void {
+    if (!match.hasPrediction) {
+      match.hasChanges =
+        match.editedHomeScore !== null || match.editedAwayScore !== null;
+      return;
+    }
     match.hasChanges =
       this.effectiveHome(match) !== match.predictedScore.home ||
       this.effectiveAway(match) !== match.predictedScore.away;
@@ -325,10 +327,10 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     }
     match.isEditing = true;
     if (which === 'home') {
-      match.mobileHomeBackup = this.scoreNum(match.editedHomeScore);
+      match.mobileHomeBackup = match.editedHomeScore ?? undefined;
       match.editedHomeScore = null;
     } else {
-      match.mobileAwayBackup = this.scoreNum(match.editedAwayScore);
+      match.mobileAwayBackup = match.editedAwayScore ?? undefined;
       match.editedAwayScore = null;
     }
     this.onScoreChange(match);
@@ -387,6 +389,7 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
       changedMatches.forEach(m => {
         const h = this.effectiveHome(m);
         const a = this.effectiveAway(m);
+        m.hasPrediction = true;
         m.predictedScore = { home: h, away: a };
         m.editedHomeScore = h;
         m.editedAwayScore = a;
