@@ -42,9 +42,12 @@ export interface GroupJoinRequest {
 
 export type PredictionResult = 'correct' | 'incorrect' | 'half' | 'bonus';
 
+/** Result dot in standings "Últimas", including missing predictions. */
+export type LastStandingPredictionResult = PredictionResult | 'missing';
+
 /** One dot in standings "Últimas" — from group standings `last_predictions` entries */
 export interface LastStandingPrediction {
-  result: PredictionResult;
+  result: LastStandingPredictionResult;
   /** Bonus multiplier applied to this prediction (API `has_multiplier`) */
   hasMultiplier: boolean;
 }

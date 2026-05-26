@@ -106,12 +106,13 @@ interface UserResponseApi {
 /** grondona GroupStanding: { user, rank, points, last_predictions } */
 type LastPredictionApiEntry =
   | 'PENDING'
+  | 'MISSING'
   | 'CORRECT'
   | 'PARTIAL'
   | 'INCORRECT'
   | 'BONUS'
   | {
-      status?: 'PENDING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS';
+      status?: 'PENDING' | 'MISSING' | 'CORRECT' | 'PARTIAL' | 'INCORRECT' | 'BONUS';
       has_multiplier?: boolean;
     };
 
@@ -358,12 +359,20 @@ export class TournamentService implements ITournamentService {
     for (const p of raw) {
       if (typeof p === 'string') {
         if (p === 'PENDING') continue;
+        if (p === 'MISSING') {
+          out.push({ result: 'missing', hasMultiplier: false });
+          continue;
+        }
         const result = predResultMap[p];
         if (result) out.push({ result, hasMultiplier: false });
         continue;
       }
       const st = p?.status;
       if (!st || st === 'PENDING') continue;
+      if (st === 'MISSING') {
+        out.push({ result: 'missing', hasMultiplier: false });
+        continue;
+      }
       const result = predResultMap[st];
       if (result) {
         out.push({ result, hasMultiplier: p.has_multiplier === true });
