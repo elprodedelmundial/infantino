@@ -18,6 +18,7 @@ import {
 } from '../../models/tournament.model';
 import { WORLD_CUP_ID } from '../../services/match.service';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
+import { includesNormalized } from '../../utils/text-search.utils';
 
 interface AwardCategory {
   id: keyof TournamentAwardPrediction;
@@ -468,15 +469,15 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     }
     if (!this.searchTerm) return options;
 
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm;
     return options.filter(opt => {
       if (this.activeCategory.type === 'country') {
-        return (opt as Country).name.toLowerCase().includes(term);
+        return includesNormalized((opt as Country).name, term);
       } else {
         const player = opt as Player;
         return (
-          player.name.toLowerCase().includes(term) ||
-          player.country.name.toLowerCase().includes(term)
+          includesNormalized(player.name, term) ||
+          includesNormalized(player.country.name, term)
         );
       }
     });

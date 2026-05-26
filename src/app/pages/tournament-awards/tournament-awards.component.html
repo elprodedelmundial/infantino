@@ -18,16 +18,27 @@
           </svg>
         </div>
         <div>
-          <h1 class="page-title">
-            <span class="page-title__desktop">Premios del Torneo</span>
-            <span class="page-title__mobile">Premios</span>
-          </h1>
+          <div class="page-title-row">
+            <h1 class="page-title">
+              <span class="page-title__desktop">Premios del Torneo</span>
+              <span class="page-title__mobile">Premios</span>
+            </h1>
+            <div class="awards-summary__actions awards-summary__actions--desktop" *ngIf="showAwardsSummary">
+              <button type="button" class="edit-awards-btn edit-awards-btn--compact" (click)="startEditAwards()">
+                Editar
+              </button>
+            </div>
+          </div>
           <p class="page-subtitle">{{ tournament.name }}</p>
-          <p class="awards-deadline-notice" *ngIf="canEdit && !isLoading">
+          <p class="awards-deadline-notice awards-deadline-notice--desktop" *ngIf="canEdit && !isLoading">
+            Tenés tiempo hasta el inicio del torneo para completar tus predicciones de cada premio.
+            Recuerda que cuantos más candidatos selecciones, menos puntos ganarás, así que elige sabiamente si quieren elegir múltiples opciones.
+          </p>
+          <p class="awards-deadline-notice awards-deadline-notice--mobile" *ngIf="canEdit && !isLoading">
             Tenés tiempo hasta el inicio del torneo para completar tus predicciones de cada premio.
             Recuerda que cuantos más candidatos selecciones, menos puntos ganarás.
           </p>
-          <div class="awards-summary__actions" *ngIf="showAwardsSummary">
+          <div class="awards-summary__actions awards-summary__actions--mobile" *ngIf="showAwardsSummary">
             <button type="button" class="edit-awards-btn" (click)="startEditAwards()">
               Editar Predicciones
             </button>
