@@ -18,7 +18,7 @@ import {
 } from '../../models/tournament.model';
 import { WORLD_CUP_ID } from '../../services/match.service';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
-import { includesNormalized } from '../../utils/text-search.utils';
+import { includesNormalized, matchesCountrySearch } from '../../utils/text-search.utils';
 
 interface AwardCategory {
   id: keyof TournamentAwardPrediction;
@@ -472,12 +472,12 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     const term = this.searchTerm;
     return options.filter(opt => {
       if (this.activeCategory.type === 'country') {
-        return includesNormalized((opt as Country).name, term);
+        return matchesCountrySearch((opt as Country).name, term);
       } else {
         const player = opt as Player;
         return (
           includesNormalized(player.name, term) ||
-          includesNormalized(player.country.name, term)
+          matchesCountrySearch(player.country.name, term)
         );
       }
     });
