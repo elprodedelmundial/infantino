@@ -13,6 +13,7 @@ import {
   MatchPrediction,
   GroupRole,
   LastStandingPrediction,
+  LastStandingPredictionResult,
   GroupCandidate
 } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
@@ -300,17 +301,21 @@ export class TournamentStandingsComponent implements OnInit {
     return this.standings?.currentUserId === player.id;
   }
 
-  getPredictionClass(result: PredictionResult): string {
+  getPredictionClass(result: LastStandingPredictionResult): string {
     switch (result) {
       case 'correct': return 'prediction correct';
       case 'incorrect': return 'prediction incorrect';
       case 'half': return 'prediction half';
       case 'bonus': return 'prediction bonus';
+      case 'missing': return 'prediction missing';
       default: return 'prediction';
     }
   }
 
   lastPredictionTitle(dot: LastStandingPrediction): string {
+    if (dot.result === 'missing') {
+      return 'Sin predicción';
+    }
     const base =
       dot.result === 'correct'
         ? 'Correcto'

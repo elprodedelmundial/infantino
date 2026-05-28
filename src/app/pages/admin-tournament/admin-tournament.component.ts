@@ -13,6 +13,7 @@ import {
   emptyTournamentAwardWinners,
   isYoungPlayerAwardEligible
 } from '../../models/tournament.model';
+import { includesNormalized, matchesCountrySearch } from '../../utils/text-search.utils';
 
 interface AdminAwardCategory {
   id: keyof TournamentAwardWinners;
@@ -180,15 +181,15 @@ export class AdminTournamentComponent implements OnInit {
       options = options.filter(o => (o as Player).country.code === this.countryFilterCode);
     }
     if (!this.searchTerm.trim()) return options;
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm;
     return options.filter(opt => {
       if (this.activeCategory.type === 'country') {
-        return (opt as Country).name.toLowerCase().includes(term);
+        return matchesCountrySearch((opt as Country).name, term);
       }
       const pl = opt as Player;
       return (
-        pl.name.toLowerCase().includes(term) ||
-        pl.country.name.toLowerCase().includes(term)
+        includesNormalized(pl.name, term) ||
+        matchesCountrySearch(pl.country.name, term)
       );
     });
   }

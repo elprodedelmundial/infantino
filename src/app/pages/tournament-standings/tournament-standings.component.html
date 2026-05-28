@@ -298,8 +298,8 @@
               <span class="col-result score">–</span>
             </ng-container>
             <ng-template #finishedRow>
-              <span class="col-prediction score">
-                {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+              <span class="col-prediction score" [class.pending]="!pred.hasPrediction">
+                {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
               </span>
               <span class="col-result score actual">
                 {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
@@ -349,8 +349,9 @@
                   </span>
                   <span class="past-match-card__field-label">Predicción</span>
                   <span class="past-match-card__score past-match-card__score--prediccion"
+                    [class.past-match-card__score--upcoming-pending]="!pred.hasPrediction"
                     [ngClass]="getPredictionLineToneClass(pred)">
-                    {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+                    {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
                   </span>
                 </ng-template>
               </div>

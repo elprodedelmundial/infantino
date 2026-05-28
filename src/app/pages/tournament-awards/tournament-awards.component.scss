@@ -42,6 +42,11 @@
   gap: 20px;
 }
 
+.header-content > div:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
 .header-icon {
   width: 56px;
   height: 56px;
@@ -58,6 +63,19 @@
   letter-spacing: 0.05em;
   color: var(--text-primary);
   margin-bottom: 4px;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+}
+
+.page-title-row .page-title {
+  margin-bottom: 0;
+  min-width: 0;
 }
 
 .page-title__mobile {
@@ -78,6 +96,10 @@
   line-height: 1.45;
   color: var(--error);
   text-align: left;
+
+  &--mobile {
+    display: none;
+  }
 }
 
 // Layout
@@ -917,6 +939,16 @@
   width: 100%;
 }
 
+.awards-summary__actions--desktop {
+  margin-top: 0;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.awards-summary__actions--mobile {
+  display: none;
+}
+
 .edit-awards-btn {
   display: inline-flex;
   align-items: center;
@@ -936,6 +968,12 @@
 
   &:hover {
     opacity: 0.92;
+  }
+
+  &--compact {
+    width: auto;
+    padding: 12px 28px;
+    white-space: nowrap;
   }
 }
 
@@ -1404,6 +1442,19 @@
 
   .page-title {
     font-size: 1.9rem;
+    margin-bottom: 4px;
+  }
+
+  .page-title-row {
+    display: block;
+  }
+
+  .awards-summary__actions--desktop {
+    display: none;
+  }
+
+  .awards-summary__actions--mobile {
+    display: flex;
   }
 
   .page-title__desktop {
@@ -1421,6 +1472,14 @@
 
   .awards-deadline-notice {
     text-align: center;
+  }
+
+  .awards-deadline-notice--desktop {
+    display: none;
+  }
+
+  .awards-deadline-notice--mobile {
+    display: block;
   }
 
   .header-icon {

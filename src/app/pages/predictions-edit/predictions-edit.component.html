@@ -97,19 +97,27 @@
         [class.has-changes]="match.hasChanges">
         
         <div class="match-header">
-          <div class="match-header__desktop">
-            <span class="match-code">{{ match.matchCode }}</span>
-            <span class="match-group" *ngIf="match.group">Grupo {{ match.group }}</span>
-            <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
-          </div>
-          <div class="match-header__mobile">
-            <span class="match-header__compact-left">
-              <span class="match-header__code">{{ match.matchCode }}</span>
-              <ng-container *ngIf="getMatchHeaderRoundSuffix(match) as roundSuffix">
-                <span class="match-header__round-suffix">{{ roundSuffix }}</span>
-              </ng-container>
-            </span>
-            <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
+          <div class="match-header__row">
+            <div class="match-header__start">
+              <div class="match-header__desktop">
+                <span class="match-code">{{ match.matchCode }}</span>
+                <span class="match-group" *ngIf="match.group">Grupo {{ match.group }}</span>
+              </div>
+              <div class="match-header__mobile">
+                <span class="match-header__code">{{ match.matchCode }}</span>
+                <ng-container *ngIf="getMatchHeaderRoundSuffix(match) as roundSuffix">
+                  <span class="match-header__round-suffix">{{ roundSuffix }}</span>
+                </ng-container>
+              </div>
+            </div>
+            <div class="match-header__center">
+              <app-match-multiplier-badge
+                *ngIf="match.hasMultiplier"
+                (badgeClick)="showMultiplierToast($event, match)"></app-match-multiplier-badge>
+            </div>
+            <div class="match-header__end">
+              <span class="match-date">{{ formatMatchDate(match.matchDate) }}</span>
+            </div>
           </div>
         </div>
 
@@ -224,8 +232,6 @@
 
         <div class="match-footer">
           <div class="match-footer-leading">
-            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="star"></app-match-multiplier-badge>
-
             <!-- Result badge for played matches -->
             <span [ngClass]="getResultBadgeClass(match)" *ngIf="match.isPlayed && match.result">
               {{ match.result === 'correct' ? 'Correcto' : match.result === 'half' ? 'Parcial' : match.result === 'bonus' ? 'Bonus' : 'Incorrecto' }}
@@ -294,4 +300,20 @@
     class="odds-toast__arrow"
     aria-hidden="true"
     [style.left.px]="oddsToast.arrowOffset"></span>
+</div>
+
+<div
+  #multiplierToastEl
+  class="multiplier-toast"
+  [class.multiplier-toast--below]="multiplierToast.placement === 'below'"
+  *ngIf="multiplierToast"
+  role="status"
+  aria-live="polite"
+  [style.top.px]="multiplierToast.top"
+  [style.left.px]="multiplierToast.left">
+  <span class="multiplier-toast__text">{{ multiplierToast.before }}<br class="multiplier-toast__break" aria-hidden="true"/>{{ ' ' + multiplierToast.after }}</span>
+  <span
+    class="multiplier-toast__arrow"
+    aria-hidden="true"
+    [style.left.px]="multiplierToast.arrowOffset"></span>
 </div>
