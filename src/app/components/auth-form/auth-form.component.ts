@@ -31,6 +31,11 @@ export class AuthFormComponent {
   confirmPassword: string = '';
   
   isSubmitting: boolean = false;
+  isForgotPasswordSubmitting: boolean = false;
+  forgotPasswordOpen: boolean = false;
+  forgotPasswordSent: boolean = false;
+  resetEmail: string = '';
+  forgotPasswordError: string = '';
   errorMessage: string = '';
   errorField: 'username' | 'email' | null = null;
 
@@ -43,6 +48,7 @@ export class AuthFormComponent {
   switchTab(tab: AuthTab): void {
     this.currentTab = tab;
     this.clearErrors();
+    this.closeForgotPasswordForm();
     // Reset form fields when switching tabs
     this.email = '';
     this.password = '';
@@ -64,6 +70,44 @@ export class AuthFormComponent {
   private clearErrors(): void {
     this.errorMessage = '';
     this.errorField = null;
+  }
+
+  openForgotPasswordForm(): void {
+    this.clearErrors();
+    this.forgotPasswordError = '';
+    this.forgotPasswordOpen = true;
+    this.forgotPasswordSent = false;
+    this.resetEmail = this.email.trim();
+  }
+
+  closeForgotPasswordForm(): void {
+    this.forgotPasswordOpen = false;
+    this.forgotPasswordSent = false;
+    this.resetEmail = '';
+    this.forgotPasswordError = '';
+    this.isForgotPasswordSubmitting = false;
+  }
+
+  confirmPasswordReset(): void {
+    this.forgotPasswordError = '';
+
+    if (!this.resetEmail.trim()) {
+      this.forgotPasswordError = 'Ingresá tu correo o nombre de usuario';
+      return;
+    }
+
+    this.isForgotPasswordSubmitting = true;
+
+    this.userService.forgotPassword(this.resetEmail.trim()).subscribe({
+      next: () => {
+        this.isForgotPasswordSubmitting = false;
+        this.forgotPasswordSent = true;
+      },
+      error: (error: Error) => {
+        this.isForgotPasswordSubmitting = false;
+        this.forgotPasswordError = error?.message || 'No se pudo enviar el correo de recuperación';
+      }
+    });
   }
 
   private handleLogin(): void {

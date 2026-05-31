@@ -237,6 +237,24 @@ export class UserService implements IUserService {
     );
   }
 
+  forgotPassword(user: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/api/users/forgot-password`, { user }, {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    }).pipe(
+      map(() => undefined),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Forgot password error:', error);
+        if (error.status === 400) {
+          return throwError(() => new Error('Usuario no encontrado'));
+        }
+        if (error.status >= 500) {
+          return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
+        }
+        return throwError(() => new Error('No se pudo enviar el correo de recuperación'));
+      })
+    );
+  }
+
   setUsername(username: string): void {
     // Sync route/navigation username only — do not overwrite fullName (that broke the toolbar when /me fails).
     this.currentUser = {
