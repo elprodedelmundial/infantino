@@ -112,6 +112,247 @@
   color: var(--text-muted);
 }
 
+.forgot-password-btn {
+  display: block;
+  margin-top: 10px;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.auth-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 92vw);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: authModalScaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes authModalScaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.auth-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.auth-modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.auth-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+  }
+}
+
+.auth-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px 8px;
+  text-align: center;
+
+  &--success {
+    padding-bottom: 4px;
+  }
+}
+
+.auth-modal-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(232, 255, 71, 0.1);
+  color: var(--accent);
+  flex-shrink: 0;
+
+  &--success {
+    background: rgba(74, 222, 128, 0.1);
+    color: var(--success);
+  }
+}
+
+.auth-modal-message {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 340px;
+
+  strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+}
+
+.auth-modal-input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 1px rgba(232, 255, 71, 0.15);
+}
+
+.auth-modal-input-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(232, 255, 71, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.auth-modal-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+
+  &::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.auth-modal-error {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--error);
+}
+
+.auth-modal-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px 20px;
+}
+
+.auth-modal-btn {
+  flex: 1;
+  height: 40px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.18s ease, opacity 0.18s ease;
+
+  &--full {
+    flex: none;
+    width: 100%;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--cancel {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+
+    &:hover:not(:disabled) {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+  }
+
+  &--confirm {
+    background: var(--accent);
+    color: #0a0a0c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    &:hover:not(:disabled) {
+      opacity: 0.88;
+    }
+
+    .spinner-small {
+      border-color: rgba(10, 10, 12, 0.3);
+      border-top-color: #0a0a0c;
+    }
+  }
+}
+
 .error-message {
   display: flex;
   align-items: flex-start;
