@@ -1,128 +1,127 @@
-import { TournamentStage, TournamentStageInfo } from '../models/tournament.model';
+import { StageFilterId, TournamentStage, TournamentStageInfo } from '../models/tournament.model';
 
-export interface MatchStageInfo {
-  stage: TournamentStage;
-  group?: string;
-}
+/** grondona MatchStage enum (openapi MatchResponse.stage) */
+export type MatchStageApi =
+  | 'GROUP_STAGE'
+  | 'ROUND_OF_32'
+  | 'ROUND_OF_16'
+  | 'QUARTERFINALS'
+  | 'SEMIFINALS'
+  | 'THIRD_PLACE'
+  | 'FINAL';
 
-// Derived from resources/world-cup-stages.csv
-// GS = Fase de Grupos, R32 = Dieciseisavos, R16 = Octavos, QF = Cuartos, SF = Semifinales, F = Final
-const STAGE_MAP: Record<string, MatchStageInfo> = {
-  '1':   { stage: 'group_stage', group: 'A' },
-  '2':   { stage: 'group_stage', group: 'A' },
-  '25':  { stage: 'group_stage', group: 'A' },
-  '28':  { stage: 'group_stage', group: 'A' },
-  '53':  { stage: 'group_stage', group: 'A' },
-  '54':  { stage: 'group_stage', group: 'A' },
-  '3':   { stage: 'group_stage', group: 'B' },
-  '8':   { stage: 'group_stage', group: 'B' },
-  '26':  { stage: 'group_stage', group: 'B' },
-  '27':  { stage: 'group_stage', group: 'B' },
-  '51':  { stage: 'group_stage', group: 'B' },
-  '52':  { stage: 'group_stage', group: 'B' },
-  '7':   { stage: 'group_stage', group: 'C' },
-  '5':   { stage: 'group_stage', group: 'C' },
-  '29':  { stage: 'group_stage', group: 'C' },
-  '30':  { stage: 'group_stage', group: 'C' },
-  '49':  { stage: 'group_stage', group: 'C' },
-  '50':  { stage: 'group_stage', group: 'C' },
-  '4':   { stage: 'group_stage', group: 'D' },
-  '6':   { stage: 'group_stage', group: 'D' },
-  '31':  { stage: 'group_stage', group: 'D' },
-  '32':  { stage: 'group_stage', group: 'D' },
-  '59':  { stage: 'group_stage', group: 'D' },
-  '60':  { stage: 'group_stage', group: 'D' },
-  '9':   { stage: 'group_stage', group: 'E' },
-  '10':  { stage: 'group_stage', group: 'E' },
-  '33':  { stage: 'group_stage', group: 'E' },
-  '34':  { stage: 'group_stage', group: 'E' },
-  '56':  { stage: 'group_stage', group: 'E' },
-  '55':  { stage: 'group_stage', group: 'E' },
-  '11':  { stage: 'group_stage', group: 'F' },
-  '12':  { stage: 'group_stage', group: 'F' },
-  '35':  { stage: 'group_stage', group: 'F' },
-  '36':  { stage: 'group_stage', group: 'F' },
-  '57':  { stage: 'group_stage', group: 'F' },
-  '58':  { stage: 'group_stage', group: 'F' },
-  '15':  { stage: 'group_stage', group: 'G' },
-  '16':  { stage: 'group_stage', group: 'G' },
-  '39':  { stage: 'group_stage', group: 'G' },
-  '40':  { stage: 'group_stage', group: 'G' },
-  '64':  { stage: 'group_stage', group: 'G' },
-  '63':  { stage: 'group_stage', group: 'G' },
-  '14':  { stage: 'group_stage', group: 'H' },
-  '13':  { stage: 'group_stage', group: 'H' },
-  '38':  { stage: 'group_stage', group: 'H' },
-  '37':  { stage: 'group_stage', group: 'H' },
-  '66':  { stage: 'group_stage', group: 'H' },
-  '65':  { stage: 'group_stage', group: 'H' },
-  '17':  { stage: 'group_stage', group: 'I' },
-  '18':  { stage: 'group_stage', group: 'I' },
-  '42':  { stage: 'group_stage', group: 'I' },
-  '41':  { stage: 'group_stage', group: 'I' },
-  '61':  { stage: 'group_stage', group: 'I' },
-  '62':  { stage: 'group_stage', group: 'I' },
-  '19':  { stage: 'group_stage', group: 'J' },
-  '20':  { stage: 'group_stage', group: 'J' },
-  '43':  { stage: 'group_stage', group: 'J' },
-  '44':  { stage: 'group_stage', group: 'J' },
-  '70':  { stage: 'group_stage', group: 'J' },
-  '69':  { stage: 'group_stage', group: 'J' },
-  '23':  { stage: 'group_stage', group: 'K' },
-  '24':  { stage: 'group_stage', group: 'K' },
-  '47':  { stage: 'group_stage', group: 'K' },
-  '48':  { stage: 'group_stage', group: 'K' },
-  '71':  { stage: 'group_stage', group: 'K' },
-  '72':  { stage: 'group_stage', group: 'K' },
-  '22':  { stage: 'group_stage', group: 'L' },
-  '21':  { stage: 'group_stage', group: 'L' },
-  '45':  { stage: 'group_stage', group: 'L' },
-  '46':  { stage: 'group_stage', group: 'L' },
-  '67':  { stage: 'group_stage', group: 'L' },
-  '68':  { stage: 'group_stage', group: 'L' },
-  '73':  { stage: 'round_of_32' },
-  '74':  { stage: 'round_of_32' },
-  '75':  { stage: 'round_of_32' },
-  '76':  { stage: 'round_of_32' },
-  '77':  { stage: 'round_of_32' },
-  '78':  { stage: 'round_of_32' },
-  '79':  { stage: 'round_of_32' },
-  '80':  { stage: 'round_of_32' },
-  '81':  { stage: 'round_of_32' },
-  '82':  { stage: 'round_of_32' },
-  '83':  { stage: 'round_of_32' },
-  '84':  { stage: 'round_of_32' },
-  '85':  { stage: 'round_of_32' },
-  '86':  { stage: 'round_of_32' },
-  '87':  { stage: 'round_of_32' },
-  '88':  { stage: 'round_of_32' },
-  '89':  { stage: 'round_of_16' },
-  '90':  { stage: 'round_of_16' },
-  '91':  { stage: 'round_of_16' },
-  '92':  { stage: 'round_of_16' },
-  '93':  { stage: 'round_of_16' },
-  '94':  { stage: 'round_of_16' },
-  '95':  { stage: 'round_of_16' },
-  '96':  { stage: 'round_of_16' },
-  '97':  { stage: 'quarter_finals' },
-  '98':  { stage: 'quarter_finals' },
-  '99':  { stage: 'quarter_finals' },
-  '100': { stage: 'quarter_finals' },
-  '101': { stage: 'semi_finals' },
-  '102': { stage: 'semi_finals' },
-  '103': { stage: 'final' },
-  '104': { stage: 'final' },
+/** grondona MatchGroup enum (openapi MatchResponse.group) */
+export type MatchGroupApi =
+  | 'GROUP_A'
+  | 'GROUP_B'
+  | 'GROUP_C'
+  | 'GROUP_D'
+  | 'GROUP_E'
+  | 'GROUP_F'
+  | 'GROUP_G'
+  | 'GROUP_H'
+  | 'GROUP_I'
+  | 'GROUP_J'
+  | 'GROUP_K'
+  | 'GROUP_L';
+
+const API_STAGE_TO_TOURNAMENT: Record<MatchStageApi, TournamentStage> = {
+  GROUP_STAGE: 'group_stage',
+  ROUND_OF_32: 'round_of_32',
+  ROUND_OF_16: 'round_of_16',
+  QUARTERFINALS: 'quarter_finals',
+  SEMIFINALS: 'semi_finals',
+  THIRD_PLACE: 'third_place',
+  FINAL: 'final',
 };
 
-export function getMatchStageInfo(code: string): MatchStageInfo {
-  return STAGE_MAP[code] ?? { stage: 'group_stage' };
+const API_GROUP_TO_LETTER: Record<MatchGroupApi, string> = {
+  GROUP_A: 'A',
+  GROUP_B: 'B',
+  GROUP_C: 'C',
+  GROUP_D: 'D',
+  GROUP_E: 'E',
+  GROUP_F: 'F',
+  GROUP_G: 'G',
+  GROUP_H: 'H',
+  GROUP_I: 'I',
+  GROUP_J: 'J',
+  GROUP_K: 'K',
+  GROUP_L: 'L',
+};
+
+/** Match stages grouped under the "Ronda Final" filter. */
+export const FINAL_ROUND_MATCH_STAGES: readonly TournamentStage[] = ['third_place', 'final'];
+
+export function mapApiStageToTournamentStage(stage: string): TournamentStage {
+  return API_STAGE_TO_TOURNAMENT[stage as MatchStageApi] ?? 'group_stage';
 }
 
+export function mapApiGroupToGroupLetter(group: string): string {
+  return API_GROUP_TO_LETTER[group as MatchGroupApi] ?? group.replace(/^GROUP_/, '');
+}
+
+export function matchBelongsToStageFilter(
+  matchStage: TournamentStage,
+  filterId: StageFilterId | 'all'
+): boolean {
+  if (filterId === 'all') {
+    return true;
+  }
+  if (filterId === 'final_round') {
+    return FINAL_ROUND_MATCH_STAGES.includes(matchStage);
+  }
+  return matchStage === filterId;
+}
+
+export const TOURNAMENT_STAGE_NAMES: Record<TournamentStage, string> = {
+  group_stage: 'Fase de Grupos',
+  round_of_32: 'Dieciseisavos de Final',
+  round_of_16: 'Octavos de Final',
+  quarter_finals: 'Cuartos de Final',
+  semi_finals: 'Semifinales',
+  third_place: 'Tercer Puesto',
+  final: 'Final',
+};
+
 export const ALL_STAGE_INFOS: TournamentStageInfo[] = [
-  { id: 'group_stage',  name: 'Fase de Grupos',          order: 1, hasStarted: false, matchCount: 0 },
-  { id: 'round_of_32', name: 'Dieciseisavos de Final',   order: 2, hasStarted: false, matchCount: 0 },
-  { id: 'round_of_16', name: 'Octavos de Final',         order: 3, hasStarted: false, matchCount: 0 },
-  { id: 'quarter_finals', name: 'Cuartos de Final',      order: 4, hasStarted: false, matchCount: 0 },
-  { id: 'semi_finals', name: 'Semifinales',              order: 5, hasStarted: false, matchCount: 0 },
-  { id: 'final',       name: 'Final',                    order: 6, hasStarted: false, matchCount: 0 },
+  { id: 'group_stage',    name: 'Fase de Grupos',          order: 1, hasStarted: false, matchCount: 0 },
+  { id: 'round_of_32',    name: 'Dieciseisavos de Final',  order: 2, hasStarted: false, matchCount: 0 },
+  { id: 'round_of_16',    name: 'Octavos de Final',        order: 3, hasStarted: false, matchCount: 0 },
+  { id: 'quarter_finals', name: 'Cuartos de Final',        order: 4, hasStarted: false, matchCount: 0 },
+  { id: 'semi_finals',    name: 'Semifinales',             order: 5, hasStarted: false, matchCount: 0 },
+  { id: 'final_round',    name: 'Ronda Final',             order: 6, hasStarted: false, matchCount: 0 },
 ];
+
+export const MATCH_STAGE_API_OPTIONS: ReadonlyArray<{ value: MatchStageApi; label: string }> = [
+  { value: 'GROUP_STAGE', label: 'Fase de Grupos' },
+  { value: 'ROUND_OF_32', label: 'Dieciseisavos de Final' },
+  { value: 'ROUND_OF_16', label: 'Octavos de Final' },
+  { value: 'QUARTERFINALS', label: 'Cuartos de Final' },
+  { value: 'SEMIFINALS', label: 'Semifinales' },
+  { value: 'THIRD_PLACE', label: 'Tercer Puesto' },
+  { value: 'FINAL', label: 'Final' },
+];
+
+export const MATCH_GROUP_API_OPTIONS: ReadonlyArray<{ value: MatchGroupApi; label: string }> = [
+  { value: 'GROUP_A', label: 'Grupo A' },
+  { value: 'GROUP_B', label: 'Grupo B' },
+  { value: 'GROUP_C', label: 'Grupo C' },
+  { value: 'GROUP_D', label: 'Grupo D' },
+  { value: 'GROUP_E', label: 'Grupo E' },
+  { value: 'GROUP_F', label: 'Grupo F' },
+  { value: 'GROUP_G', label: 'Grupo G' },
+  { value: 'GROUP_H', label: 'Grupo H' },
+  { value: 'GROUP_I', label: 'Grupo I' },
+  { value: 'GROUP_J', label: 'Grupo J' },
+  { value: 'GROUP_K', label: 'Grupo K' },
+  { value: 'GROUP_L', label: 'Grupo L' },
+];
+
+export function getMatchStageApiLabel(stage: MatchStageApi): string {
+  return MATCH_STAGE_API_OPTIONS.find(option => option.value === stage)?.label ?? stage;
+}
+
+export function getMatchGroupApiLabel(group: MatchGroupApi): string {
+  return MATCH_GROUP_API_OPTIONS.find(option => option.value === group)?.label ?? group;
+}

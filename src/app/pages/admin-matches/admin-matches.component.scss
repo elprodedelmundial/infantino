@@ -28,6 +28,7 @@ select.form-control { min-height: 44px; padding-right: 42px; appearance: none; b
 .queued-match { justify-content: space-between; padding: 14px 16px; }
 .queued-match h3 { font-size: 0.9rem; }
 .queued-match p { color: var(--text-muted); }
+.queued-match-meta { font-size: 0.72rem; margin-top: 4px; }
 .remove-queued-btn { border: 0; background: transparent; color: var(--text-muted); font-size: 1.4rem; }
 .hint { color: #ff6b6b; font-size: 0.75rem; }
 .reopen-form-btn { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 48px; margin-bottom: 16px; font-size: 1.7rem; line-height: 1; }

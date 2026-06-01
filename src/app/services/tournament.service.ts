@@ -36,7 +36,12 @@ import {
 import { ITournamentService } from './tournament-service.interface';
 import { TournamentPredictions, MatchPredictionsByTournament } from './match-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
-import { getMatchStageInfo, ALL_STAGE_INFOS } from '../utils/match-stage.utils';
+import {
+  mapApiGroupToGroupLetter,
+  mapApiStageToTournamentStage,
+  ALL_STAGE_INFOS,
+  FINAL_ROUND_MATCH_STAGES
+} from '../utils/match-stage.utils';
 import { ConflictErrorResponse } from './user.service';
 
 // Prediction API response interfaces
@@ -50,6 +55,8 @@ interface TeamApiResponse {
 interface MatchApiResponse {
   id: string;
   code?: string;
+  stage?: string;
+  group?: string;
   home_team: TeamApiResponse;
   away_team: TeamApiResponse;
   home_quota?: number;
@@ -323,7 +330,8 @@ export class TournamentService implements ITournamentService {
       BONUS: 'bonus'
     };
     const status = pred?.status;
-    const stageInfo = getMatchStageInfo(m.code ?? '');
+    const stage = m.stage ? mapApiStageToTournamentStage(m.stage) : 'group_stage';
+    const group = m.group ? mapApiGroupToGroupLetter(m.group) : undefined;
     return {
       id: m.id,
       matchCode: m.code ?? '',
@@ -341,8 +349,8 @@ export class TournamentService implements ITournamentService {
       matchStatus: m.status,
       matchDate: m.started_at ? new Date(m.started_at) : new Date(0),
       result: status && status !== 'PENDING' ? resultMap[status] : undefined,
-      stage: stageInfo.stage,
-      group: stageInfo.group,
+      stage,
+      group,
       odds: (m.home_quota !== undefined)
         ? { home: m.home_quota, draw: m.draw_quota ?? 0, away: m.away_quota ?? 0 }
         : undefined,
@@ -798,11 +806,23 @@ export class TournamentService implements ITournamentService {
             stageHasStarted.set(m.stage, stageHasStarted.get(m.stage) ?? false);
           }
         }
-        const stages = ALL_STAGE_INFOS.map(s => ({
-          ...s,
-          matchCount: stageMatchCounts.get(s.id) ?? 0,
-          hasStarted: stageHasStarted.get(s.id) ?? false
-        }));
+        const stages = ALL_STAGE_INFOS.map(s => {
+          if (s.id === 'final_round') {
+            const matchCount = FINAL_ROUND_MATCH_STAGES.reduce(
+              (sum, stage) => sum + (stageMatchCounts.get(stage) ?? 0),
+              0
+            );
+            const hasStarted = FINAL_ROUND_MATCH_STAGES.some(
+              stage => stageHasStarted.get(stage) === true
+            );
+            return { ...s, matchCount, hasStarted };
+          }
+          return {
+            ...s,
+            matchCount: stageMatchCounts.get(s.id) ?? 0,
+            hasStarted: stageHasStarted.get(s.id) ?? false
+          };
+        });
         return { matches, stages };
       }),
       catchError(error => {
@@ -1114,6 +1134,8 @@ export class TournamentService implements ITournamentService {
         home_team: match.homeTeamId,
         away_team: match.awayTeamId,
         started_at: match.startedAt,
+        stage: match.stage,
+        ...(match.group ? { group: match.group } : {}),
         has_multiplier: match.hasMultiplier
       }))
     };

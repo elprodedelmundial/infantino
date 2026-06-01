@@ -46,6 +46,9 @@
         <div>
           <h3>Partido {{ match.code }}</h3>
           <p>{{ match.homeTeamName }} vs {{ match.awayTeamName }}</p>
+          <p class="queued-match-meta">
+            {{ match.stageLabel }}<span *ngIf="match.groupLabel"> · {{ match.groupLabel }}</span>
+          </p>
         </div>
         <button type="button" class="remove-queued-btn" (click)="removeQueuedMatch(i)" aria-label="Quitar partido">×</button>
       </div>
@@ -79,6 +82,33 @@
           maxlength="10"
           autocomplete="off"
           placeholder="Ej: M001" />
+      </div>
+
+      <div class="form-row">
+        <label class="form-label" for="match-stage">Etapa</label>
+        <select
+          id="match-stage"
+          class="form-control"
+          [(ngModel)]="selectedStage"
+          name="stage"
+          (ngModelChange)="onStageSelect()">
+          <option *ngFor="let option of matchStageOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row" *ngIf="isGroupStageSelected">
+        <label class="form-label" for="match-group">Grupo</label>
+        <select
+          id="match-group"
+          class="form-control"
+          [(ngModel)]="selectedGroup"
+          name="group">
+          <option *ngFor="let option of matchGroupOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
       </div>
 
       <div class="teams-grid">

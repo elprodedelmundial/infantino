@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -10,10 +10,12 @@ import {
   MatchPrediction, 
   TournamentStageInfo,
   TournamentStage,
+  StageFilterId,
   PredictionFilter,
   MatchScore
 } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
+import { matchBelongsToStageFilter, TOURNAMENT_STAGE_NAMES } from '../../utils/match-stage.utils';
 
 interface EditablePrediction extends MatchPrediction {
   /** `null` = empty in mobile boxed inputs (user cleared to type a new value) */
@@ -60,11 +62,13 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
   
   // Filters
   timeFilter: PredictionFilter = 'future';
-  stageFilter: TournamentStage | 'all' = 'all';
+  stageFilter: StageFilterId | 'all' = 'all';
   groupFilter: string | 'all' = 'all';
   
   // Available groups
   groups: string[] = [];
+  isStageFilterOpen = false;
+  isGroupFilterOpen = false;
 
   /**
    * Floating banner anchored to the last clicked quota badge.
@@ -184,7 +188,7 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     
     // Stage filter
     if (this.stageFilter !== 'all') {
-      filtered = filtered.filter(m => m.stage === this.stageFilter);
+      filtered = filtered.filter(m => matchBelongsToStageFilter(m.stage, this.stageFilter));
     }
     
     // Group filter (only for group stage)
@@ -203,11 +207,12 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  setStageFilter(stage: TournamentStage | 'all'): void {
+  setStageFilter(stage: StageFilterId | 'all'): void {
     this.stageFilter = stage;
     // Reset group filter when changing stage
     if (stage !== 'group_stage') {
       this.groupFilter = 'all';
+      this.isGroupFilterOpen = false;
     }
     this.applyFilters();
   }
@@ -215,6 +220,58 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
   setGroupFilter(group: string | 'all'): void {
     this.groupFilter = group;
     this.applyFilters();
+  }
+
+  get stageFilterLabel(): string {
+    if (this.stageFilter === 'all') {
+      return 'Todas las etapas';
+    }
+    const stage = this.stages.find(s => s.id === this.stageFilter);
+    return stage?.name ?? this.stageFilter;
+  }
+
+  get groupFilterLabel(): string {
+    if (this.groupFilter === 'all') {
+      return 'Todos los grupos';
+    }
+    return `Grupo ${this.groupFilter}`;
+  }
+
+  toggleStageFilter(): void {
+    this.isGroupFilterOpen = false;
+    this.isStageFilterOpen = !this.isStageFilterOpen;
+  }
+
+  toggleGroupFilter(): void {
+    this.isStageFilterOpen = false;
+    this.isGroupFilterOpen = !this.isGroupFilterOpen;
+  }
+
+  selectStageFilter(stage: StageFilterId | 'all'): void {
+    if (stage !== 'all') {
+      const stageInfo = this.stages.find(s => s.id === stage);
+      if (stageInfo && !this.isStageAvailable(stageInfo)) {
+        return;
+      }
+    }
+    this.setStageFilter(stage);
+    this.isStageFilterOpen = false;
+  }
+
+  selectGroupFilter(group: string | 'all'): void {
+    this.setGroupFilter(group);
+    this.isGroupFilterOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (this.isStageFilterOpen && !target.closest('.stage-filter-selector')) {
+      this.isStageFilterOpen = false;
+    }
+    if (this.isGroupFilterOpen && !target.closest('.group-filter-selector')) {
+      this.isGroupFilterOpen = false;
+    }
   }
 
   isStageAvailable(stage: TournamentStageInfo): boolean {
@@ -798,8 +855,7 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
   }
 
   getStageName(stageId: TournamentStage): string {
-    const stage = this.stages.find(s => s.id === stageId);
-    return stage?.name || stageId;
+    return TOURNAMENT_STAGE_NAMES[stageId] ?? stageId;
   }
 
   /** Suffix after match code in mobile header (e.g. " · Grupo K") — code is styled separately */

@@ -5,10 +5,20 @@ import { Router } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { AdminCreateMatchPayload, AdminTournamentListItem, Country } from '../../models/tournament.model';
+import {
+  MatchGroupApi,
+  MatchStageApi,
+  MATCH_GROUP_API_OPTIONS,
+  MATCH_STAGE_API_OPTIONS,
+  getMatchGroupApiLabel,
+  getMatchStageApiLabel
+} from '../../utils/match-stage.utils';
 
 interface QueuedAdminMatch extends AdminCreateMatchPayload {
   homeTeamName: string;
   awayTeamName: string;
+  stageLabel: string;
+  groupLabel?: string;
 }
 
 @Component({
@@ -27,6 +37,8 @@ export class AdminMatchesComponent implements OnInit {
   code = '';
   homeTeamId = '';
   awayTeamId = '';
+  selectedStage: MatchStageApi = 'GROUP_STAGE';
+  selectedGroup: MatchGroupApi = 'GROUP_A';
   hasMultiplier = false;
   startedAtDateInput = '';
   startedAtTimeInput = '';
@@ -41,6 +53,9 @@ export class AdminMatchesComponent implements OnInit {
   loadError: string | null = null;
   saveError: string | null = null;
   saveSuccess: string | null = null;
+
+  readonly matchStageOptions = MATCH_STAGE_API_OPTIONS;
+  readonly matchGroupOptions = MATCH_GROUP_API_OPTIONS;
 
   constructor(
     private router: Router,
@@ -86,6 +101,10 @@ export class AdminMatchesComponent implements OnInit {
     return this.teams.find(team => team.id === this.awayTeamId);
   }
 
+  get isGroupStageSelected(): boolean {
+    return this.selectedStage === 'GROUP_STAGE';
+  }
+
   goBack(): void {
     this.router.navigate(['/admin'], { state: { username: this.username } });
   }
@@ -94,6 +113,12 @@ export class AdminMatchesComponent implements OnInit {
     this.homeTeamId = '';
     this.awayTeamId = '';
     this.loadTeams();
+  }
+
+  onStageSelect(): void {
+    if (!this.isGroupStageSelected) {
+      this.selectedGroup = 'GROUP_A';
+    }
   }
 
   openForm(): void {
@@ -230,7 +255,8 @@ export class AdminMatchesComponent implements OnInit {
       this.homeTeamId !== this.awayTeamId &&
       !!this.parseStartedAtInput() &&
       !this.isStartedAtInPast() &&
-      !this.isLoadingTeams
+      !this.isLoadingTeams &&
+      (!this.isGroupStageSelected || !!this.selectedGroup)
     );
   }
 
@@ -241,6 +267,8 @@ export class AdminMatchesComponent implements OnInit {
     const startedAt = this.buildStartedAt();
     if (!home || !away || !startedAt) return;
 
+    const group = this.isGroupStageSelected ? this.selectedGroup : undefined;
+
     this.queuedMatches = [
       ...this.queuedMatches,
       {
@@ -249,8 +277,12 @@ export class AdminMatchesComponent implements OnInit {
         awayTeamId: this.awayTeamId,
         startedAt,
         hasMultiplier: this.hasMultiplier,
+        stage: this.selectedStage,
+        ...(group ? { group } : {}),
         homeTeamName: home.name,
-        awayTeamName: away.name
+        awayTeamName: away.name,
+        stageLabel: getMatchStageApiLabel(this.selectedStage),
+        ...(group ? { groupLabel: getMatchGroupApiLabel(group) } : {})
       }
     ];
     this.code = '';

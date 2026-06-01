@@ -115,8 +115,17 @@ export type TournamentStage =
   | 'third_place'
   | 'final';
 
+/** Stage ids shown in prediction filters (third place + final are merged). */
+export type StageFilterId =
+  | 'group_stage'
+  | 'round_of_32'
+  | 'round_of_16'
+  | 'quarter_finals'
+  | 'semi_finals'
+  | 'final_round';
+
 export interface TournamentStageInfo {
-  id: TournamentStage;
+  id: StageFilterId;
   name: string;
   order: number;
   hasStarted: boolean;
@@ -232,6 +241,8 @@ export interface AdminCreateMatchPayload {
   awayTeamId: string;
   startedAt: string;
   hasMultiplier: boolean;
+  stage: string;
+  group?: string;
 }
 
 /** GET .../predictions/awards (group) + standings in one load */
