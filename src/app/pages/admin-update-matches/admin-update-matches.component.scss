@@ -10,9 +10,151 @@
 .card, .queued-match, .reopen-form-btn { background: rgba(17, 17, 19, 0.6); border: 1px solid var(--border); color: var(--text-primary); }
 .card { padding: 24px; }
 .form-row { margin-bottom: 18px; }
-.form-label { display: block; margin-bottom: 8px; text-transform: uppercase; color: var(--text-muted); }
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 .form-control { width: 100%; padding: 12px 14px; box-sizing: border-box; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); font-size: 0.85rem; }
 select.form-control { min-height: 44px; padding-right: 42px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 18px center; }
+.filter-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.filter-dropdown-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+  background: rgba(10, 10, 11, 0.96);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.filter-dropdown-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s ease, background 0.18s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(232, 255, 71, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &--selected {
+    border-color: var(--accent);
+    background: rgba(232, 255, 71, 0.08);
+    box-shadow: 0 0 0 1px rgba(232, 255, 71, 0.15);
+  }
+}
+
+.filter-dropdown-list .filter-dropdown-row {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+
+  &:hover {
+    border-color: transparent;
+    background: rgba(232, 255, 71, 0.05);
+  }
+
+  &--selected {
+    background: rgba(232, 255, 71, 0.08);
+    box-shadow: none;
+  }
+}
+
+.filter-dropdown-toggle {
+  font-family: inherit;
+
+  &--open {
+    border-color: var(--accent);
+    background: rgba(232, 255, 71, 0.08);
+    box-shadow: 0 0 0 1px rgba(232, 255, 71, 0.15);
+
+    .filter-dropdown-chevron {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+  }
+}
+
+.filter-dropdown-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.filter-dropdown-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(232, 255, 71, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.filter-dropdown-name {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.match-option__title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.match-option__status {
+  display: block;
+  margin-top: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
 .quotas-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 18px; }
 .score-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
 .multiplier-toggle { display: inline-flex; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text-secondary); cursor: pointer; }

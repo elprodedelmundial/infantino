@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -47,6 +47,9 @@ export class AdminUpdateMatchesComponent implements OnInit {
   isLoading = true;
   isLoadingMatches = false;
   isSaving = false;
+  isTournamentPickerOpen = false;
+  isMatchPickerOpen = false;
+  isStatusPickerOpen = false;
   loadError: string | null = null;
   saveError: string | null = null;
   saveSuccess: string | null = null;
@@ -87,8 +90,83 @@ export class AdminUpdateMatchesComponent implements OnInit {
   onTournamentSelect(): void {
     this.selectedMatchId = '';
     this.queuedUpdates = [];
+    this.closeAllPickers();
     this.resetEditableFields();
     this.loadMatches();
+  }
+
+  toggleTournamentPicker(): void {
+    if (this.tournaments.length <= 1) return;
+    this.isMatchPickerOpen = false;
+    this.isStatusPickerOpen = false;
+    this.isTournamentPickerOpen = !this.isTournamentPickerOpen;
+  }
+
+  selectTournament(tournamentId: string): void {
+    this.isTournamentPickerOpen = false;
+    if (tournamentId === this.selectedTournamentId) return;
+    this.selectedTournamentId = tournamentId;
+    this.onTournamentSelect();
+  }
+
+  get selectedTournament(): AdminTournamentListItem | undefined {
+    return this.tournaments.find(t => t.id === this.selectedTournamentId);
+  }
+
+  get selectedTournamentLabel(): string {
+    return this.selectedTournament?.name ?? 'Elegir torneo';
+  }
+
+  toggleMatchPicker(): void {
+    if (this.isLoadingMatches || this.availableMatches.length === 0) return;
+    this.isTournamentPickerOpen = false;
+    this.isStatusPickerOpen = false;
+    this.isMatchPickerOpen = !this.isMatchPickerOpen;
+  }
+
+  selectMatch(matchId: string): void {
+    this.selectedMatchId = matchId;
+    this.isMatchPickerOpen = false;
+    this.onMatchSelect();
+  }
+
+  get selectedMatchLabel(): string {
+    const match = this.selectedMatch;
+    return match ? this.describeMatch(match) : 'Elegir partido';
+  }
+
+  toggleStatusPicker(): void {
+    if (!this.selectedMatch || this.availableTargetStatuses.length <= 1) return;
+    this.isTournamentPickerOpen = false;
+    this.isMatchPickerOpen = false;
+    this.isStatusPickerOpen = !this.isStatusPickerOpen;
+  }
+
+  selectTargetStatus(status: MatchApiStatus): void {
+    this.isStatusPickerOpen = false;
+    if (status === this.targetStatus) return;
+    this.targetStatus = status;
+    this.onTargetStatusChange();
+  }
+
+  private closeAllPickers(): void {
+    this.isTournamentPickerOpen = false;
+    this.isMatchPickerOpen = false;
+    this.isStatusPickerOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (this.isTournamentPickerOpen && !target.closest('.tournament-picker-selector')) {
+      this.isTournamentPickerOpen = false;
+    }
+    if (this.isMatchPickerOpen && !target.closest('.match-picker-selector')) {
+      this.isMatchPickerOpen = false;
+    }
+    if (this.isStatusPickerOpen && !target.closest('.status-picker-selector')) {
+      this.isStatusPickerOpen = false;
+    }
   }
 
   private loadMatches(): void {
@@ -183,6 +261,7 @@ export class AdminUpdateMatchesComponent implements OnInit {
 
   openForm(): void {
     this.isFormOpen = true;
+    this.closeAllPickers();
     this.saveError = null;
     this.saveSuccess = null;
     this.selectedMatchId = this.availableMatches[0]?.id ?? '';
@@ -230,6 +309,7 @@ export class AdminUpdateMatchesComponent implements OnInit {
 
     this.queuedUpdates = [...this.queuedUpdates, payload];
     this.isFormOpen = false;
+    this.closeAllPickers();
     this.saveError = null;
     this.saveSuccess = null;
   }
@@ -269,7 +349,11 @@ export class AdminUpdateMatchesComponent implements OnInit {
   }
 
   describeMatch(match: AdminTournamentMatch): string {
-    return `${match.code} · ${match.homeTeam.name} vs ${match.awayTeam.name} (${this.statusLabels[match.status]})`;
+    return `${this.matchTitle(match)} (${this.statusLabels[match.status]})`;
+  }
+
+  matchTitle(match: AdminTournamentMatch): string {
+    return `${match.code} · ${match.homeTeam.name} vs ${match.awayTeam.name}`;
   }
 
   describeQueuedFields(queued: QueuedAdminMatchUpdate): string {

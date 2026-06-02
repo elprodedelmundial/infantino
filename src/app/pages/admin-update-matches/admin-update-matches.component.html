@@ -18,7 +18,7 @@
           </svg>
         </div>
         <div>
-          <h1 class="page-title">Actualizar partidos</h1>
+          <h1 class="page-title">Editar partidos</h1>
           <p class="page-subtitle">Modificar resultados, cuotas y multiplicador</p>
         </div>
       </div>
@@ -63,35 +63,145 @@
 
     <form class="match-form card" *ngIf="!isLoading && isFormOpen" (ngSubmit)="addUpdate()">
       <div class="form-row">
-        <label class="form-label" for="match-tournament">Torneo</label>
-        <select id="match-tournament" class="form-control"
-                [(ngModel)]="selectedTournamentId" name="tournament"
-                (ngModelChange)="onTournamentSelect()">
-          <option *ngFor="let t of tournaments" [value]="t.id">{{ t.name }}</option>
-        </select>
+        <label class="form-label" id="tournament-picker-label">Torneo</label>
+        <div class="filter-dropdown tournament-picker-selector">
+          <button
+            type="button"
+            class="filter-dropdown-row filter-dropdown-toggle"
+            [class.filter-dropdown-toggle--open]="isTournamentPickerOpen"
+            [disabled]="tournaments.length <= 1"
+            (click)="toggleTournamentPicker()"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="isTournamentPickerOpen"
+            aria-labelledby="tournament-picker-label">
+            <div class="filter-dropdown-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M5.5 3H12.5V8C12.5 9.93 10.93 11.5 9 11.5C7.07 11.5 5.5 9.93 5.5 8V3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M5.5 4.5H3.5V6C3.5 7.1 4.4 8 5.5 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M12.5 4.5H14.5V6C14.5 7.1 13.6 8 12.5 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M9 11.5V14M6.5 14.5H11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="filter-dropdown-name">{{ selectedTournamentLabel }}</span>
+            <svg class="filter-dropdown-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <ul class="filter-dropdown-list" *ngIf="isTournamentPickerOpen" role="listbox">
+            <li
+              class="filter-dropdown-row"
+              *ngFor="let t of tournaments"
+              role="option"
+              [attr.aria-selected]="selectedTournamentId === t.id"
+              [class.filter-dropdown-row--selected]="selectedTournamentId === t.id"
+              (click)="selectTournament(t.id)">
+              <div class="filter-dropdown-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <path d="M5.5 3H12.5V8C12.5 9.93 10.93 11.5 9 11.5C7.07 11.5 5.5 9.93 5.5 8V3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  <path d="M5.5 4.5H3.5V6C3.5 7.1 4.4 8 5.5 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  <path d="M12.5 4.5H14.5V6C14.5 7.1 13.6 8 12.5 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  <path d="M9 11.5V14M6.5 14.5H11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="filter-dropdown-name">{{ t.name }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div class="form-row">
-        <label class="form-label" for="match-select">Partido</label>
-        <select id="match-select" class="form-control"
-                [(ngModel)]="selectedMatchId" name="match"
-                [disabled]="isLoadingMatches || availableMatches.length === 0"
-                (ngModelChange)="onMatchSelect()">
-          <option value="" disabled>Elegir partido</option>
-          <option *ngFor="let m of availableMatches" [value]="m.id">{{ describeMatch(m) }}</option>
-        </select>
+        <label class="form-label" id="match-picker-label">Partido</label>
+        <div class="filter-dropdown match-picker-selector">
+          <button
+            type="button"
+            class="filter-dropdown-row filter-dropdown-toggle"
+            [class.filter-dropdown-toggle--open]="isMatchPickerOpen"
+            [disabled]="isLoadingMatches || availableMatches.length === 0"
+            (click)="toggleMatchPicker()"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="isMatchPickerOpen"
+            aria-labelledby="match-picker-label">
+            <div class="filter-dropdown-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <rect x="2.5" y="4" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M6 2.5V5M12 2.5V5M2.5 7.5H15.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="filter-dropdown-name">
+              <span class="match-option__title">{{ selectedMatch ? matchTitle(selectedMatch) : 'Elegir partido' }}</span>
+              <span class="match-option__status" *ngIf="selectedMatch">{{ statusLabels[selectedMatch.status] }}</span>
+            </span>
+            <svg class="filter-dropdown-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <ul class="filter-dropdown-list" *ngIf="isMatchPickerOpen" role="listbox">
+            <li
+              class="filter-dropdown-row"
+              *ngFor="let m of availableMatches"
+              role="option"
+              [attr.aria-selected]="selectedMatchId === m.id"
+              [class.filter-dropdown-row--selected]="selectedMatchId === m.id"
+              (click)="selectMatch(m.id)">
+              <div class="filter-dropdown-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <rect x="2.5" y="4" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M6 2.5V5M12 2.5V5M2.5 7.5H15.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="filter-dropdown-name">
+                <span class="match-option__title">{{ matchTitle(m) }}</span>
+                <span class="match-option__status">{{ statusLabels[m.status] }}</span>
+              </span>
+            </li>
+          </ul>
+        </div>
         <p class="hint" *ngIf="!isLoadingMatches && availableMatches.length === 0">
           No quedan partidos disponibles para actualizar.
         </p>
       </div>
 
       <div class="form-row" *ngIf="selectedMatch">
-        <label class="form-label" for="target-status">Nuevo estado</label>
-        <select id="target-status" class="form-control"
-                [(ngModel)]="targetStatus" name="targetStatus"
-                (ngModelChange)="onTargetStatusChange()">
-          <option *ngFor="let s of availableTargetStatuses" [value]="s">{{ statusLabels[s] }}</option>
-        </select>
+        <label class="form-label" id="status-picker-label">Nuevo estado</label>
+        <div class="filter-dropdown status-picker-selector">
+          <button
+            type="button"
+            class="filter-dropdown-row filter-dropdown-toggle"
+            [class.filter-dropdown-toggle--open]="isStatusPickerOpen"
+            [disabled]="availableTargetStatuses.length <= 1"
+            (click)="toggleStatusPicker()"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="isStatusPickerOpen"
+            aria-labelledby="status-picker-label">
+            <div class="filter-dropdown-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M9 5V9L11.5 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="filter-dropdown-name">{{ statusLabels[targetStatus] }}</span>
+            <svg class="filter-dropdown-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <ul class="filter-dropdown-list" *ngIf="isStatusPickerOpen" role="listbox">
+            <li
+              class="filter-dropdown-row"
+              *ngFor="let s of availableTargetStatuses"
+              role="option"
+              [attr.aria-selected]="targetStatus === s"
+              [class.filter-dropdown-row--selected]="targetStatus === s"
+              (click)="selectTargetStatus(s)">
+              <div class="filter-dropdown-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M9 5V9L11.5 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="filter-dropdown-name">{{ statusLabels[s] }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <ng-container *ngIf="selectedMatch && targetIsNotStarted">
