@@ -245,6 +245,44 @@ export interface AdminCreateMatchPayload {
   group?: string;
 }
 
+/** Admin: a tournament match shown in the "update matches" admin screen */
+export interface AdminTournamentMatch {
+  id: string;
+  code: string;
+  homeTeam: Country;
+  awayTeam: Country;
+  status: MatchApiStatus;
+  startedAt?: string;
+  stage: TournamentStage;
+  group?: string;
+  homeGoals?: number;
+  awayGoals?: number;
+  homePenalties?: number;
+  awayPenalties?: number;
+  homeQuota?: number;
+  awayQuota?: number;
+  drawQuota?: number;
+  hasMultiplier: boolean;
+}
+
+/**
+ * Admin: payload posted to PUT /api/tournaments/{id}/matches.
+ * Only fields applicable to the selected `status` should be sent (the rules
+ * are enforced in the `admin-update-matches` page).
+ */
+export interface AdminUpdateMatchPayload {
+  matchId: string;
+  status: MatchApiStatus;
+  homeGoals?: number;
+  awayGoals?: number;
+  homePenalties?: number;
+  awayPenalties?: number;
+  homeQuota?: number;
+  awayQuota?: number;
+  drawQuota?: number;
+  hasMultiplier?: boolean;
+}
+
 /** GET .../predictions/awards (group) + standings in one load */
 export interface GroupAwardPredictionsLoadPayload {
   /**

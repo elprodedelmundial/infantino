@@ -31,6 +31,8 @@ import {
   AdminTournamentListItem,
   AdminTournamentDetail,
   AdminCreateMatchPayload,
+  AdminTournamentMatch,
+  AdminUpdateMatchPayload,
   GroupCandidate
 } from '../models/tournament.model';
 import { ITournamentService } from './tournament-service.interface';
@@ -67,7 +69,17 @@ interface MatchApiResponse {
   started_at?: string;
   home_goals?: number;
   away_goals?: number;
+  home_penalties?: number;
+  away_penalties?: number;
   has_multiplier?: boolean;
+}
+
+interface TournamentMatchesApiResponse {
+  tournament_id: string;
+  tournament_name: string;
+  past_matches?: MatchApiResponse[];
+  live_matches?: MatchApiResponse[];
+  next_matches?: MatchApiResponse[];
 }
 
 interface UserApiResponse {
@@ -1151,6 +1163,84 @@ export class TournamentService implements ITournamentService {
           return throwError(() => new Error(this.getCreateMatchesErrorMessage(error)));
         })
       );
+  }
+
+  getAdminTournamentMatches(tournamentId: string): Observable<AdminTournamentMatch[]> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http
+      .get<TournamentMatchesApiResponse>(`${this.baseUrl}/api/tournaments/${tournamentId}/matches`, {
+        headers: this.getAuthHeaders()
+      })
+      .pipe(
+        map(response => {
+          const all = [
+            ...(response.past_matches ?? []),
+            ...(response.live_matches ?? []),
+            ...(response.next_matches ?? [])
+          ];
+          return all.map(m => this.mapAdminMatch(m));
+        }),
+        catchError(error => {
+          console.error('Get admin tournament matches error:', error);
+          return throwError(() => new Error('No se pudieron cargar los partidos.'));
+        })
+      );
+  }
+
+  updateAdminMatches(tournamentId: string, payload: AdminUpdateMatchPayload[]): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    const body = {
+      matches: payload.map(match => {
+        const entry: Record<string, unknown> = {
+          match_id: match.matchId,
+          status: match.status
+        };
+        if (match.homeGoals !== undefined) entry['home_goals'] = match.homeGoals;
+        if (match.awayGoals !== undefined) entry['away_goals'] = match.awayGoals;
+        if (match.homePenalties !== undefined) entry['home_penalties'] = match.homePenalties;
+        if (match.awayPenalties !== undefined) entry['away_penalties'] = match.awayPenalties;
+        if (match.homeQuota !== undefined) entry['home_quota'] = match.homeQuota;
+        if (match.awayQuota !== undefined) entry['away_quota'] = match.awayQuota;
+        if (match.drawQuota !== undefined) entry['draw_quota'] = match.drawQuota;
+        if (match.hasMultiplier !== undefined) entry['has_multiplier'] = match.hasMultiplier;
+        return entry;
+      })
+    };
+
+    return this.http
+      .put(`${this.baseUrl}/api/tournaments/${tournamentId}/matches`, body, {
+        headers: this.getAuthHeaders()
+      })
+      .pipe(
+        map(() => true),
+        catchError(error => {
+          console.error('Update admin matches error:', error);
+          const body = error?.error as ConflictErrorResponse | undefined;
+          const message = typeof body?.message === 'string' ? body.message : 'No se pudieron actualizar los partidos';
+          return throwError(() => new Error(message));
+        })
+      );
+  }
+
+  private mapAdminMatch(m: MatchApiResponse): AdminTournamentMatch {
+    return {
+      id: m.id,
+      code: m.code ?? '',
+      homeTeam: this.mapTeamToCountry(m.home_team),
+      awayTeam: this.mapTeamToCountry(m.away_team),
+      status: m.status,
+      startedAt: m.started_at,
+      stage: m.stage ? mapApiStageToTournamentStage(m.stage) : 'group_stage',
+      group: m.group ? mapApiGroupToGroupLetter(m.group) : undefined,
+      homeGoals: m.home_goals,
+      awayGoals: m.away_goals,
+      homePenalties: m.home_penalties,
+      awayPenalties: m.away_penalties,
+      homeQuota: m.home_quota,
+      awayQuota: m.away_quota,
+      drawQuota: m.draw_quota,
+      hasMultiplier: m.has_multiplier === true
+    };
   }
 
   private getCreateMatchesErrorMessage(error: any): string {

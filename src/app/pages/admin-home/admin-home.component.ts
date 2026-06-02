@@ -29,4 +29,8 @@ export class AdminHomeComponent {
   goAddMatches(): void {
     this.router.navigate(['/admin/matches'], { state: { username: this.username } });
   }
+
+  goUpdateMatches(): void {
+    this.router.navigate(['/admin/matches/update'], { state: { username: this.username } });
+  }
 }

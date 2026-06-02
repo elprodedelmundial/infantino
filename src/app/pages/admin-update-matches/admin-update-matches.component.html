@@ -1,0 +1,161 @@
+<app-user-toolbar [username]="username"></app-user-toolbar>
+
+<main class="main">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <button type="button" class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Volver
+      </button>
+      <div class="header-content">
+        <div class="header-icon admin-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 3V7M16 3V7M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8 14L11 17L16 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="page-title">Actualizar partidos</h1>
+          <p class="page-subtitle">Modificar resultados, cuotas y multiplicador</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="alert alert--error" *ngIf="loadError">{{ loadError }}</p>
+    <p class="alert alert--error" *ngIf="saveError">{{ saveError }}</p>
+    <p class="alert alert--success" *ngIf="saveSuccess">{{ saveSuccess }}</p>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando...</p>
+    </div>
+
+    <div class="queued-actions" *ngIf="queuedUpdates.length > 0">
+      <button type="button" class="save-btn" [disabled]="!canSaveUpdates()" (click)="submitUpdates()">
+        <span class="spinner-small" *ngIf="isSaving"></span>
+        {{ isSaving ? 'Actualizando...' : 'Actualizar partidos' }}
+      </button>
+    </div>
+
+    <div class="queued-matches" *ngIf="queuedUpdates.length > 0">
+      <div class="queued-match" *ngFor="let queued of queuedUpdates; let i = index">
+        <div>
+          <h3>{{ queued.code }} · {{ queued.homeTeamName }} vs {{ queued.awayTeamName }}</h3>
+          <p class="queued-match-meta">
+            {{ statusLabels[queued.currentStatus] }} → {{ statusLabels[queued.status] }}
+          </p>
+          <p class="queued-match-meta" *ngIf="describeQueuedFields(queued)">
+            {{ describeQueuedFields(queued) }}
+          </p>
+        </div>
+        <button type="button" class="remove-queued-btn" (click)="removeQueuedUpdate(i)" aria-label="Quitar partido">×</button>
+      </div>
+    </div>
+
+    <button type="button" class="reopen-form-btn"
+            *ngIf="!isLoading && !isFormOpen && availableMatches.length > 0"
+            (click)="openForm()" aria-label="Actualizar otro partido">
+      +
+    </button>
+
+    <form class="match-form card" *ngIf="!isLoading && isFormOpen" (ngSubmit)="addUpdate()">
+      <div class="form-row">
+        <label class="form-label" for="match-tournament">Torneo</label>
+        <select id="match-tournament" class="form-control"
+                [(ngModel)]="selectedTournamentId" name="tournament"
+                (ngModelChange)="onTournamentSelect()">
+          <option *ngFor="let t of tournaments" [value]="t.id">{{ t.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label" for="match-select">Partido</label>
+        <select id="match-select" class="form-control"
+                [(ngModel)]="selectedMatchId" name="match"
+                [disabled]="isLoadingMatches || availableMatches.length === 0"
+                (ngModelChange)="onMatchSelect()">
+          <option value="" disabled>Elegir partido</option>
+          <option *ngFor="let m of availableMatches" [value]="m.id">{{ describeMatch(m) }}</option>
+        </select>
+        <p class="hint" *ngIf="!isLoadingMatches && availableMatches.length === 0">
+          No quedan partidos disponibles para actualizar.
+        </p>
+      </div>
+
+      <div class="form-row" *ngIf="selectedMatch">
+        <label class="form-label" for="target-status">Nuevo estado</label>
+        <select id="target-status" class="form-control"
+                [(ngModel)]="targetStatus" name="targetStatus"
+                (ngModelChange)="onTargetStatusChange()">
+          <option *ngFor="let s of availableTargetStatuses" [value]="s">{{ statusLabels[s] }}</option>
+        </select>
+      </div>
+
+      <ng-container *ngIf="selectedMatch && targetIsNotStarted">
+        <div class="quotas-grid">
+          <div class="form-row">
+            <label class="form-label" for="home-quota">Cuota local</label>
+            <input id="home-quota" type="number" step="0.01" min="0"
+                   class="form-control" [(ngModel)]="homeQuota" name="homeQuota" />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="draw-quota">Cuota empate</label>
+            <input id="draw-quota" type="number" step="0.01" min="0"
+                   class="form-control" [(ngModel)]="drawQuota" name="drawQuota" />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="away-quota">Cuota visitante</label>
+            <input id="away-quota" type="number" step="0.01" min="0"
+                   class="form-control" [(ngModel)]="awayQuota" name="awayQuota" />
+          </div>
+        </div>
+
+        <label class="multiplier-toggle">
+          <input type="checkbox" [(ngModel)]="hasMultiplier" name="hasMultiplier" />
+          <span class="toggle-box"></span>
+          <span>Partido Destacado</span>
+        </label>
+      </ng-container>
+
+      <ng-container *ngIf="selectedMatch && (targetIsInProgress || targetIsFinished)">
+        <div class="score-grid">
+          <div class="form-row">
+            <label class="form-label" for="home-goals">Goles local{{ targetIsFinished ? ' *' : '' }}</label>
+            <input id="home-goals" type="number" min="0" step="1"
+                   class="form-control" [(ngModel)]="homeGoals" name="homeGoals" />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="away-goals">Goles visitante{{ targetIsFinished ? ' *' : '' }}</label>
+            <input id="away-goals" type="number" min="0" step="1"
+                   class="form-control" [(ngModel)]="awayGoals" name="awayGoals" />
+          </div>
+        </div>
+
+        <div class="score-grid">
+          <div class="form-row">
+            <label class="form-label" for="home-penalties">Penales local</label>
+            <input id="home-penalties" type="number" min="0" step="1"
+                   class="form-control" [(ngModel)]="homePenalties" name="homePenalties" />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="away-penalties">Penales visitante</label>
+            <input id="away-penalties" type="number" min="0" step="1"
+                   class="form-control" [(ngModel)]="awayPenalties" name="awayPenalties" />
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="save-bar-inline" *ngIf="selectedMatch">
+        <button type="submit" class="save-btn" [disabled]="!canAddUpdate()">
+          Agregar
+        </button>
+        <span class="hint" *ngIf="targetIsFinished && (homeGoals === null || awayGoals === null)">
+          Para finalizar el partido se requieren los goles.
+        </span>
+      </div>
+    </form>
+  </div>
+</main>
