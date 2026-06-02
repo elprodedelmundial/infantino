@@ -13,6 +13,7 @@ import { RulesComponent } from './pages/rules/rules.component';
 import { AdminHomeComponent } from './pages/admin-home/admin-home.component';
 import { AdminTournamentComponent } from './pages/admin-tournament/admin-tournament.component';
 import { AdminMatchesComponent } from './pages/admin-matches/admin-matches.component';
+import { AdminUpdateMatchesComponent } from './pages/admin-update-matches/admin-update-matches.component';
 import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'rules', component: RulesComponent },
   { path: 'admin/tournament', component: AdminTournamentComponent, canActivate: [adminGuard] },
   { path: 'admin/matches', component: AdminMatchesComponent, canActivate: [adminGuard] },
+  { path: 'admin/matches/update', component: AdminUpdateMatchesComponent, canActivate: [adminGuard] },
   { path: 'admin', component: AdminHomeComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

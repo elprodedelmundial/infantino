@@ -115,8 +115,17 @@ export type TournamentStage =
   | 'third_place'
   | 'final';
 
+/** Stage ids shown in prediction filters (third place + final are merged). */
+export type StageFilterId =
+  | 'group_stage'
+  | 'round_of_32'
+  | 'round_of_16'
+  | 'quarter_finals'
+  | 'semi_finals'
+  | 'final_round';
+
 export interface TournamentStageInfo {
-  id: TournamentStage;
+  id: StageFilterId;
   name: string;
   order: number;
   hasStarted: boolean;
@@ -232,6 +241,46 @@ export interface AdminCreateMatchPayload {
   awayTeamId: string;
   startedAt: string;
   hasMultiplier: boolean;
+  stage: string;
+  group?: string;
+}
+
+/** Admin: a tournament match shown in the "update matches" admin screen */
+export interface AdminTournamentMatch {
+  id: string;
+  code: string;
+  homeTeam: Country;
+  awayTeam: Country;
+  status: MatchApiStatus;
+  startedAt?: string;
+  stage: TournamentStage;
+  group?: string;
+  homeGoals?: number;
+  awayGoals?: number;
+  homePenalties?: number;
+  awayPenalties?: number;
+  homeQuota?: number;
+  awayQuota?: number;
+  drawQuota?: number;
+  hasMultiplier: boolean;
+}
+
+/**
+ * Admin: payload posted to PUT /api/tournaments/{id}/matches.
+ * Only fields applicable to the selected `status` should be sent (the rules
+ * are enforced in the `admin-update-matches` page).
+ */
+export interface AdminUpdateMatchPayload {
+  matchId: string;
+  status: MatchApiStatus;
+  homeGoals?: number;
+  awayGoals?: number;
+  homePenalties?: number;
+  awayPenalties?: number;
+  homeQuota?: number;
+  awayQuota?: number;
+  drawQuota?: number;
+  hasMultiplier?: boolean;
 }
 
 /** GET .../predictions/awards (group) + standings in one load */
