@@ -13,6 +13,8 @@ interface AuthResponse {
   fullname: string;
   /** grondona: USER | SUPERUSER */
   permissions?: string;
+  /** Nullable flag indicating the user must set a new password after logging in */
+  should_reset_password?: boolean;
 }
 
 interface JoinRequestUserApi {
@@ -131,7 +133,8 @@ export class UserService implements IUserService {
       username: response.username,
       fullName: response.fullname,
       email: response.email,
-      permissions: this.mapPermission(response.permissions)
+      permissions: this.mapPermission(response.permissions),
+      shouldResetPassword: response.should_reset_password === true
     };
   }
 
