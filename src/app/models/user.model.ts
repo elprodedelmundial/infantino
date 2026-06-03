@@ -24,6 +24,8 @@ export interface UserProfile {
   permissions: UserPermission;
   /** Pending join requests for groups where this user is admin (from CurrentUserResponse) */
   joinRequests?: UserJoinRequest[];
+  /** From login AuthResponse: user must set a new password before continuing */
+  shouldResetPassword?: boolean;
 }
 
 export interface UserProfileUpdate {

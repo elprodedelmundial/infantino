@@ -122,7 +122,7 @@ export class AuthFormComponent {
       next: (user) => {
         this.isSubmitting = false;
         this.router.navigate(['/dashboard'], { 
-          state: { username: user.username } 
+          state: { username: user.username, shouldResetPassword: user.shouldResetPassword === true } 
         });
       },
       error: (error: Error) => {

@@ -54,3 +54,68 @@
     </div>
   </div>
 </main>
+
+<!-- Forced password change banner, hovering over the dashboard -->
+<div
+  class="password-reset-overlay"
+  *ngIf="passwordResetRequired"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Cambiá tu contraseña">
+  <div class="password-reset-backdrop" aria-hidden="true"></div>
+  <div class="password-reset-panel">
+    <div class="password-reset-panel__icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect x="6" y="12" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M9.5 12V8.5C9.5 6.01 11.51 4 14 4C16.49 4 18.5 6.01 18.5 8.5V12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h2 class="password-reset-panel__title">Cambiá tu contraseña</h2>
+    <p class="password-reset-panel__message">
+      Por seguridad, necesitás <strong>establecer una nueva contraseña</strong> antes de continuar.
+    </p>
+
+    <form (ngSubmit)="submitPasswordReset()">
+      <div class="form-group">
+        <label class="form-label" for="newPassword">Nueva Contraseña</label>
+        <input
+          type="password"
+          id="newPassword"
+          class="form-input"
+          placeholder="••••••••"
+          [(ngModel)]="newPassword"
+          name="newPassword"
+          autocomplete="new-password"
+          required>
+        <span class="form-hint">Mínimo 6 caracteres</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirmNewPassword">Confirmar Contraseña</label>
+        <input
+          type="password"
+          id="confirmNewPassword"
+          class="form-input"
+          placeholder="••••••••"
+          [(ngModel)]="confirmNewPassword"
+          name="confirmNewPassword"
+          autocomplete="new-password"
+          required>
+      </div>
+
+      <div class="error-message" *ngIf="passwordResetError">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 5V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="8" cy="11" r="0.75" fill="currentColor"/>
+        </svg>
+        {{ passwordResetError }}
+      </div>
+
+      <button type="submit" class="password-reset-submit" [disabled]="isPasswordResetSubmitting">
+        <span class="spinner-small" *ngIf="isPasswordResetSubmitting"></span>
+        Guardar contraseña
+      </button>
+    </form>
+  </div>
+</div>
