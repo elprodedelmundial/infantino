@@ -2,7 +2,8 @@
 
 <main
   class="main"
-  [class.others-awards-browse]="awardsLocked && browseGroupOpen">
+  [class.others-awards-browse]="awardsLocked && browseGroupOpen"
+  [class.has-floating-save]="canEdit && hasChanges && !isLoading">
   <div class="content-wrapper">
     <div class="page-header" *ngIf="tournament">
       <button class="back-btn" (click)="goBack()">
@@ -222,13 +223,6 @@
                   </svg>
                 </button>
               </div>
-            </div>
-            <div class="save-bar" *ngIf="canEdit && hasChanges && !isLoading">
-              <span class="save-info">Tienes cambios sin guardar</span>
-              <button class="save-btn" (click)="savePredictions()" [disabled]="isSaving">
-                <span class="spinner-small" *ngIf="isSaving"></span>
-                {{ isSaving ? 'Guardando...' : 'Guardar Predicciones' }}
-              </button>
             </div>
           </div>
         </div>
@@ -558,3 +552,14 @@
     </div>
   </div>
 </main>
+
+<!-- Floating Save bar — pinned just above the footer so it stays visible while scrolling -->
+<div class="save-bar" *ngIf="canEdit && hasChanges && !isLoading">
+  <div class="save-bar__inner">
+    <span class="save-info">Tienes cambios sin guardar</span>
+    <button class="save-btn" (click)="savePredictions()" [disabled]="isSaving">
+      <span class="spinner-small" *ngIf="isSaving"></span>
+      {{ isSaving ? 'Guardando...' : 'Guardar Predicciones' }}
+    </button>
+  </div>
+</div>
