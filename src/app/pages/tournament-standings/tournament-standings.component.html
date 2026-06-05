@@ -148,7 +148,11 @@
         </div>
 
         <div class="standings-list">
-          <div class="player-row" *ngFor="let player of standings.players" [class.current-user]="isCurrentUser(player)">
+          <div class="player-row player-row--clickable" *ngFor="let player of standings.players"
+            [class.current-user]="isCurrentUser(player)" role="button" tabindex="0"
+            (click)="goToPlayerProfile(player)" (keydown.enter)="goToPlayerProfile(player)"
+            (keydown.space)="$event.preventDefault(); goToPlayerProfile(player)"
+            [attr.aria-label]="'Ver perfil de ' + playerLabel(player)">
             <div [ngClass]="getPositionClass(player.position)">
               {{ player.position }}
             </div>

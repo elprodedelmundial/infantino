@@ -2,14 +2,87 @@
 
 <main class="main">
   <div class="content-wrapper">
-    <section class="profile-card" *ngIf="!isLoading; else loading">
-      <div class="profile-avatar">
-        <span>{{ initials }}</span>
-      </div>
-      <h1 class="profile-name">{{ displayName }}</h1>
-      <p class="profile-handle">{{ handle }}</p>
-      <p class="profile-status">Página en construcción</p>
-    </section>
+    <ng-container *ngIf="!isLoading; else loading">
+      <section class="profile-card">
+        <h1 class="profile-name">{{ displayName }}</h1>
+        <p class="profile-handle">{{ handle }}</p>
+      </section>
+
+      <section class="profile-stats" *ngIf="selectedProfile as perf">
+        <!-- Group selector when the user belongs to multiple groups -->
+        <div class="group-tabs" *ngIf="profiles.length > 1">
+          <button
+            type="button"
+            class="group-tab"
+            *ngFor="let p of profiles"
+            [class.active]="p.groupId === selectedGroupId"
+            (click)="selectGroup(p.groupId)">
+            {{ p.groupName }}
+          </button>
+        </div>
+
+        <!-- Points summary -->
+        <div class="points-grid">
+          <div class="points-box">
+            <span class="points-value">{{ formatPoints(perf.totalPoints) }}</span>
+            <span class="points-label">Puntos<br>totales</span>
+          </div>
+          <div class="points-box">
+            <span class="points-value">{{ formatPoints(perf.quotasPoints) }}</span>
+            <span class="points-label">Puntos por<br>cuotas</span>
+          </div>
+          <div class="points-box">
+            <span class="points-value">{{ formatAwardsPoints(perf.awardsPoints) }}</span>
+            <span class="points-label">Puntos por<br>premios</span>
+          </div>
+        </div>
+
+        <!-- Common matches breakdown -->
+        <div class="predictions-box">
+          <h2 class="predictions-title">Partidos</h2>
+          <div class="predictions-grid">
+            <div class="prediction-stat" *ngFor="let stat of predictionStats" [ngClass]="'prediction-stat--' + stat.modifier">
+              <span class="prediction-count">{{ perf.commonMatches[stat.key] }}</span>
+              <span class="prediction-label">{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Highlighted matches breakdown -->
+        <div class="predictions-box">
+          <h2 class="predictions-title">Partidos destacados</h2>
+          <div class="predictions-grid">
+            <div class="prediction-stat" *ngFor="let stat of predictionStats" [ngClass]="'prediction-stat--' + stat.modifier">
+              <span class="prediction-count">{{ perf.highlightedMatches[stat.key] }}</span>
+              <span class="prediction-label">{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top quotas -->
+        <div class="quotas-grid">
+          <button
+            type="button"
+            class="quota-box quota-box--success"
+            [disabled]="!perf.topQuotaSucceeded"
+            (click)="openQuotaModal('succeeded')">
+            <span class="quota-label">Mejor cuota acertada</span>
+            <span class="quota-value" *ngIf="perf.topQuotaSucceeded">+{{ perf.topQuotaSucceeded.quota.toFixed(2) }}</span>
+            <span class="quota-value quota-value--empty" *ngIf="!perf.topQuotaSucceeded">–</span>
+          </button>
+
+          <button
+            type="button"
+            class="quota-box quota-box--fail"
+            [disabled]="!perf.topQuotaFailed"
+            (click)="openQuotaModal('failed')">
+            <span class="quota-label">Mayor cuota fallada</span>
+            <span class="quota-value" *ngIf="perf.topQuotaFailed">+{{ perf.topQuotaFailed.quota.toFixed(2) }}</span>
+            <span class="quota-value quota-value--empty" *ngIf="!perf.topQuotaFailed">–</span>
+          </button>
+        </div>
+      </section>
+    </ng-container>
 
     <ng-template #loading>
       <div class="loading-state">
@@ -19,3 +92,37 @@
     </ng-template>
   </div>
 </main>
+
+<!-- Hovering banner with the match result and the user's prediction -->
+<div class="quota-modal-overlay" *ngIf="openQuotaProfile as q" (click)="closeQuotaModal()">
+  <div class="quota-modal" (click)="$event.stopPropagation()">
+    <button class="quota-modal-close" type="button" (click)="closeQuotaModal()" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <div class="quota-modal-status">{{ matchStatusLabel(q.prediction.match) }}</div>
+
+    <div class="quota-modal-teams">
+      <div class="quota-modal-team">
+        <img [src]="q.prediction.match.homeTeam.flagUrl" [alt]="q.prediction.match.homeTeam.name"
+          class="quota-modal-flag" [class.flag--ch]="isSwitzerland(q.prediction.match.homeTeam)">
+        <span class="quota-modal-name">{{ q.prediction.match.homeTeam.name }}</span>
+      </div>
+
+      <div class="quota-modal-center">
+        <span class="quota-modal-score-label">Resultado</span>
+        <span class="quota-modal-score quota-modal-score--result">{{ formatScore(q.prediction.match) }}</span>
+        <span class="quota-modal-score-label">Predicción</span>
+        <span class="quota-modal-score quota-modal-score--prediction">{{ formatPrediction(q) }}</span>
+      </div>
+
+      <div class="quota-modal-team">
+        <img [src]="q.prediction.match.awayTeam.flagUrl" [alt]="q.prediction.match.awayTeam.name"
+          class="quota-modal-flag" [class.flag--ch]="isSwitzerland(q.prediction.match.awayTeam)">
+        <span class="quota-modal-name">{{ q.prediction.match.awayTeam.name }}</span>
+      </div>
+    </div>
+  </div>
+</div>

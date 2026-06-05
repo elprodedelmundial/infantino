@@ -1,7 +1,19 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { UserProfile, UserProfileUpdate, RegisterUserData, RegistrationError, UserPermission, UserJoinRequest } from '../models/user.model';
+import { WORLD_CUP_ID } from './match.service';
+import {
+  UserProfile,
+  UserProfileUpdate,
+  RegisterUserData,
+  RegistrationError,
+  UserPermission,
+  UserJoinRequest,
+  UserGroupPerformance,
+  PredictionsProfile,
+  QuotaProfile,
+  ProfileMatchSummary
+} from '../models/user.model';
 import { IUserService } from './user-service.interface';
 import { EnvironmentConfig } from '../config/environment.config';
 
@@ -32,6 +44,62 @@ interface JoinGroupRequestApi {
   users: JoinRequestUserApi[];
 }
 
+interface ProfileTeamApi {
+  id: string;
+  name: string;
+  code: string;
+  icon: string;
+}
+
+interface ProfileMatchApi {
+  id: string;
+  code: string;
+  home_team: ProfileTeamApi;
+  away_team: ProfileTeamApi;
+  home_goals?: number;
+  away_goals?: number;
+  home_penalties?: number;
+  away_penalties?: number;
+  status: string;
+  substatus?: string;
+}
+
+interface ProfileScorePredictionApi {
+  home_goals: number;
+  away_goals: number;
+  status?: string;
+}
+
+interface ProfileMatchPredictionApi {
+  id?: string;
+  match: ProfileMatchApi;
+  prediction?: ProfileScorePredictionApi;
+}
+
+interface QuotasProfileApi {
+  quota: number;
+  prediction?: ProfileMatchPredictionApi;
+}
+
+interface PredictionsProfileApi {
+  partial: number;
+  correct: number;
+  bonus: number;
+  incorrect: number;
+  missing: number;
+}
+
+interface UserProfileApi {
+  group: { id: string; name: string };
+  total_points: number;
+  quotas_points: number;
+  awards_points?: number | null;
+  common_matches: PredictionsProfileApi;
+  highlighted_matches: PredictionsProfileApi;
+  top_succeeded_quota?: QuotasProfileApi;
+  top_failed_quota?: QuotasProfileApi;
+}
+
 interface UserResponse {
   id: string;
   fullname: string;
@@ -43,6 +111,8 @@ interface UserResponse {
   permissions?: string;
   /** From CurrentUserResponse: pending join requests for groups where user is admin */
   join_requests?: JoinGroupRequestApi[];
+  /** Per-group performance summary */
+  profiles?: UserProfileApi[];
 }
 
 export interface ConflictErrorResponse {
@@ -117,13 +187,74 @@ export class UserService implements IUserService {
           }))
       : undefined;
 
+    const profiles = this.mapProfiles(response.profiles);
+
     return {
       id: response.id,
       username: response.username,
       fullName: response.fullname,
       email: response.email,
       permissions: this.mapPermission(response.permissions),
-      joinRequests: joinRequests?.length ? joinRequests : undefined
+      joinRequests: joinRequests?.length ? joinRequests : undefined,
+      profiles: profiles?.length ? profiles : undefined
+    };
+  }
+
+  private mapProfiles(profiles?: UserProfileApi[]): UserGroupPerformance[] | undefined {
+    if (!profiles?.length) return undefined;
+    return profiles.map(p => this.mapSingleProfile(p));
+  }
+
+  private mapSingleProfile(p: UserProfileApi): UserGroupPerformance {
+    return {
+      groupId: p.group?.id ?? '',
+      groupName: p.group?.name ?? '',
+      totalPoints: p.total_points ?? 0,
+      quotasPoints: p.quotas_points ?? 0,
+      awardsPoints: p.awards_points ?? null,
+      commonMatches: this.mapPredictionsProfile(p.common_matches),
+      highlightedMatches: this.mapPredictionsProfile(p.highlighted_matches),
+      topQuotaSucceeded: this.mapQuotaProfile(p.top_succeeded_quota),
+      topQuotaFailed: this.mapQuotaProfile(p.top_failed_quota)
+    };
+  }
+
+  private mapPredictionsProfile(p?: PredictionsProfileApi): PredictionsProfile {
+    return {
+      partial: p?.partial ?? 0,
+      correct: p?.correct ?? 0,
+      bonus: p?.bonus ?? 0,
+      incorrect: p?.incorrect ?? 0,
+      missing: p?.missing ?? 0
+    };
+  }
+
+  private mapQuotaProfile(q?: QuotasProfileApi): QuotaProfile | null {
+    const pred = q?.prediction;
+    if (!pred?.match) return null;
+    return {
+      quota: q!.quota ?? 0,
+      prediction: {
+        match: this.mapProfileMatch(pred.match),
+        predictedHome: pred.prediction?.home_goals ?? null,
+        predictedAway: pred.prediction?.away_goals ?? null,
+        status: pred.prediction?.status
+      }
+    };
+  }
+
+  private mapProfileMatch(m: ProfileMatchApi): ProfileMatchSummary {
+    return {
+      id: m.id,
+      code: m.code,
+      homeTeam: { code: m.home_team.code, name: m.home_team.name, flagUrl: m.home_team.icon },
+      awayTeam: { code: m.away_team.code, name: m.away_team.name, flagUrl: m.away_team.icon },
+      homeGoals: m.home_goals,
+      awayGoals: m.away_goals,
+      homePenalties: m.home_penalties,
+      awayPenalties: m.away_penalties,
+      status: m.status,
+      substatus: m.substatus
     };
   }
 
@@ -284,6 +415,19 @@ export class UserService implements IUserService {
         if (error.status === 404) return throwError(() => new Error('Usuario no encontrado'));
         if (error.status >= 500) return throwError(() => new Error('Error del servidor, por favor intenta más tarde'));
         return throwError(() => new Error('Error al obtener el perfil'));
+      })
+    );
+  }
+
+  getGroupMemberProfile(groupId: string, memberId: string): Observable<UserGroupPerformance | null> {
+    return this.http.get<UserProfileApi>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/members/${memberId}`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(response => this.mapSingleProfile(response)),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Get group member profile error:', error);
+        return of(null);
       })
     );
   }

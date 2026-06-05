@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { UserProfile, UserProfileUpdate, RegisterUserData } from '../models/user.model';
+import { UserProfile, UserProfileUpdate, RegisterUserData, UserGroupPerformance } from '../models/user.model';
 
 export interface IUserService {
   user$: Observable<UserProfile>;
@@ -11,6 +11,8 @@ export interface IUserService {
   /** Last known full name for this login (localStorage); used when GET /me fails. */
   getCachedFullNameForUsername(username: string): string;
   getUserProfile(): Observable<UserProfile>;
+  /** Performance profile of another group member (GET .../groups/{groupId}/members/{memberId}). */
+  getGroupMemberProfile(groupId: string, memberId: string): Observable<UserGroupPerformance | null>;
   updateProfile(update: UserProfileUpdate): Observable<UserProfile>;
   changePassword(currentPassword: string, newPassword: string): Observable<boolean>;
   deleteUser(): Observable<boolean>;

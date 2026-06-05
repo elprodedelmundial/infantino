@@ -20,6 +20,7 @@ export class MyTournamentsComponent implements OnInit {
   isLoading: boolean = true;
   featureFlagsLoaded: boolean = false;
   allowNewGroups: boolean = false;
+  allowJoiningGroups: boolean = true;
 
   showCreateGroup = false;
   createGroupName = '';
@@ -49,13 +50,15 @@ export class MyTournamentsComponent implements OnInit {
       this.tournamentService.setCurrentUser(this.username);
     }
 
-    this.featureFlagService.isNewGroupsAllowed().subscribe({
-      next: allowed => {
-        this.allowNewGroups = allowed;
+    this.featureFlagService.getFeatureFlags().subscribe({
+      next: flags => {
+        this.allowNewGroups = flags.allowNewGroups;
+        this.allowJoiningGroups = flags.allowJoiningGroups;
         this.featureFlagsLoaded = true;
       },
       error: () => {
         this.allowNewGroups = false;
+        this.allowJoiningGroups = true;
         this.featureFlagsLoaded = true;
       }
     });
