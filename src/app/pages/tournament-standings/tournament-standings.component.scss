@@ -377,23 +377,8 @@
   }
 }
 
-.standings-list {
-  max-height: 400px;
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
-  }
-}
+// .standings-list intentionally has no height/overflow: the full table renders
+// and grows with content, scrolling with the page rather than an inner area.
 
 .player-row {
   display: grid;
