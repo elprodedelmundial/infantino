@@ -412,6 +412,14 @@
     background: rgba(232, 255, 71, 0.02);
   }
 
+  &--clickable {
+    cursor: pointer;
+  }
+
+  &--clickable:hover {
+    background: rgba(232, 255, 71, 0.05);
+  }
+
   &.current-user {
     background: rgba(232, 255, 71, 0.08);
     border-left: 3px solid var(--accent);

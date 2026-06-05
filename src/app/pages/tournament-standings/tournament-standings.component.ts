@@ -301,6 +301,22 @@ export class TournamentStandingsComponent implements OnInit {
     return this.standings?.currentUserId === player.id;
   }
 
+  goToPlayerProfile(player: TournamentPlayer): void {
+    if (this.isCurrentUser(player)) {
+      this.router.navigate(['/profile'], { state: { username: this.username } });
+      return;
+    }
+    this.router.navigate(['/profile'], {
+      state: {
+        username: this.username,
+        memberId: player.id,
+        groupId: this.tournamentId,
+        memberFullName: player.fullName ?? '',
+        memberUsername: player.username
+      }
+    });
+  }
+
   getPredictionClass(result: LastStandingPredictionResult): string {
     switch (result) {
       case 'correct': return 'prediction correct';
