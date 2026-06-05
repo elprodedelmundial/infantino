@@ -84,6 +84,10 @@ export class UserToolbarComponent implements OnInit, OnChanges {
       if (profile.joinRequests) {
         this.joinRequestsState.set(profile.joinRequests);
       }
+      // Keep the mode toggle in sync with the backend's authoritative flag.
+      if (profile.uniquePredictions !== undefined) {
+        this.predictionMode.set(profile.uniquePredictions ? 'unique' : 'per_group');
+      }
     });
 
     this.userService.getUserProfile().subscribe({

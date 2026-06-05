@@ -87,6 +87,10 @@ export interface UserProfile {
   shouldResetPassword?: boolean;
   /** Per-group performance summary (from GET /me `profiles`) */
   profiles?: UserGroupPerformance[];
+  /** From GET /me `unique_predictions`: user predicts once and it mirrors to every group */
+  uniquePredictions?: boolean;
+  /** Group id used as the prediction source when uniquePredictions is true */
+  uniquePredictionsMaster?: string | null;
 }
 
 export interface UserProfileUpdate {

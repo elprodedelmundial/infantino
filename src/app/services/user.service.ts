@@ -113,6 +113,10 @@ interface UserResponse {
   join_requests?: JoinGroupRequestApi[];
   /** Per-group performance summary */
   profiles?: UserProfileApi[];
+  /** Whether the user predicts once and it's mirrored to all their groups */
+  unique_predictions?: boolean;
+  /** Group id used as the prediction source when unique_predictions is true */
+  unique_predictions_master?: string | null;
 }
 
 export interface ConflictErrorResponse {
@@ -130,6 +134,8 @@ export interface ConflictErrorResponse {
 export class UserService implements IUserService {
 
   private static readonly DISPLAY_NAME_CACHE_KEY = 'prode_user_display_name_v1';
+  /** Mirror of the backend `unique_predictions` flag, read by the results / edit screens. */
+  private static readonly PRED_MODE_KEY = 'prode_prediction_mode_v1';
 
   private baseUrl: string;
   private token: string | null = null;
@@ -196,7 +202,9 @@ export class UserService implements IUserService {
       email: response.email,
       permissions: this.mapPermission(response.permissions),
       joinRequests: joinRequests?.length ? joinRequests : undefined,
-      profiles: profiles?.length ? profiles : undefined
+      profiles: profiles?.length ? profiles : undefined,
+      uniquePredictions: response.unique_predictions === true,
+      uniquePredictionsMaster: response.unique_predictions_master ?? null
     };
   }
 
@@ -277,6 +285,24 @@ export class UserService implements IUserService {
       localStorage.setItem(
         UserService.DISPLAY_NAME_CACHE_KEY,
         JSON.stringify({ username: u, fullName: f })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /**
+   * Keeps the local prediction-mode flag aligned with the backend's
+   * `unique_predictions`. The results and predictions-edit screens read this
+   * key to decide whether to skip the group selector, so it must reflect the
+   * server even when the user never toggled the mode in this browser session.
+   */
+  private syncPredictionModeFromProfile(profile: UserProfile): void {
+    if (profile.uniquePredictions === undefined) return;
+    try {
+      localStorage.setItem(
+        UserService.PRED_MODE_KEY,
+        profile.uniquePredictions ? 'unique' : 'per_group'
       );
     } catch {
       /* ignore */
@@ -406,6 +432,7 @@ export class UserService implements IUserService {
       tap(response => {
         this.currentUser = this.mapUserResponse(response);
         this.persistDisplayNameCache(this.currentUser);
+        this.syncPredictionModeFromProfile(this.currentUser);
         this.userSubject.next(this.currentUser);
       }),
       map(response => this.mapUserResponse(response)),
