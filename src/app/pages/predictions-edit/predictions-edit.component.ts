@@ -344,13 +344,26 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
 
   onScoreChange(match: EditablePrediction): void {
     if (!match.hasPrediction) {
-      match.hasChanges =
-        match.editedHomeScore !== null || match.editedAwayScore !== null;
+      // A brand-new prediction only counts as an unsaved change once BOTH
+      // goals are entered — a single team's score is an incomplete prediction.
+      match.hasChanges = this.hasHomeValue(match) && this.hasAwayValue(match);
       return;
     }
     match.hasChanges =
       this.effectiveHome(match) !== match.predictedScore.home ||
       this.effectiveAway(match) !== match.predictedScore.away;
+  }
+
+  /**
+   * Whether a score is present for the side, accounting for the mobile focus
+   * flow that temporarily parks the value in the backup field while editing.
+   */
+  private hasHomeValue(m: EditablePrediction): boolean {
+    return m.editedHomeScore !== null || m.mobileHomeBackup !== undefined;
+  }
+
+  private hasAwayValue(m: EditablePrediction): boolean {
+    return m.editedAwayScore !== null || m.mobileAwayBackup !== undefined;
   }
 
   /**
