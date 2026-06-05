@@ -317,6 +317,24 @@
   &--higher { color: var(--accent); }
 }
 
+// Desktop: line up the points rows across both award cards even when the
+// descriptions wrap to a different number of lines. Subgrid makes the
+// name / description / points rows share the grid's row tracks across the two
+// columns, so each card's points list starts at the same height. The mobile
+// single-column layout (below) is unaffected.
+@media (min-width: 769px) {
+  .awards-grid {
+    grid-template-rows: auto auto auto;
+  }
+
+  .award-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
+    row-gap: 0;
+  }
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
