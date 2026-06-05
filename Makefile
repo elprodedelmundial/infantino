@@ -1,7 +1,7 @@
 # PRODE Homepage - Makefile
 # Angular project management commands
 
-.PHONY: help install start serve build build-prod clean test lint format
+.PHONY: help install start serve build build-prod clean test lint format check-config
 
 # Default target
 help:
@@ -17,6 +17,7 @@ help:
 	@echo "  test        Run unit tests"
 	@echo "  lint        Run linter"
 	@echo "  deploy      Deploy static content to Firebase Hosting"
+	@echo "  check-config  Verify 'grondona-url' is not localhost before deploying"
 	@echo "  format      Format code with Prettier (if available)"
 	@echo ""
 
@@ -41,7 +42,16 @@ build-prod:
 	npm run build -- --configuration production
 
 
-deploy: install build-prod
+# Guard: refuse to deploy when the active 'grondona-url' points to localhost.
+# Only inspects uncommented lines (a leading // would not match the anchor).
+check-config:
+	@if grep -E "^[[:space:]]*'grondona-url'[[:space:]]*:" src/config.js | grep -Eq "localhost|127\.0\.0\.1"; then \
+		echo "✗ Deploy aborted: 'grondona-url' in src/config.js points to localhost."; \
+		echo "  Set it to the production Grondona URL before running 'make deploy'."; \
+		exit 1; \
+	fi
+
+deploy: check-config install build-prod
 	firebase deploy --only hosting
 
 # Clean build artifacts
