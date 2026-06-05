@@ -13,13 +13,15 @@ import { ENVIRONMENT_CONFIG, EnvironmentConfig } from '../config/environment.con
 export interface FeatureFlags {
   allowUsersRegistration: boolean;
   allowNewGroups: boolean;
+  allowJoiningGroups: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class FeatureFlagService {
   private static readonly DEFAULT_FLAGS: FeatureFlags = {
     allowUsersRegistration: true,
-    allowNewGroups: false
+    allowNewGroups: false,
+    allowJoiningGroups: true
   };
 
   private remoteConfig: RemoteConfig | null = null;
@@ -41,7 +43,8 @@ export class FeatureFlagService {
         return from(fetchAndActivate(remoteConfig)).pipe(
           map(() => ({
             allowUsersRegistration: getValue(remoteConfig, 'allow_new_users').asBoolean(),
-            allowNewGroups: getValue(remoteConfig, 'allow_new_groups').asBoolean()
+            allowNewGroups: getValue(remoteConfig, 'allow_new_groups').asBoolean(),
+            allowJoiningGroups: getValue(remoteConfig, 'allow_joining_groups').asBoolean()
           }))
         );
       }),
@@ -55,6 +58,10 @@ export class FeatureFlagService {
 
   isNewGroupsAllowed(): Observable<boolean> {
     return this.getFeatureFlags().pipe(map(flags => flags.allowNewGroups));
+  }
+
+  isJoiningGroupsAllowed(): Observable<boolean> {
+    return this.getFeatureFlags().pipe(map(flags => flags.allowJoiningGroups));
   }
 
   private hasFirebaseRemoteConfig(): boolean {
@@ -74,7 +81,8 @@ export class FeatureFlagService {
     this.remoteConfig = getRemoteConfig(app);
     this.remoteConfig.defaultConfig = {
       allow_new_users: FeatureFlagService.DEFAULT_FLAGS.allowUsersRegistration,
-      allow_new_groups: FeatureFlagService.DEFAULT_FLAGS.allowNewGroups
+      allow_new_groups: FeatureFlagService.DEFAULT_FLAGS.allowNewGroups,
+      allow_joining_groups: FeatureFlagService.DEFAULT_FLAGS.allowJoiningGroups
     };
     this.remoteConfig.settings = {
       minimumFetchIntervalMillis: 60_000,
