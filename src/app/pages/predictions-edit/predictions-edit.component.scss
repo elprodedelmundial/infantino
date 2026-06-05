@@ -88,6 +88,21 @@
   border: 1px solid var(--border);
 }
 
+// On desktop, match the Próximos/Todos toggle height to the stage/group
+// dropdown so the filter row lines up. The dropdown height is driven by its
+// 32px icon + 12px vertical padding + 1px borders.
+@media (min-width: 769px) {
+  .filter-buttons {
+    min-height: 58px;
+  }
+
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 .filter-btn {
   padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace;
@@ -251,15 +266,46 @@
   border-radius: 4px;
 }
 
-// Save All Bar
+// Floating Save All Bar — fixed just above the footer so it stays in view while scrolling.
+// z-index sits below the mobile footer nav (z-index: 100) so the footer always wins.
 .save-all-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  padding: 16px 40px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: rgba(10, 10, 11, 0.95);
+  border-top: 1px solid var(--accent);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
+  animation: saveBarSlideUp 0.3s ease-out;
+}
+
+.save-all-bar__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  background: rgba(232, 255, 71, 0.08);
-  border: 1px solid var(--accent);
-  margin-bottom: 20px;
+  justify-content: center;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@keyframes saveBarSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Reserve space at the bottom of the page so the floating bar never covers the
+// last match card. Only applied while the bar is visible.
+.main.has-floating-save {
+  padding-bottom: 120px;
 }
 
 .save-info {
@@ -957,15 +1003,26 @@
     justify-content: space-between;
   }
 
+  // On mobile the footer nav is fixed at the bottom, so lift the bar to sit
+  // just above it (footer height + safe-area inset already included below).
   .save-all-bar {
+    bottom: calc(var(--mobile-footer-height, 68px) + env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px;
+  }
+
+  .save-all-bar__inner {
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: 10px;
   }
 
   .save-all-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  // Extra bottom padding so the last card clears both the footer and the bar.
+  .main.has-floating-save {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--mobile-footer-height, 68px) + 150px) !important;
   }
 
   .match-header {

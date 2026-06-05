@@ -1,6 +1,6 @@
 <app-user-toolbar [username]="username"></app-user-toolbar>
 
-<main class="main">
+<main class="main" [class.has-floating-save]="hasUnsavedChanges && !isLoading">
   <div class="content-wrapper">
     <div class="page-header" *ngIf="tournament">
       <button class="back-btn" (click)="goBack()">
@@ -149,20 +149,6 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- Save All Button -->
-    <div class="save-all-bar" *ngIf="hasUnsavedChanges && !isLoading">
-      <span class="save-info">
-        Tienes {{ unsavedCount }} predicción(es) sin guardar
-      </span>
-      <button class="save-all-btn" (click)="saveAllChanges()" [disabled]="isSaving">
-        <svg *ngIf="!isSaving" width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M4 9L7.5 12.5L14 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="spinner-small" *ngIf="isSaving"></span>
-        {{ isSaving ? 'Guardando...' : 'Guardar Todas' }}
-      </button>
     </div>
 
     <!-- Matches List -->
@@ -361,6 +347,22 @@
     </div>
   </div>
 </main>
+
+<!-- Floating Save All Bar — pinned just above the footer so it stays visible while scrolling -->
+<div class="save-all-bar" *ngIf="hasUnsavedChanges && !isLoading">
+  <div class="save-all-bar__inner">
+    <span class="save-info">
+      Tienes {{ unsavedCount }} predicción(es) sin guardar
+    </span>
+    <button class="save-all-btn" (click)="saveAllChanges()" [disabled]="isSaving">
+      <svg *ngIf="!isSaving" width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M4 9L7.5 12.5L14 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="spinner-small" *ngIf="isSaving"></span>
+      {{ isSaving ? 'Guardando...' : 'Guardar Todas' }}
+    </button>
+  </div>
+</div>
 
 <!-- Popover anchored to the last tapped match quota. Sits above the badge by
      default and flips below when there isn't enough room above the page
