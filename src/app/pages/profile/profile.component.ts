@@ -46,7 +46,7 @@ export class ProfileComponent implements OnInit {
   readonly predictionStats: PredictionStat[] = [
     { key: 'partial', label: 'Parcial', modifier: 'partial' },
     { key: 'correct', label: 'Correcto', modifier: 'correct' },
-    { key: 'bonus', label: 'Bonus', modifier: 'bonus' },
+    { key: 'bonus', label: 'Extra', modifier: 'bonus' },
     { key: 'incorrect', label: 'Incorrecto', modifier: 'incorrect' },
     { key: 'missing', label: 'Faltante', modifier: 'missing' }
   ];
