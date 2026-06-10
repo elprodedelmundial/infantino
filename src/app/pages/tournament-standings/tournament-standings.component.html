@@ -150,7 +150,10 @@
         <div class="standings-list">
           <div class="player-row player-row--clickable" *ngFor="let player of standings.players"
             [class.current-user]="isCurrentUser(player)" role="button" tabindex="0"
-            (click)="goToPlayerProfile(player)" (keydown.enter)="goToPlayerProfile(player)"
+            (click)="onPlayerClick(player)" (dblclick)="onPlayerDblClick(player)"
+            (touchstart)="onPlayerTouchStart($event, player)" (touchmove)="onPlayerTouchMove($event)"
+            (touchend)="onPlayerTouchEnd()" (touchcancel)="onPlayerTouchEnd()"
+            (keydown.enter)="goToPlayerProfile(player)"
             (keydown.space)="$event.preventDefault(); goToPlayerProfile(player)"
             [attr.aria-label]="'Ver perfil de ' + playerLabel(player)">
             <div [ngClass]="getPositionClass(player.position)">
@@ -498,6 +501,29 @@
       <button class="modal-btn confirm" (click)="confirmLeaveTournament()" [disabled]="isLeaving">
         <span class="spinner-small" *ngIf="isLeaving"></span>
         {{ isLeaving ? 'Saliendo...' : 'Sí, Abandonar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Kick Member Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showKickConfirm" (click)="cancelKick()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-icon warning">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
+        <path d="M11 11L21 21M21 11L11 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </div>
+    <h2>Expulsar miembro</h2>
+    <p>Estás a punto de expulsar a <strong>{{ kickTargetLabel }}</strong> del grupo. Perderá su posición y
+      predicciones. Esta acción no se puede deshacer.</p>
+    <div class="edit-group-error" *ngIf="kickError">{{ kickError }}</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" (click)="cancelKick()" [disabled]="isKicking">Cancelar</button>
+      <button class="modal-btn confirm" (click)="confirmKick()" [disabled]="isKicking">
+        <span class="spinner-small" *ngIf="isKicking"></span>
+        {{ isKicking ? 'Expulsando...' : 'Sí, Expulsar' }}
       </button>
     </div>
   </div>

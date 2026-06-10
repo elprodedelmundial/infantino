@@ -57,6 +57,23 @@ export class TournamentStandingsComponent implements OnInit {
   isLoadingCandidates: boolean = false;
   candidateActionInProgress: Set<string> = new Set();
 
+  // Kick member (admins only): double-click on desktop / long-press on mobile
+  showKickConfirm: boolean = false;
+  kickTarget: TournamentPlayer | null = null;
+  isKicking: boolean = false;
+  kickError: string = '';
+
+  /** Differentiates a single click (open profile) from a double click (kick). */
+  private clickTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Long-press detection for touch devices. */
+  private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  private longPressTriggered: boolean = false;
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private readonly singleClickDelayMs = 250;
+  private readonly longPressMs = 550;
+  private readonly touchMoveTolerance = 12;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -313,6 +330,123 @@ export class TournamentStandingsComponent implements OnInit {
         groupId: this.tournamentId,
         memberFullName: player.fullName ?? '',
         memberUsername: player.username
+      }
+    });
+  }
+
+  /** A member can be kicked when the current user is a group admin and it isn't themselves. */
+  isMemberKickable(player: TournamentPlayer): boolean {
+    return this.canEditGroup() && !this.isCurrentUser(player);
+  }
+
+  /**
+   * Single click → open profile. For kickable rows the navigation is deferred a
+   * moment so a double click can cancel it and open the kick banner instead.
+   */
+  onPlayerClick(player: TournamentPlayer): void {
+    if (this.longPressTriggered) {
+      // The click that follows a long-press release must not also open the profile.
+      this.longPressTriggered = false;
+      return;
+    }
+    if (!this.isMemberKickable(player)) {
+      this.goToPlayerProfile(player);
+      return;
+    }
+    if (this.clickTimer) {
+      // Second click of a double click — let onPlayerDblClick handle it.
+      return;
+    }
+    this.clickTimer = setTimeout(() => {
+      this.clickTimer = null;
+      this.goToPlayerProfile(player);
+    }, this.singleClickDelayMs);
+  }
+
+  /** Desktop: double click on a member opens the kick confirmation. */
+  onPlayerDblClick(player: TournamentPlayer): void {
+    if (this.clickTimer) {
+      clearTimeout(this.clickTimer);
+      this.clickTimer = null;
+    }
+    if (this.isMemberKickable(player)) {
+      this.openKickConfirm(player);
+    }
+  }
+
+  /** Mobile: start the long-press timer that opens the kick confirmation. */
+  onPlayerTouchStart(event: TouchEvent, player: TournamentPlayer): void {
+    this.longPressTriggered = false;
+    this.clearLongPress();
+    if (!this.isMemberKickable(player) || event.touches.length !== 1) {
+      return;
+    }
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.longPressTimer = setTimeout(() => {
+      this.longPressTimer = null;
+      this.longPressTriggered = true;
+      this.openKickConfirm(player);
+    }, this.longPressMs);
+  }
+
+  onPlayerTouchMove(event: TouchEvent): void {
+    if (!this.longPressTimer || event.touches.length !== 1) {
+      return;
+    }
+    const touch = event.touches[0];
+    if (
+      Math.abs(touch.clientX - this.touchStartX) > this.touchMoveTolerance ||
+      Math.abs(touch.clientY - this.touchStartY) > this.touchMoveTolerance
+    ) {
+      this.clearLongPress();
+    }
+  }
+
+  onPlayerTouchEnd(): void {
+    this.clearLongPress();
+  }
+
+  private clearLongPress(): void {
+    if (this.longPressTimer) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+    }
+  }
+
+  get kickTargetLabel(): string {
+    return this.kickTarget ? this.playerLabel(this.kickTarget) : '';
+  }
+
+  openKickConfirm(player: TournamentPlayer): void {
+    this.kickTarget = player;
+    this.kickError = '';
+    this.showKickConfirm = true;
+  }
+
+  cancelKick(): void {
+    if (this.isKicking) return;
+    this.showKickConfirm = false;
+    this.kickTarget = null;
+    this.kickError = '';
+  }
+
+  confirmKick(): void {
+    if (!this.kickTarget || this.isKicking) return;
+    const member = this.kickTarget;
+    this.isKicking = true;
+    this.kickError = '';
+    this.tournamentService.kickMember(this.tournamentId, member.id).subscribe({
+      next: () => {
+        this.isKicking = false;
+        this.showKickConfirm = false;
+        this.kickTarget = null;
+        this.loadData();
+      },
+      error: (err: Error) => {
+        this.isKicking = false;
+        this.kickError = err?.message || 'No se pudo expulsar al miembro del grupo';
       }
     });
   }
