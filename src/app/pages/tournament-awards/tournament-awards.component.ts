@@ -274,6 +274,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
             this.countries = [];
             this.allPlayers = [];
             this.predictions = this.cloneAwardPredictions(awards.me);
+            this.suppressReminderIfHasPicks();
             this.hasChanges = false;
             this.trueWinners = trueWinners ?? null;
             this.membersAwardPredictions =
@@ -297,6 +298,7 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
             this.countries = countries;
             this.allPlayers = allPlayers;
             this.predictions = this.cloneAwardPredictions(awardsMe);
+            this.suppressReminderIfHasPicks();
             this.hasChanges = false;
             this.membersAwardPredictions = [];
             this.selectedMemberId = null;
@@ -308,6 +310,24 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  /**
+   * If grondona returned any non-empty award picks, the user has already made
+   * their awards predictions, so the login reminder must stop appearing — same
+   * effect as submitting from this screen.
+   */
+  private suppressReminderIfHasPicks(): void {
+    const p = this.predictions;
+    const hasPicks =
+      p.champion.length > 0 ||
+      p.goldenBall.length > 0 ||
+      p.goldenBoot.length > 0 ||
+      p.goldenGlove.length > 0 ||
+      p.bestYoungPlayer.length > 0;
+    if (hasPicks) {
+      this.awardsReminder.markSubmitted(this.username);
+    }
   }
 
   private finishLoadAfterAwards(): void {
