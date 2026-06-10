@@ -30,7 +30,7 @@
               </button>
             </div>
           </div>
-          <p class="page-subtitle">{{ tournament.name }}</p>
+          <p class="page-subtitle" *ngIf="!genericMode">{{ tournament.name }}</p>
           <p class="awards-deadline-notice awards-deadline-notice--desktop" *ngIf="canEdit && !isLoading">
             Tenés tiempo hasta el inicio del torneo para completar tus predicciones de cada premio.
             Recuerda que cuantos más candidatos selecciones, menos puntos ganarás, así que elige sabiamente si quieren elegir múltiples opciones.
@@ -139,11 +139,11 @@
               [class.selections-list--player-awards]="cat.type === 'player'">
               <div class="selection-item" *ngFor="let item of getSelectionsForCategory(cat)">
                 <ng-container *ngIf="cat.type === 'country'">
-                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
+                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asCountry(item))">
                   <span class="selection-name">{{ asCountry(item).name }}</span>
                 </ng-container>
                 <ng-container *ngIf="cat.type === 'player'">
-                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
+                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asPlayer(item).country)">
                   <div class="selection-info">
                     <span class="selection-name">{{ asPlayer(item).name }}</span>
                     <span class="selection-country">{{ asPlayer(item).country.name }}</span>
@@ -234,11 +234,11 @@
             <div class="selections-list">
               <div class="selection-item selection-item--winner">
                 <ng-container *ngIf="activeCategory.type === 'country'">
-                  <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag">
+                  <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asCountry(winner))">
                   <span class="selection-name">{{ asCountry(winner).name }}</span>
                 </ng-container>
                 <ng-container *ngIf="activeCategory.type === 'player'">
-                  <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag">
+                  <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asPlayer(winner).country)">
                   <div class="selection-info">
                     <span class="selection-name">{{ asPlayer(winner).name }}</span>
                     <span class="selection-country">{{ asPlayer(winner).country.name }}</span>
@@ -272,11 +272,11 @@
               (click)="canEdit && removeSelection(item)"
               (keydown)="onSelectionItemKeydown($event, item)">
               <ng-container *ngIf="activeCategory.type === 'country'">
-                <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
+                <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asCountry(item))">
                 <span class="selection-name">{{ asCountry(item).name }}</span>
               </ng-container>
               <ng-container *ngIf="activeCategory.type === 'player'">
-                <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
+                <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asPlayer(item).country)">
                 <div class="selection-info">
                   <span class="selection-name">{{ asPlayer(item).name }}</span>
                   <span class="selection-country">{{ asPlayer(item).country.name }}</span>
@@ -369,12 +369,12 @@
             (click)="toggleSelection(option)">
             
             <ng-container *ngIf="activeCategory.type === 'country'">
-              <img [src]="asCountry(option).flagUrl" [alt]="asCountry(option).name" class="option-flag">
+              <img [src]="asCountry(option).flagUrl" [alt]="asCountry(option).name" class="option-flag" [class.option-flag--square]="isSquareFlag(asCountry(option))">
               <span class="option-name">{{ asCountry(option).name }}</span>
             </ng-container>
 
             <ng-container *ngIf="activeCategory.type === 'player'">
-              <img [src]="asPlayer(option).country.flagUrl" [alt]="asPlayer(option).country.name" class="option-flag">
+              <img [src]="asPlayer(option).country.flagUrl" [alt]="asPlayer(option).country.name" class="option-flag" [class.option-flag--square]="isSquareFlag(asPlayer(option).country)">
               <div class="option-info">
                 <span class="option-name">{{ asPlayer(option).name }}</span>
                 <span class="option-detail">{{ asPlayer(option).country.name }} · {{ asPlayer(option).position }}</span>
@@ -398,11 +398,11 @@
               <div class="selections-list">
                 <div class="selection-item selection-item--winner">
                   <ng-container *ngIf="cat.type === 'country'">
-                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag">
+                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asCountry(winner))">
                     <span class="selection-name">{{ asCountry(winner).name }}</span>
                   </ng-container>
                   <ng-container *ngIf="cat.type === 'player'">
-                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag">
+                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asPlayer(winner).country)">
                     <div class="selection-info">
                       <span class="selection-name">{{ asPlayer(winner).name }}</span>
                       <span class="selection-country">{{ asPlayer(winner).country.name }}</span>
@@ -425,11 +425,11 @@
                 [class.selection-item--is-winner]="isWinnerItemInCategory(item, cat)"
                 *ngFor="let item of getSelectionsForCategory(cat)">
                 <ng-container *ngIf="cat.type === 'country'">
-                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag">
+                  <img [src]="asCountry(item).flagUrl" [alt]="asCountry(item).name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asCountry(item))">
                   <span class="selection-name">{{ asCountry(item).name }}</span>
                 </ng-container>
                 <ng-container *ngIf="cat.type === 'player'">
-                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag">
+                  <img [src]="asPlayer(item).country.flagUrl" [alt]="asPlayer(item).country.name" class="selection-flag" [class.selection-flag--square]="isSquareFlag(asPlayer(item).country)">
                   <div class="selection-info">
                     <span class="selection-name">{{ asPlayer(item).name }}</span>
                     <span class="selection-country">{{ asPlayer(item).country.name }}</span>
@@ -502,13 +502,13 @@
                 [class.per-award-picks--player]="activeCategory.type === 'player'">
                 <ng-container *ngIf="activeCategory.type === 'country'">
                   <span class="pick-chip pick-chip--winner-item">
-                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="pick-flag">
+                    <img [src]="asCountry(winner).flagUrl" [alt]="asCountry(winner).name" class="pick-flag" [class.pick-flag--square]="isSquareFlag(asCountry(winner))">
                     {{ asCountry(winner).name }}
                   </span>
                 </ng-container>
                 <ng-container *ngIf="activeCategory.type === 'player'">
                   <span class="pick-chip pick-chip--winner-item">
-                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="pick-flag">
+                    <img [src]="asPlayer(winner).country.flagUrl" [alt]="asPlayer(winner).country.name" class="pick-flag" [class.pick-flag--square]="isSquareFlag(asPlayer(winner).country)">
                     <span class="pick-chip-text">{{ asPlayer(winner).name }}</span>
                   </span>
                 </ng-container>
@@ -527,13 +527,13 @@
               [class.per-award-picks--player]="activeCategory.type === 'player'">
               <ng-container *ngIf="activeCategory.type === 'country'">
                 <span class="pick-chip" [class.pick-chip--is-winner]="isWinnerItem(c)" *ngFor="let c of getMemberCategorySelections(member, activeCategory)">
-                  <img [src]="asCountry(c).flagUrl" [alt]="asCountry(c).name" class="pick-flag">
+                  <img [src]="asCountry(c).flagUrl" [alt]="asCountry(c).name" class="pick-flag" [class.pick-flag--square]="isSquareFlag(asCountry(c))">
                   {{ asCountry(c).name }}
                 </span>
               </ng-container>
               <ng-container *ngIf="activeCategory.type === 'player'">
                 <span class="pick-chip" [class.pick-chip--is-winner]="isWinnerItem(pl)" *ngFor="let pl of getMemberCategorySelections(member, activeCategory)">
-                  <img [src]="asPlayer(pl).country.flagUrl" [alt]="asPlayer(pl).country.name" class="pick-flag">
+                  <img [src]="asPlayer(pl).country.flagUrl" [alt]="asPlayer(pl).country.name" class="pick-flag" [class.pick-flag--square]="isSquareFlag(asPlayer(pl).country)">
                   <span class="pick-chip-text">{{ asPlayer(pl).name }}</span>
                 </span>
               </ng-container>
