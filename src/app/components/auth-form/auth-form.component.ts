@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { IUserService, USER_SERVICE } from '../../services/user-service.interface';
 import { RegistrationError } from '../../models/user.model';
 import { FeatureFlagService } from '../../services/feature-flag.service';
+import { AuthSessionService } from '../../services/auth-session.service';
 
 type AuthTab = 'login' | 'register';
 
@@ -32,6 +33,8 @@ export class AuthFormComponent {
   
   isSubmitting: boolean = false;
   isForgotPasswordSubmitting: boolean = false;
+  /** Shown when the user was bounced here because their session/JWT expired. */
+  sessionExpired: boolean = false;
   forgotPasswordOpen: boolean = false;
   forgotPasswordSent: boolean = false;
   resetEmail: string = '';
@@ -42,11 +45,16 @@ export class AuthFormComponent {
   constructor(
     private router: Router,
     @Inject(USER_SERVICE) private userService: IUserService,
-    private featureFlagService: FeatureFlagService
-  ) {}
+    private featureFlagService: FeatureFlagService,
+    private authSession: AuthSessionService
+  ) {
+    // Consume-once flag: only true right after a 401/403 redirect, never on a fresh visit.
+    this.sessionExpired = this.authSession.consumeExpired();
+  }
 
   switchTab(tab: AuthTab): void {
     this.currentTab = tab;
+    this.sessionExpired = false;
     this.clearErrors();
     this.closeForgotPasswordForm();
     // Reset form fields when switching tabs
@@ -59,6 +67,7 @@ export class AuthFormComponent {
 
   onSubmit(): void {
     this.clearErrors();
+    this.sessionExpired = false;
     
     if (this.currentTab === 'login') {
       this.handleLogin();

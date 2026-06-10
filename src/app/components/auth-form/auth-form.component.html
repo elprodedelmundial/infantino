@@ -15,6 +15,15 @@
       </button>
     </div>
 
+    <!-- Session expired notice (redirected here after a 401/403 from the API) -->
+    <div class="session-expired-notice" *ngIf="sessionExpired && isLogin">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 4.5V8.5L10.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Tu sesión expiró. Iniciá sesión de nuevo para continuar.
+    </div>
+
     <form (ngSubmit)="onSubmit()">
       <!-- Register: Full Name -->
       <div class="form-group" *ngIf="isRegister">
