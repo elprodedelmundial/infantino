@@ -1,7 +1,11 @@
 # PRODE Homepage - Makefile
 # Angular project management commands
 
-.PHONY: help install start serve build build-prod clean test lint format check-config
+.PHONY: help install start serve serve-open build build-prod clean test lint format deploy confirm-local config-prod config-local
+
+# Grondona API targets used when switching src/config.js
+PROD_GRONDONA_URL := https://grondona-897932846991.southamerica-east1.run.app
+LOCAL_GRONDONA_URL := http://localhost:8080
 
 # Default target
 help:
@@ -16,8 +20,9 @@ help:
 	@echo "  clean       Remove build artifacts and node_modules"
 	@echo "  test        Run unit tests"
 	@echo "  lint        Run linter"
-	@echo "  deploy      Deploy static content to Firebase Hosting"
-	@echo "  check-config  Verify 'grondona-url' is not localhost before deploying"
+	@echo "  deploy      Point config to prod, deploy to Firebase, then revert to local"
+	@echo "  config-prod   Point 'grondona-url' in src/config.js to production"
+	@echo "  config-local  Point 'grondona-url' in src/config.js to localhost"
 	@echo "  format      Format code with Prettier (if available)"
 	@echo ""
 
@@ -28,11 +33,23 @@ install:
 # Start development server
 start: serve
 
-serve:
+serve: confirm-local
 	npm run start
 
-serve-open:
+serve-open: confirm-local
 	npm run start -- --open
+
+# Ask for confirmation before serving when config.js points to a non-local
+# (production) grondona-url, to avoid accidentally hitting prod from dev.
+confirm-local:
+	@if grep -E "^[[:space:]]*'grondona-url'[[:space:]]*:" src/config.js | grep -Eqv "localhost|127\.0\.0\.1"; then \
+		printf "⚠️  config.js 'grondona-url' is NOT local (pointing to production). Start anyway? [y/N] "; \
+		read ans; \
+		case "$$ans" in \
+			[yY]|[yY][eE][sS]) echo "Continuing with production configuration..." ;; \
+			*) echo "Aborted. Set 'grondona-url' to localhost (or confirm) before serving."; exit 1 ;; \
+		esac; \
+	fi
 
 # Build targets
 build:
@@ -42,16 +59,23 @@ build-prod:
 	npm run build -- --configuration production
 
 
-# Guard: refuse to deploy when the active 'grondona-url' points to localhost.
-# Only inspects uncommented lines (a leading // would not match the anchor).
-check-config:
-	@if grep -E "^[[:space:]]*'grondona-url'[[:space:]]*:" src/config.js | grep -Eq "localhost|127\.0\.0\.1"; then \
-		echo "✗ Deploy aborted: 'grondona-url' in src/config.js points to localhost."; \
-		echo "  Set it to the production Grondona URL before running 'make deploy'."; \
-		exit 1; \
-	fi
+# Rewrite the active (uncommented) 'grondona-url' line in src/config.js.
+# A leading // keeps the commented prod line from matching the anchor.
+config-prod:
+	@perl -i -pe "s|^(\s*)'grondona-url'\s*:\s*'[^']*'|\$$1'grondona-url': '$(PROD_GRONDONA_URL)'|" src/config.js
+	@echo "✓ config.js 'grondona-url' → $(PROD_GRONDONA_URL)"
 
-deploy: check-config install build-prod
+config-local:
+	@perl -i -pe "s|^(\s*)'grondona-url'\s*:\s*'[^']*'|\$$1'grondona-url': '$(LOCAL_GRONDONA_URL)'|" src/config.js
+	@echo "✓ config.js 'grondona-url' → $(LOCAL_GRONDONA_URL)"
+
+# Deploy: point config.js to prod, build & deploy, then always revert to local
+# (the trap reverts even if the build or deploy fails / is interrupted).
+deploy: install
+	@$(MAKE) --no-print-directory config-prod
+	@trap '$(MAKE) --no-print-directory config-local' EXIT INT TERM; \
+	set -e; \
+	npm run build -- --configuration production; \
 	firebase deploy --only hosting
 
 # Clean build artifacts

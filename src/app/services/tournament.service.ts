@@ -578,6 +578,20 @@ export class TournamentService implements ITournamentService {
     );
   }
 
+  kickMember(groupId: string, memberId: string): Observable<boolean> {
+    this.token = localStorage.getItem('auth_token');
+    return this.http.delete<void>(
+      `${this.baseUrl}/api/tournaments/${WORLD_CUP_ID}/groups/${groupId}/members/${memberId}`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      map(() => true),
+      catchError(error => {
+        console.error('Kick member error:', error);
+        return throwError(() => new Error('No se pudo expulsar al miembro del grupo'));
+      })
+    );
+  }
+
   rejectCandidate(groupId: string, candidateId: string): Observable<boolean> {
     this.token = localStorage.getItem('auth_token');
     return this.http.delete<void>(

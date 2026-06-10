@@ -399,6 +399,10 @@
 
   &--clickable {
     cursor: pointer;
+    // Long-press to kick (admins) shouldn't select text or pop the iOS callout.
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   &--clickable:hover {

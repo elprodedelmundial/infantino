@@ -67,6 +67,8 @@ export interface ITournamentService {
   acceptCandidate(groupId: string, candidateId: string): Observable<boolean>;
   /** DELETE reject a candidate from the group */
   rejectCandidate(groupId: string, candidateId: string): Observable<boolean>;
+  /** DELETE kick (remove) an existing member from the group */
+  kickMember(groupId: string, memberId: string): Observable<boolean>;
 }
 
 export const TOURNAMENT_SERVICE = 'TOURNAMENT_SERVICE';
