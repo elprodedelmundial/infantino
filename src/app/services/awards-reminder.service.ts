@@ -11,13 +11,9 @@ export class AwardsReminderService {
 
   /**
    * Hard cutoff: after this instant the banner is never shown to anyone.
-   *
-   * NOTE: the requirement stated "2025-06-11 16:00 (UTC-3)", but the tournament
-   * runs in June 2026, so a 2025 date would disable the banner immediately. This
-   * uses 2026-06-11 16:00 (UTC-3) — adjust this constant if a different cutoff
-   * is intended.
+   * Set to 2026-06-11 15:00 Buenos Aires time (UTC-3).
    */
-  private static readonly CUTOFF = new Date('2026-06-11T16:00:00-03:00');
+  private static readonly CUTOFF = new Date('2026-06-11T15:00:00-03:00');
 
   isPastCutoff(now: number = Date.now()): boolean {
     return now > AwardsReminderService.CUTOFF.getTime();
