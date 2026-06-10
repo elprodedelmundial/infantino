@@ -391,6 +391,11 @@
   width: 24px;
   height: 16px;
   object-fit: cover;
+
+  // Switzerland's flag is square, not the usual rectangle.
+  &--square {
+    width: 16px;
+  }
 }
 
 .selection-info {
@@ -688,6 +693,11 @@
   height: 20px;
   object-fit: cover;
   flex-shrink: 0;
+
+  // Switzerland's flag is square, not the usual rectangle.
+  &--square {
+    width: 20px;
+  }
 }
 
 .option-info {
@@ -1364,6 +1374,11 @@
   height: 12px;
   object-fit: cover;
   border-radius: 1px;
+
+  // Switzerland's flag is square, not the usual rectangle.
+  &--square {
+    width: 12px;
+  }
 }
 
 .pick-empty {

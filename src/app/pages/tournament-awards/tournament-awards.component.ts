@@ -18,6 +18,7 @@ import {
 } from '../../models/tournament.model';
 import { WORLD_CUP_ID } from '../../services/match.service';
 import { MemberDisplayPreferenceService } from '../../services/member-display-preference.service';
+import { AwardsReminderService } from '../../services/awards-reminder.service';
 import { includesNormalized, matchesCountrySearch } from '../../utils/text-search.utils';
 
 interface AwardCategory {
@@ -104,10 +105,18 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
   /** From router state: abrir vista de predicciones del grupo al cargar (torneo iniciado) */
   private openBrowseFromRoute = false;
 
+  /**
+   * Generic mode (reached from the unique-predictions awards reminder): the
+   * screen is identical to a group's awards page but hides the group-name
+   * subtitle, since the picks are shared across all of the user's groups.
+   */
+  genericMode = false;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
+    private awardsReminder: AwardsReminderService,
     readonly memberDisplay: MemberDisplayPreferenceService
   ) {}
 
@@ -126,12 +135,14 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       const st = history.state as {
         username?: string;
         openGroupAwardsBrowse?: boolean;
+        generic?: boolean;
       } | undefined;
       if (st?.username) {
         this.username = st.username;
         this.tournamentService.setCurrentUser(this.username);
       }
       this.openBrowseFromRoute = st?.openGroupAwardsBrowse === true;
+      this.genericMode = st?.generic === true;
       this.loadData();
     });
   }
@@ -627,6 +638,8 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
       next: () => {
         this.isSaving = false;
         this.hasChanges = false;
+        // Any successful awards submission permanently suppresses the login reminder.
+        this.awardsReminder.markSubmitted(this.username);
         if (this.isMobileLayout()) {
           this.goToNextCategory();
         } else {
@@ -658,6 +671,19 @@ export class TournamentAwardsComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/tournament', this.tournamentId], {
       state: { username: this.username, activeTab }
     });
+  }
+
+  /** Countries whose flag is square (1:1) rather than the usual rectangle. */
+  private static readonly SQUARE_FLAG_CODES = new Set(['CH', 'CHE', 'SUI']);
+  private static readonly SQUARE_FLAG_NAMES = new Set(['suiza', 'switzerland', 'suisse', 'schweiz', 'svizzera']);
+
+  /** Switzerland (and any other square-flag nation) should render its flag as a square. */
+  isSquareFlag(country: Country | null | undefined): boolean {
+    if (!country) return false;
+    const code = (country.code ?? '').trim().toUpperCase();
+    if (TournamentAwardsComponent.SQUARE_FLAG_CODES.has(code)) return true;
+    const name = (country.name ?? '').trim().toLowerCase();
+    return TournamentAwardsComponent.SQUARE_FLAG_NAMES.has(name);
   }
 
   asCountry(item: Country | Player): Country {

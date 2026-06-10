@@ -1,0 +1,82 @@
+<div
+  class="awards-reminder-overlay"
+  *ngIf="ready"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Recordatorio de predicciones de premios">
+  <div class="awards-reminder-backdrop" (click)="close()" aria-hidden="true"></div>
+
+  <div class="awards-reminder-panel">
+    <div class="awards-reminder-header">
+      <h2 class="awards-reminder-title">Predicciones de Premios</h2>
+      <button class="awards-reminder-close-btn" (click)="close()" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="awards-reminder-intro">
+      <div class="awards-reminder-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M8 21H16M12 17V21M7 3H17L19 8C19 10.76 15.87 13 12 13C8.13 13 5 10.76 5 8L7 3Z"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M5 8C3.5 8 2 9 2 10.5C2 12 3 13 5 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <path d="M19 8C20.5 8 22 9 22 10.5C22 12 21 13 19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <p class="awards-reminder-subtitle">
+        No olvides enviar tus <strong>predicciones de premios</strong> antes del inicio del torneo.
+        Una vez comenzado, no podrán cargarse y esos puntos podrían ser la diferencia entre ganar y perder.
+      </p>
+
+      <p class="awards-reminder-hint" *ngIf="mode === 'select'">
+        Elegí el grupo para el que querés cargar tus predicciones.
+      </p>
+    </div>
+
+    <!-- Group selector (many groups, per-group predictions) -->
+    <div class="awards-reminder-selector" *ngIf="mode === 'select' && selectedGroup as group">
+      <button
+        type="button"
+        class="awards-reminder-row awards-reminder-row--selected awards-reminder-selector-toggle"
+        [class.awards-reminder-selector-toggle--open]="isGroupSelectorOpen"
+        (click)="toggleGroupSelector()">
+        <div class="awards-reminder-row-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 9C10.6569 9 12 7.65685 12 6C12 4.34315 10.6569 3 9 3C7.34315 3 6 4.34315 6 6C6 7.65685 7.34315 9 9 9Z" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M3 15C3 12.7909 5.68629 11 9 11C12.3137 11 15 12.7909 15 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="awards-reminder-row-name">{{ group.tournament.name }}</span>
+        <svg class="awards-reminder-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <ul class="awards-reminder-list" *ngIf="isGroupSelectorOpen">
+        <li
+          class="awards-reminder-row"
+          *ngFor="let g of selectableGroups"
+          (click)="selectGroup(g)">
+          <div class="awards-reminder-row-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 9C10.6569 9 12 7.65685 12 6C12 4.34315 10.6569 3 9 3C7.34315 3 6 4.34315 6 6C6 7.65685 7.34315 9 9 9Z" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M3 15C3 12.7909 5.68629 11 9 11C12.3137 11 15 12.7909 15 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="awards-reminder-row-name">{{ g.tournament.name }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="awards-reminder-actions">
+      <button class="awards-reminder-btn awards-reminder-btn--cancel" (click)="close()">
+        Ahora no
+      </button>
+      <button class="awards-reminder-btn awards-reminder-btn--confirm" (click)="goToAwards()">
+        Cargar predicciones
+      </button>
+    </div>
+  </div>
+</div>

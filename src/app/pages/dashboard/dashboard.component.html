@@ -1,5 +1,11 @@
 <app-user-toolbar [username]="username"></app-user-toolbar>
 
+<app-awards-reminder
+  *ngIf="showAwardsReminder"
+  [username]="username"
+  (closed)="showAwardsReminder = false">
+</app-awards-reminder>
+
 <main class="main">
   <div class="content-wrapper">
     <div class="main-buttons">

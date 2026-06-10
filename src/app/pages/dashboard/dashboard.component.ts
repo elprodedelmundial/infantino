@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserToolbarComponent } from '../../components/user-toolbar/user-toolbar.component';
+import { AwardsReminderComponent } from '../../components/awards-reminder/awards-reminder.component';
 import { ITournamentService, TOURNAMENT_SERVICE } from '../../services/tournament-service.interface';
 import { IUserService, USER_SERVICE } from '../../services/user-service.interface';
+import { AwardsReminderService } from '../../services/awards-reminder.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserToolbarComponent],
+  imports: [CommonModule, FormsModule, UserToolbarComponent, AwardsReminderComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -23,16 +25,24 @@ export class DashboardComponent implements OnInit {
   passwordResetError: string = '';
   isPasswordResetSubmitting: boolean = false;
 
+  /** Awards-predictions reminder, shown once per login until the user submits. */
+  showAwardsReminder: boolean = false;
+
   constructor(
     private router: Router,
     @Inject(TOURNAMENT_SERVICE) private tournamentService: ITournamentService,
-    @Inject(USER_SERVICE) private userService: IUserService
+    @Inject(USER_SERVICE) private userService: IUserService,
+    private awardsReminder: AwardsReminderService
   ) {}
 
   ngOnInit(): void {
     const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as { username?: string; shouldResetPassword?: boolean } | undefined;
-    const historyState = history.state as { username?: string; shouldResetPassword?: boolean } | undefined;
+    const state = navigation?.extras.state as
+      | { username?: string; shouldResetPassword?: boolean; fromLogin?: boolean }
+      | undefined;
+    const historyState = history.state as
+      | { username?: string; shouldResetPassword?: boolean; fromLogin?: boolean }
+      | undefined;
 
     const resolvedState = state ?? historyState;
     if (resolvedState?.username) {
@@ -41,6 +51,15 @@ export class DashboardComponent implements OnInit {
 
     if (resolvedState?.shouldResetPassword) {
       this.passwordResetRequired = true;
+    }
+
+    // Only on a fresh login, and not while the forced password change is up.
+    if (
+      resolvedState?.fromLogin &&
+      !this.passwordResetRequired &&
+      this.awardsReminder.canShow(this.username)
+    ) {
+      this.showAwardsReminder = true;
     }
 
     this.tournamentService.setCurrentUser(this.username);
