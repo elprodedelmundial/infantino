@@ -15,7 +15,7 @@
     </div>
 
     <!-- Live Matches Section -->
-    <div class="live-section" *ngIf="!isLoading && liveMatches.length > 0">
+    <div class="live-section" *ngIf="!isLoading && (liveMatches.length > 0 || lockedUpcomingMatches.length > 0)">
       <div class="section-header">
         <h2 class="section-title live">
           <span class="live-dot"></span>
@@ -69,17 +69,60 @@
             </button>
           </div>
         </div>
+
+        <!-- Locked matches: kickoff imminent / already underway but not yet flagged
+             live. Same layout & behaviour as a live card (tap → predictions); the
+             substatus shows API substatus or "PROXIMO" (same badge as live, no dot). -->
+        <div class="live-match-card results-match-grid locked-match-card" *ngFor="let match of lockedUpcomingMatches"
+          (click)="onResultsMatchCardClick($event, match, 'live')">
+          <div class="match-schedule match-schedule--live">
+            <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"
+              (badgeClick)="showMultiplierToast($event, match)"></app-match-multiplier-badge>
+            <div class="match-time-badge live">
+              {{ match.matchTime || 'PROXIMO' }}
+            </div>
+          </div>
+
+          <div class="team-stack team-stack--home">
+            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag flag-stack"
+              [class.flag--ch]="isSwitzerland(match.homeTeam)">
+            <span class="team-name-stack">{{ match.homeTeam.name }}</span>
+          </div>
+
+          <div class="match-center-col">
+            <span class="vs">vs</span>
+          </div>
+
+          <div class="team-stack team-stack--away">
+            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag flag-stack"
+              [class.flag--ch]="isSwitzerland(match.awayTeam)">
+            <span class="team-name-stack">{{ match.awayTeam.name }}</span>
+          </div>
+
+          <div class="match-action" *ngIf="hasJoinedTournaments() && !resultsLayoutIsMobile">
+            <button class="view-predictions-btn" (click)="viewPredictions(match)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z"
+                  stroke="currentColor" stroke-width="1.5" />
+                <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor"
+                  stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              Predicciones
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Upcoming Matches Section -->
-    <div class="upcoming-section" *ngIf="!isLoading && upcomingMatches.length > 0">
+    <div class="upcoming-section" *ngIf="!isLoading && openUpcomingMatches.length > 0">
       <div class="section-header">
         <h2 class="section-title">Próximos Partidos</h2>
       </div>
 
       <div class="upcoming-matches-list">
-        <div class="upcoming-match-card results-match-grid" *ngFor="let match of upcomingMatches"
+        <div class="upcoming-match-card results-match-grid" *ngFor="let match of openUpcomingMatches"
           (click)="onResultsMatchCardClick($event, match, 'upcoming')">
           <div class="match-schedule">
             <app-match-multiplier-badge *ngIf="match.hasMultiplier" variant="schedule-gap"
@@ -105,17 +148,7 @@
           </div>
 
           <div class="match-action" *ngIf="hasJoinedTournaments() && !resultsLayoutIsMobile">
-            <!-- Match locked (< 15 min or started) -->
-            <div class="locked-badge-small" *ngIf="isMatchActive(match)">
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5" />
-                <path d="M4.5 6V4C4.5 2.619 5.619 1.5 7 1.5C8.381 1.5 9.5 2.619 9.5 4V6" stroke="currentColor"
-                  stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-              Bloqueado
-            </div>
-            <!-- Predict button (> 15 min away) -->
-            <button class="predict-btn" *ngIf="!isMatchActive(match)" (click)="predictMatch(match)">
+            <button class="predict-btn" (click)="predictMatch(match)">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M10 2L12 4L5.5 10.5H3.5V8.5L10 2Z" stroke="currentColor" stroke-width="1.5"
                   stroke-linejoin="round" />

@@ -37,6 +37,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
   joinedTournaments: JoinedTournament[] = [];
   isLoading: boolean = true;
   private matchRefreshSub?: Subscription;
+  /** Suspends the 10s live refresh while a predictions modal is open. */
+  private refreshPaused = false;
   
   // Match data
   liveMatches: LiveMatch[] = [];
@@ -148,10 +150,25 @@ export class ResultsComponent implements OnInit, OnDestroy {
     };
   }
 
-  /** 10s polling only while there are live matches; stops when the list is empty. */
+  /**
+   * Upcoming matches whose kickoff is imminent (≤15 min) or already underway but
+   * not yet flagged `live` by the server. They render at the END of the live
+   * section and behave like live matches (tap → other users' predictions); the
+   * only difference is the schedule shows the start time instead of a live minute.
+   */
+  get lockedUpcomingMatches(): LiveMatch[] {
+    return this.upcomingMatches.filter(m => this.isMatchActive(m));
+  }
+
+  /** Upcoming matches still open for predictions (kickoff > 15 min away). */
+  get openUpcomingMatches(): LiveMatch[] {
+    return this.upcomingMatches.filter(m => !this.isMatchActive(m));
+  }
+
+  /** 10s polling while there are live (or locked, soon-to-be-live) matches. */
   private syncMatchRefreshSubscription(): void {
-    const hasLive = this.liveMatches.length > 0;
-    if (!hasLive) {
+    const hasLive = this.liveMatches.length > 0 || this.lockedUpcomingMatches.length > 0;
+    if (!hasLive || this.refreshPaused) {
       this.matchRefreshSub?.unsubscribe();
       this.matchRefreshSub = undefined;
       return;
@@ -277,6 +294,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.selectedMatch = match;
     this.isLoadingPredictions = true;
     this.showPredictionsModal = true;
+    // Freeze the live list while the user inspects predictions; resumed on close.
+    this.refreshPaused = true;
+    this.syncMatchRefreshSubscription();
     this.expandedTournaments.clear();
     
     if (this.joinedTournaments.length > 0) {
@@ -298,6 +318,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.showPredictionsModal = false;
     this.selectedMatch = null;
     this.matchPredictionsByTournament = null;
+    // Resume the live refresh that was suspended when the modal opened.
+    this.refreshPaused = false;
+    this.syncMatchRefreshSubscription();
   }
 
   toggleTournamentExpanded(tournamentId: string): void {
