@@ -696,6 +696,7 @@
   z-index: 1000;
   padding: 20px;
   animation: fadeIn 0.2s ease-out;
+  overscroll-behavior: none;
 }
 
 .modal-content {
@@ -706,6 +707,7 @@
   max-height: 80vh;
   overflow-y: auto;
   overflow-x: visible;
+  overscroll-behavior: contain;
   animation: modalSlideUp 0.3s ease-out;
   position: relative;
 

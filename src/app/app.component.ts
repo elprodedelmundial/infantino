@@ -97,8 +97,15 @@ export class AppComponent implements OnInit {
 
     // Arm pull-to-refresh only when the page is scrolled to the very top. This
     // works even when the gesture starts on a button, since a tap can't reach
-    // the (large) trigger distance.
-    if (!this.isRefreshing && this.isAtTop()) {
+    // the (large) trigger distance. Skip when the gesture begins inside a modal
+    // (or other scroll container that isn't at its own top) so list scrolling
+    // there doesn't reload the page underneath.
+    if (
+      !this.isRefreshing &&
+      this.isAtTop() &&
+      !this.startedOnBlockingOverlay(event.target) &&
+      !this.hasScrollableAncestorNotAtTop(event.target)
+    ) {
       this.pullStartX = touch.clientX;
       this.pullStartY = touch.clientY;
       this.pullArmed = true;
@@ -118,6 +125,11 @@ export class AppComponent implements OnInit {
 
   @HostListener('window:touchmove', ['$event'])
   onTouchMove(event: TouchEvent): void {
+    if (this.startedOnBlockingOverlay(event.target) || this.hasScrollableAncestorNotAtTop(event.target)) {
+      this.resetPull();
+      return;
+    }
+
     if (!this.pullArmed || this.pullStartY === null || this.isRefreshing || event.touches.length !== 1) {
       return;
     }
@@ -139,6 +151,11 @@ export class AppComponent implements OnInit {
     // Pull-to-refresh takes priority and is independent of the swipe-nav state.
     if (this.pullArmed && this.pullStartY !== null && !this.isRefreshing) {
       const touch = event.changedTouches[0];
+      if (this.startedOnBlockingOverlay(event.target) || this.hasScrollableAncestorNotAtTop(event.target)) {
+        this.resetPull();
+        this.resetTouch();
+        return;
+      }
       const deltaY = touch.clientY - this.pullStartY;
       const deltaX = this.pullStartX !== null ? Math.abs(touch.clientX - this.pullStartX) : 0;
       const triggered =
@@ -198,6 +215,35 @@ export class AppComponent implements OnInit {
     }
 
     return Boolean(target.closest('input, textarea, select, button, a, [role="button"], [contenteditable="true"]'));
+  }
+
+  /** Modals and similar overlays: never pull-to-refresh the page underneath. */
+  private startedOnBlockingOverlay(target: EventTarget | null): boolean {
+    if (!(target instanceof Element)) {
+      return false;
+    }
+
+    return Boolean(target.closest('.modal-overlay, .auth-modal-overlay, .quota-modal-overlay'));
+  }
+
+  /** True when the touch is inside a nested scroller that isn't at scroll top. */
+  private hasScrollableAncestorNotAtTop(target: EventTarget | null): boolean {
+    if (!(target instanceof Element)) {
+      return false;
+    }
+
+    let el: Element | null = target;
+    while (el && el !== document.documentElement) {
+      const { overflowY } = window.getComputedStyle(el);
+      const scrollable =
+        (overflowY === 'auto' || overflowY === 'scroll') &&
+        el.scrollHeight > el.clientHeight + 1;
+      if (scrollable && el.scrollTop > 0) {
+        return true;
+      }
+      el = el.parentElement;
+    }
+    return false;
   }
 
   private resetTouch(): void {
