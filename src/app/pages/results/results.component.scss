@@ -499,23 +499,6 @@
   flex-wrap: wrap;
 }
 
-.locked-badge-small {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #fb923c;
-  background: rgba(251, 146, 60, 0.1);
-  border: 1px solid rgba(251, 146, 60, 0.3);
-  padding: 5px 10px;
-  border-radius: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
 .past-section {
   margin-bottom: 32px;
 }
@@ -713,6 +696,7 @@
   z-index: 1000;
   padding: 20px;
   animation: fadeIn 0.2s ease-out;
+  overscroll-behavior: none;
 }
 
 .modal-content {
@@ -723,6 +707,7 @@
   max-height: 80vh;
   overflow-y: auto;
   overflow-x: visible;
+  overscroll-behavior: contain;
   animation: modalSlideUp 0.3s ease-out;
   position: relative;
 

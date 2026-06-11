@@ -251,7 +251,81 @@
         </div>
       </div>
 
-      <!-- Past Predictions (collapsible) — hidden when there are no past / in-progress rows -->
+      <!-- Live matches (in progress) -->
+      <div class="predictions-section live" *ngIf="predictions.livePredictions.length > 0">
+        <h3 class="section-title section-title--live">
+          <span class="live-dot"></span>
+          Partidos Actuales
+          <span class="section-count">{{ predictions.livePredictions.length }}</span>
+        </h3>
+
+        <div class="predictions-table live-table predictions-table--live-desktop">
+          <div class="table-header">
+            <span class="col-code">Código</span>
+            <div class="col-match col-match--header">
+              <span class="match-code-to-teams-gutter match-code-to-teams-gutter--header" aria-hidden="true"></span>
+              <span class="col-match-heading">Partido</span>
+            </div>
+            <span class="col-prediction">Tu Predicción</span>
+            <span class="col-status">Estado</span>
+          </div>
+
+          <div class="table-row" *ngFor="let pred of predictions.livePredictions">
+            <span class="col-code">{{ pred.matchCode }}</span>
+            <div class="col-match">
+              <div class="match-code-to-teams-gutter">
+                <app-match-multiplier-badge *ngIf="pred.hasMultiplier"></app-match-multiplier-badge>
+              </div>
+              <div class="team home">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.homeTeam)">
+                <span class="team-name">{{ pred.homeTeam.name }}</span>
+              </div>
+              <span class="vs">vs</span>
+              <div class="team away">
+                <span class="team-name">{{ pred.awayTeam.name }}</span>
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+              </div>
+            </div>
+            <span class="col-prediction score" [class.pending]="!pred.hasPrediction">
+              {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
+            </span>
+            <div class="col-status">
+              <span class="result-badge live">Jugando</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="live-matches-mobile">
+          <article class="past-match-card live-match-card" *ngFor="let pred of predictions.livePredictions">
+            <div class="past-match-card__body">
+              <div class="past-match-card__team past-match-card__team--home">
+                <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.homeTeam)">
+                <span class="past-match-card__team-name">{{ pred.homeTeam.name }}</span>
+              </div>
+              <div class="past-match-card__center past-match-card__center--upcoming">
+                <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
+                  <app-match-multiplier-badge></app-match-multiplier-badge>
+                </div>
+                <span class="past-match-card__field-label">Predicción</span>
+                <span class="past-match-card__score past-match-card__score--prediccion past-match-card__score--upcoming"
+                  [class.past-match-card__score--upcoming-pending]="!pred.hasPrediction">
+                  {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
+                </span>
+              </div>
+              <div class="past-match-card__team past-match-card__team--away">
+                <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
+                  [class.flag--ch]="isSwitzerland(pred.awayTeam)">
+                <span class="past-match-card__team-name">{{ pred.awayTeam.name }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- Past Predictions (collapsible) — finished matches only -->
       <div class="predictions-section" *ngIf="predictions.pastPredictions.length > 0">
         <button class="section-title-toggle" (click)="showPastPredictions = !showPastPredictions">
           <div class="section-title standalone">
@@ -300,22 +374,15 @@
                   [class.flag--ch]="isSwitzerland(pred.awayTeam)">
               </div>
             </div>
-            <ng-container *ngIf="pred.matchStatus === 'IN_PROGRESS'; else finishedRow">
-              <span class="col-prediction score">–</span>
-              <span class="col-result score">–</span>
-            </ng-container>
-            <ng-template #finishedRow>
-              <span class="col-prediction score" [class.pending]="!pred.hasPrediction">
-                {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
-              </span>
-              <span class="col-result score actual">
-                {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
-              </span>
-            </ng-template>
+            <span class="col-prediction score" [class.pending]="!pred.hasPrediction">
+              {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
+            </span>
+            <span class="col-result score actual">
+              {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
+            </span>
             <div class="col-status">
-              <span *ngIf="pred.matchStatus === 'IN_PROGRESS' || pred.result" [ngClass]="getResultBadgeClass(pred)">
-                {{ pred.matchStatus === 'IN_PROGRESS' ? 'Jugando'
-                : pred.result === 'correct' ? 'Correcto'
+              <span *ngIf="pred.result" [ngClass]="getResultBadgeClass(pred)">
+                {{ pred.result === 'correct' ? 'Correcto'
                 : pred.result === 'half' ? 'Parcial'
                 : pred.result === 'bonus' ? 'Bonus'
                 : 'Incorrecto' }}
@@ -334,33 +401,19 @@
                 <span class="past-match-card__team-name">{{ pred.homeTeam.name }}</span>
               </div>
               <div class="past-match-card__center">
-                <ng-container *ngIf="pred.matchStatus === 'IN_PROGRESS'; else pastDoneScores">
-                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
-                    <app-match-multiplier-badge></app-match-multiplier-badge>
-                  </div>
-                  <span class="past-match-card__field-label">Resultado</span>
-                  <span class="past-match-card__score past-match-card__score--resultado">–</span>
-                  <span class="past-match-card__field-label">Predicción</span>
-                  <span class="past-match-card__score past-match-card__score--prediccion"
-                    [ngClass]="getPredictionLineToneClass(pred)">
-                    –
-                  </span>
-                </ng-container>
-                <ng-template #pastDoneScores>
-                  <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
-                    <app-match-multiplier-badge></app-match-multiplier-badge>
-                  </div>
-                  <span class="past-match-card__field-label">Resultado</span>
-                  <span class="past-match-card__score past-match-card__score--resultado">
-                    {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
-                  </span>
-                  <span class="past-match-card__field-label">Predicción</span>
-                  <span class="past-match-card__score past-match-card__score--prediccion"
-                    [class.past-match-card__score--upcoming-pending]="!pred.hasPrediction"
-                    [ngClass]="getPredictionLineToneClass(pred)">
-                    {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
-                  </span>
-                </ng-template>
+                <div *ngIf="pred.hasMultiplier" class="past-match-card__star-row">
+                  <app-match-multiplier-badge></app-match-multiplier-badge>
+                </div>
+                <span class="past-match-card__field-label">Resultado</span>
+                <span class="past-match-card__score past-match-card__score--resultado">
+                  {{ pred.actualScore?.home }} - {{ pred.actualScore?.away }}
+                </span>
+                <span class="past-match-card__field-label">Predicción</span>
+                <span class="past-match-card__score past-match-card__score--prediccion"
+                  [class.past-match-card__score--upcoming-pending]="!pred.hasPrediction"
+                  [ngClass]="getPredictionLineToneClass(pred)">
+                  {{ pred.hasPrediction ? (pred.predictedScore.home + ' - ' + pred.predictedScore.away) : '–' }}
+                </span>
               </div>
               <div class="past-match-card__team past-match-card__team--away">
                 <img [src]="pred.awayTeam.flagUrl" [alt]="pred.awayTeam.name" class="flag"
