@@ -863,13 +863,14 @@ export class TournamentService implements ITournamentService {
       map(response => {
         const all = response.predictions.map(p => this.mapPredictionToMatchPrediction(p));
         return {
-          pastPredictions: all.filter(m => m.isPlayed || m.matchStatus === 'IN_PROGRESS'),
+          pastPredictions: all.filter(m => m.isPlayed),
+          livePredictions: all.filter(m => m.matchStatus === 'IN_PROGRESS'),
           upcomingPredictions: all.filter(m => !m.isPlayed && m.matchStatus !== 'IN_PROGRESS')
         };
       }),
       catchError(error => {
         console.error('Get user predictions error:', error);
-        return of({ pastPredictions: [], upcomingPredictions: [] });
+        return of({ pastPredictions: [], livePredictions: [], upcomingPredictions: [] });
       })
     );
   }

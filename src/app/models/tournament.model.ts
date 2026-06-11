@@ -155,6 +155,8 @@ export interface MatchPrediction {
 
 export interface UserPredictions {
   pastPredictions: MatchPrediction[];
+  /** In-progress matches (status IN_PROGRESS). */
+  livePredictions: MatchPrediction[];
   upcomingPredictions: MatchPrediction[];
 }
 

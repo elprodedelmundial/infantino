@@ -625,6 +625,16 @@
       grid-template-columns: max-content 1fr 120px 80px 60px;
     }
   }
+
+  &.live {
+    border-color: rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(17, 17, 19, 0.6) 100%);
+
+    .table-header,
+    .table-row {
+      grid-template-columns: max-content 1fr 120px 100px;
+    }
+  }
 }
 
 .section-header-row {
@@ -651,10 +661,28 @@
 
   // When standalone (not in header row)
   &.standalone,
-  .predictions-section.upcoming & {
+  .predictions-section.upcoming &,
+  .predictions-section.live & {
     padding: 16px 24px;
     background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border);
+  }
+}
+
+.section-title--live {
+  color: #ff6b6b;
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    animation: livePulse 1.5s ease-in-out infinite;
+  }
+
+  .section-count {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
   }
 }
 
@@ -714,6 +742,10 @@
 
 // Past predictions: mobile card list (hidden on desktop; shown in @media (max-width: 768px))
 .past-matches-mobile {
+  display: none;
+}
+
+.live-matches-mobile {
   display: none;
 }
 
@@ -864,6 +896,10 @@
 // Próximos Partidos — mobile card list (mirrors past-match layout; hidden on desktop)
 .upcoming-matches-mobile {
   display: none;
+}
+
+.live-match-card {
+  border-color: rgba(255, 107, 107, 0.25);
 }
 
 .past-match-card__score--upcoming:not(.past-match-card__score--upcoming-pending) {
@@ -1875,14 +1911,16 @@
     display: none;
   }
 
-  // Últimos partidos: table hidden; card layout
+  // Últimos / actuales / próximos: table hidden; card layout on mobile
   .predictions-table--past-desktop,
-  .predictions-table--upcoming-desktop {
+  .predictions-table--upcoming-desktop,
+  .predictions-table--live-desktop {
     display: none !important;
   }
 
   .past-matches-mobile,
-  .upcoming-matches-mobile {
+  .upcoming-matches-mobile,
+  .live-matches-mobile {
     display: flex;
     flex-direction: column;
     gap: 0;
