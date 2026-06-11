@@ -19,24 +19,6 @@
     <!-- Filters -->
     <div class="filters-container" *ngIf="!isLoading">
       <div class="filter-group">
-        <label class="filter-label">Mostrar</label>
-        <div class="filter-buttons">
-          <button 
-            class="filter-btn" 
-            [class.active]="timeFilter === 'future'"
-            (click)="setTimeFilter('future')">
-            Próximos
-          </button>
-          <button 
-            class="filter-btn" 
-            [class.active]="timeFilter === 'all'"
-            (click)="setTimeFilter('all')">
-            Todos
-          </button>
-        </div>
-      </div>
-
-      <div class="filter-group">
         <label class="filter-label" id="stage-filter-label">Etapa</label>
         <div class="filter-dropdown stage-filter-selector">
           <button
@@ -230,14 +212,14 @@
                   Real: {{ match.actualScore.home }} - {{ match.actualScore.away }}
                 </span>
               </div>
-              <!-- Locked but not played: static boxes -->
+              <!-- Locked but not played: plain score text (no input boxes) -->
               <div class="score-section__boxes" *ngIf="!match.isPlayed && isMatchLocked(match)">
-                <div class="score-boxes">
-                  <span class="score-box score-box--static" [class.score-box--empty]="!match.hasPrediction">
+                <div class="score-readonly">
+                  <span class="score-readonly__num" [class.score-readonly__num--empty]="!match.hasPrediction">
                     {{ match.hasPrediction ? match.predictedScore.home : '–' }}
                   </span>
-                  <span class="score-boxes__sep" aria-hidden="true">-</span>
-                  <span class="score-box score-box--static" [class.score-box--empty]="!match.hasPrediction">
+                  <span class="score-readonly__sep" aria-hidden="true">-</span>
+                  <span class="score-readonly__num" [class.score-readonly__num--empty]="!match.hasPrediction">
                     {{ match.hasPrediction ? match.predictedScore.away : '–' }}
                   </span>
                 </div>

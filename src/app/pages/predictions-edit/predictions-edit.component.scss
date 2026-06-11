@@ -83,52 +83,6 @@
   color: var(--text-muted);
 }
 
-.filter-buttons {
-  display: flex;
-  border: 1px solid var(--border);
-}
-
-// On desktop, match the Próximos/Todos toggle height to the stage/group
-// dropdown so the filter row lines up. The dropdown height is driven by its
-// 32px icon + 12px vertical padding + 1px borders.
-@media (min-width: 769px) {
-  .filter-buttons {
-    min-height: 58px;
-  }
-
-  .filter-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-.filter-btn {
-  padding: 10px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:first-child {
-    border-right: 1px solid var(--border);
-  }
-
-  &:hover:not(.active) {
-    color: var(--text-secondary);
-  }
-
-  &.active {
-    background: var(--accent);
-    color: var(--bg-primary);
-  }
-}
-
 .filter-dropdown {
   position: relative;
   min-width: 220px;
@@ -686,6 +640,37 @@
   color: var(--text-muted);
 }
 
+.score-readonly {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.score-readonly__num {
+  font-family: var(--score-font-numeric);
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.score-readonly__num--empty {
+  color: var(--text-muted);
+}
+
+.score-readonly__sep {
+  font-family: var(--score-font-numeric);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .score-box-input {
   box-sizing: border-box;
   width: 3rem;
@@ -985,14 +970,6 @@
     width: 100%;
   }
 
-  .filter-buttons {
-    width: 100%;
-  }
-
-  .filter-btn {
-    flex: 1;
-  }
-
   .filter-dropdown {
     width: 100%;
     min-width: 0;
@@ -1109,6 +1086,10 @@
   .score-box--static {
     min-width: 2.5rem;
     min-height: 2.5rem;
+    font-size: 1.4rem;
+  }
+
+  .score-readonly__num {
     font-size: 1.4rem;
   }
 

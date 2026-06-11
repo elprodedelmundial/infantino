@@ -11,7 +11,6 @@ import {
   TournamentStageInfo,
   TournamentStage,
   StageFilterId,
-  PredictionFilter,
   MatchScore
 } from '../../models/tournament.model';
 import { isSwitzerland } from '../../utils/flag.utils';
@@ -61,7 +60,6 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
   isUniquePredictions: boolean = false;
   
   // Filters
-  timeFilter: PredictionFilter = 'future';
   stageFilter: StageFilterId | 'all' = 'all';
   groupFilter: string | 'all' = 'all';
   
@@ -180,11 +178,9 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     let filtered = [...this.allMatches];
-    
-    // Time filter
-    if (this.timeFilter === 'future') {
-      filtered = filtered.filter(m => !m.isPlayed);
-    }
+
+    // Only editable upcoming matches — exclude played and locked fixtures.
+    filtered = filtered.filter(m => !m.isPlayed && !this.isMatchLocked(m));
     
     // Stage filter
     if (this.stageFilter !== 'all') {
@@ -200,11 +196,6 @@ export class PredictionsEditComponent implements OnInit, OnDestroy {
     filtered.sort((a, b) => a.matchDate.getTime() - b.matchDate.getTime());
     
     this.filteredMatches = filtered;
-  }
-
-  setTimeFilter(filter: PredictionFilter): void {
-    this.timeFilter = filter;
-    this.applyFilters();
   }
 
   setStageFilter(stage: StageFilterId | 'all'): void {
