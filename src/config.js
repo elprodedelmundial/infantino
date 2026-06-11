@@ -5,7 +5,7 @@
  */
 window.__APP_CONFIG__ = {
   // Base URL for the Grondona API
-  'grondona-url': 'http://localhost:8080',
+  'grondona-url': 'https://grondona-897932846991.southamerica-east1.run.app',
   // Firebase Web app config used for Remote Config feature flags
   'firebase-project-id': 'elprodedelmundial-7d579',
   'firebase-api-key': 'AIzaSyDfwFjOMJlk1sSe6jPRmpRTLheg-VEz-w8',
