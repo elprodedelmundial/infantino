@@ -11,6 +11,7 @@ import {
   PredictionResult,
   UserPredictions,
   MatchPrediction,
+  MemberPrediction,
   GroupRole,
   LastStandingPrediction,
   LastStandingPredictionResult,
@@ -37,6 +38,10 @@ export class TournamentStandingsComponent implements OnInit {
   activeTab: 'standings' | 'predictions' = 'standings';
   showPastPredictions: boolean = false;
   isLoadingPredictions: boolean = false;
+  showGroupPredictionsModal: boolean = false;
+  selectedMatchForPredictions: MatchPrediction | null = null;
+  groupMatchPredictions: MemberPrediction[] | null = null;
+  isLoadingGroupMatchPredictions: boolean = false;
   showLeaveConfirm: boolean = false;
   isLeaving: boolean = false;
 
@@ -83,6 +88,49 @@ export class TournamentStandingsComponent implements OnInit {
 
   playerLabel(player: TournamentPlayer): string {
     return this.memberDisplay.displayName(player.username, player.fullName);
+  }
+
+  predictionLabel(pred: MemberPrediction): string {
+    return this.memberDisplay.displayName(pred.username, pred.fullName);
+  }
+
+  memberPredictionStatusClasses(pred: MemberPrediction): { [key: string]: boolean } {
+    if (!pred.hasPrediction) {
+      return {};
+    }
+    const s = pred.predictionStatus;
+    return {
+      'member-prediction--status-correct': s === 'CORRECT',
+      'member-prediction--status-partial': s === 'PARTIAL',
+      'member-prediction--status-incorrect': s === 'INCORRECT',
+      'member-prediction--status-bonus': s === 'BONUS'
+    };
+  }
+
+  canViewGroupMatchPredictions(pred: MatchPrediction): boolean {
+    return pred.isPlayed || pred.matchStatus === 'IN_PROGRESS';
+  }
+
+  viewGroupMatchPredictions(pred: MatchPrediction): void {
+    if (!this.canViewGroupMatchPredictions(pred)) {
+      return;
+    }
+    this.selectedMatchForPredictions = pred;
+    this.isLoadingGroupMatchPredictions = true;
+    this.showGroupPredictionsModal = true;
+    this.groupMatchPredictions = null;
+
+    this.tournamentService.getMatchGroupPredictions(this.tournamentId, pred.id).subscribe(result => {
+      this.groupMatchPredictions = result?.predictions ?? [];
+      this.isLoadingGroupMatchPredictions = false;
+    });
+  }
+
+  closeGroupPredictionsModal(): void {
+    this.showGroupPredictionsModal = false;
+    this.selectedMatchForPredictions = null;
+    this.groupMatchPredictions = null;
+    this.isLoadingGroupMatchPredictions = false;
   }
 
   ngOnInit(): void {
