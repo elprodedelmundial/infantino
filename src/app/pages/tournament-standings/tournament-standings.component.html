@@ -270,7 +270,8 @@
             <span class="col-status">Estado</span>
           </div>
 
-          <div class="table-row" *ngFor="let pred of predictions.livePredictions">
+          <div class="table-row table-row--view-predictions" *ngFor="let pred of predictions.livePredictions"
+            (click)="viewGroupMatchPredictions(pred)">
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="match-code-to-teams-gutter">
@@ -298,7 +299,13 @@
         </div>
 
         <div class="live-matches-mobile">
-          <article class="past-match-card live-match-card" *ngFor="let pred of predictions.livePredictions">
+          <article class="past-match-card live-match-card past-match-card--view-predictions"
+            *ngFor="let pred of predictions.livePredictions"
+            (click)="viewGroupMatchPredictions(pred)"
+            (keydown.enter)="viewGroupMatchPredictions(pred)"
+            (keydown.space)="$event.preventDefault(); viewGroupMatchPredictions(pred)"
+            role="button" tabindex="0"
+            [attr.aria-label]="'Ver predicciones: ' + pred.homeTeam.name + ' vs ' + pred.awayTeam.name">
             <div class="past-match-card__body">
               <div class="past-match-card__team past-match-card__team--home">
                 <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
@@ -356,7 +363,8 @@
             <span class="col-status">Estado</span>
           </div>
 
-          <div class="table-row" *ngFor="let pred of predictions.pastPredictions">
+          <div class="table-row table-row--view-predictions" *ngFor="let pred of predictions.pastPredictions"
+            (click)="viewGroupMatchPredictions(pred)">
             <span class="col-code">{{ pred.matchCode }}</span>
             <div class="col-match">
               <div class="match-code-to-teams-gutter">
@@ -393,7 +401,12 @@
 
         <!-- Mobile: one card per match; status = color of prediction only -->
         <div class="past-matches-mobile" *ngIf="showPastPredictions">
-          <article class="past-match-card" *ngFor="let pred of predictions.pastPredictions">
+          <article class="past-match-card past-match-card--view-predictions" *ngFor="let pred of predictions.pastPredictions"
+            (click)="viewGroupMatchPredictions(pred)"
+            (keydown.enter)="viewGroupMatchPredictions(pred)"
+            (keydown.space)="$event.preventDefault(); viewGroupMatchPredictions(pred)"
+            role="button" tabindex="0"
+            [attr.aria-label]="'Ver predicciones: ' + pred.homeTeam.name + ' vs ' + pred.awayTeam.name">
             <div class="past-match-card__body">
               <div class="past-match-card__team past-match-card__team--home">
                 <img [src]="pred.homeTeam.flagUrl" [alt]="pred.homeTeam.name" class="flag"
@@ -621,6 +634,86 @@
           <span class="spinner-small" *ngIf="isSavingGroup"></span>
           {{ isSavingGroup ? 'Guardando...' : 'Guardar Cambios' }}
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Group match predictions modal (same layout as Resultados, without group accordion) -->
+<div class="modal-overlay" *ngIf="showGroupPredictionsModal" (click)="closeGroupPredictionsModal()">
+  <div class="modal-content predictions-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeGroupPredictionsModal()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <div class="modal-header" *ngIf="selectedMatchForPredictions as match">
+      <div class="match-info-header">
+        <div class="modal-header-substatus"
+          *ngIf="match.matchStatus === 'IN_PROGRESS' || match.isPlayed">
+          <span class="match-time-label live" *ngIf="match.matchStatus === 'IN_PROGRESS'">Jugando</span>
+          <span class="match-time-label finished" *ngIf="match.isPlayed">FT</span>
+        </div>
+        <div class="modal-header-teamsrow">
+          <div class="modal-team modal-team--home">
+            <img [src]="match.homeTeam.flagUrl" [alt]="match.homeTeam.name" class="flag modal-team-flag"
+              [class.flag--ch]="isSwitzerland(match.homeTeam)">
+            <span class="modal-team-name">{{ match.homeTeam.name }}</span>
+          </div>
+          <div class="match-score">
+            <app-match-multiplier-badge *ngIf="match.hasMultiplier"></app-match-multiplier-badge>
+            <span class="score" *ngIf="match.actualScore; else noActualScore">
+              {{ match.actualScore.home }} - {{ match.actualScore.away }}
+            </span>
+            <ng-template #noActualScore>
+              <span class="score">–</span>
+            </ng-template>
+          </div>
+          <div class="modal-team modal-team--away">
+            <img [src]="match.awayTeam.flagUrl" [alt]="match.awayTeam.name" class="flag modal-team-flag"
+              [class.flag--ch]="isSwitzerland(match.awayTeam)">
+            <span class="modal-team-name">{{ match.awayTeam.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <h3 class="predictions-title">Predicciones del Grupo</h3>
+
+      <div class="predictions-loading" *ngIf="isLoadingGroupMatchPredictions">
+        <div class="spinner-small"></div>
+        <span>Cargando predicciones...</span>
+      </div>
+
+      <div class="group-predictions-list" *ngIf="!isLoadingGroupMatchPredictions && groupMatchPredictions">
+        <div class="prediction-item" *ngFor="let pred of groupMatchPredictions"
+          [class.current-user]="pred.isCurrentUser">
+          <div class="member-info">
+            <span class="member-name">{{ predictionLabel(pred) }}</span>
+            <span class="you-tag" *ngIf="pred.isCurrentUser">Tú</span>
+          </div>
+          <div class="member-right">
+            <span class="member-prediction" [class.member-prediction--empty]="!pred.hasPrediction"
+              [ngClass]="memberPredictionStatusClasses(pred)">
+              <ng-container *ngIf="pred.hasPrediction; else emptyGroupPrediction">
+                {{ pred.predictedScore.home }} - {{ pred.predictedScore.away }}
+              </ng-container>
+              <ng-template #emptyGroupPrediction>–</ng-template>
+            </span>
+            <span *ngIf="pred.predictionStatus && pred.predictionStatus !== 'PENDING'" class="pred-status-badge"
+              [class.correct]="pred.predictionStatus === 'CORRECT'"
+              [class.partial]="pred.predictionStatus === 'PARTIAL'"
+              [class.incorrect]="pred.predictionStatus === 'INCORRECT'"
+              [class.bonus]="pred.predictionStatus === 'BONUS'">
+              {{ pred.predictionStatus === 'CORRECT' ? 'Correcto'
+              : pred.predictionStatus === 'PARTIAL' ? 'Parcial'
+              : pred.predictionStatus === 'BONUS' ? 'Bonus'
+              : 'Incorrecto' }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
